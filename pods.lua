@@ -126,7 +126,7 @@ end
 ---@param table table
 ---@param key any
 ---@param default any
-local function table__get_or(table, key, default)
+local function table__get_or_default(table, key, default)
     local value = table[key]
     if value == nil then
         return default
@@ -256,7 +256,7 @@ local function container__create(container, pod, config)
         end
     end
     -- container image
-    local registry = table__get_or(container, "registry", pod.registry)
+    local registry = table__get_or_default(container, "registry", pod.registry)
     commands[#commands + 1] = registry .. "/" .. container.image
     exec(table.concat(commands, " "), config.dryrun)
 end
