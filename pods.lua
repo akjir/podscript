@@ -35,18 +35,18 @@ local function print_help()
     print("   or: lua pods.lua [OPTIONS] ACTION TARGET")
     print()
     print("ACTION:")
-    print("  create     create a new pod")
-    print("  recreate   removes and then creates a new pod")
-    print("  remove     remove a running pod")
-    print("  update     update all defined images of the pod")
+    print("  create             create a new pod")
+    print("  recreate           removes and then creates a new pod")
+    print("  remove             remove a running pod")
+    print("  update             update all defined images of the pod")
     print()
     print("TARGET:")
-    print("  *          name of a valid pod config")
-    print("  all        names of valid pod configs defined at a config")
+    print("  *                  name of a valid pod config")
+    print("  all                names of valid pod configs defined at a config")
     print()
     print("OPTIONS:")
-    print("  --help     display this help and exit")
-    print("  --test     use alternative test config")
+    print("  --config [NAME]    use config with given name")
+    print("  --help             display this help and exit")
 end
 
 ---Print info.
@@ -294,7 +294,7 @@ end
 local function pod__create(pod_config, config)
     print("Create pod '" .. pod_config.name .. "' ...")
     local commands = { "podman pod create" }
-    
+
     -- pod name
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = pod_config.pod.name
@@ -500,10 +500,13 @@ end
 ---@param config_name string
 ---@return table|nil
 local function config__load_and_validate(config_name)
-    local config, error = load_lua_file(config_name .. ".lua")
+    if not string__ends_with(config_name, ".lua") then
+        config_name = config_name .. ".lua"
+    end
+    local config, error = load_lua_file(config_name)
     if config == nil then
         if error then print_error(error) end
-        print_error("Could not load '" .. config_name .. ".lua'!")
+        print_error("Could not load '" .. config_name .. "'!")
         return nil
     end
     -- dryrun default is true
@@ -537,25 +540,36 @@ local function main__parse_arguments(arguments, options)
         return false
     end
     -- parse arguments
+    local skip = false -- bad way to do it, but works
     for i = 1, #arguments do
-        if arguments[i] == "--help" then
-            options.help = true
-            break
-        elseif arguments[i] == "--test" then
-            options.test = true
+        if skip == true then
+            skip = false
         else
-            if string__begins_with(arguments[i], "--") then
-                print_error("Unknown option '" .. arguments[i] .. "'.")
-                return true
-            elseif options.action == "" then
-                -- first argument is target
-                options.action = arguments[i]
-            elseif options.target == "" then
-                -- second argument is action
-                options.target = arguments[i]
+            if arguments[i] == "--help" then
+                options.help = true
+                break
+            elseif arguments[i] == "--config" then
+                skip = true
+                local config_name = arguments[i + 1]
+                if config_name == nil or config_name == "" or string__begins_with(config_name, "--") then
+                    print_warning("Config name invalid or not defined.")
+                end
+                print_info("Config '" .. config_name .. "' is used.")
+                options.config = config_name
             else
-                print_error("Too many arguments.")
-                return true
+                if string__begins_with(arguments[i], "--") then
+                    print_error("Unknown option '" .. arguments[i] .. "'.")
+                    return true
+                elseif options.action == "" then
+                    -- first argument is target
+                    options.action = arguments[i]
+                elseif options.target == "" then
+                    -- second argument is action
+                    options.target = arguments[i]
+                else
+                    print_error("Too many arguments.")
+                    return true
+                end
             end
         end
     end
@@ -567,9 +581,9 @@ local function main()
     -- default options
     local options = {}
     options.action = ""  -- action for target pod config
+    options.config = "config"  -- config name to use
     options.help = false -- print help
     options.target = ""  -- target pod config name
-    options.test = false -- use test config
 
     -- parse arguments
     if main__parse_arguments(arg, options) then return end
@@ -581,7 +595,7 @@ local function main()
     end
 
     -- validate action
-    if options.action == "" then
+    if options.action == nil or options.action == "" then
         print_error("No action set.")
         return
     end
@@ -591,13 +605,7 @@ local function main()
     end
 
     -- parse config
-    local config_name = "config"
-    if options.test then
-        -- info test config
-        print_info("Test config is used.")
-        -- set test config name
-        config_name = "config_test"
-    end
+    local config_name = options.config
     local config = config__load_and_validate(config_name)
     if config == nil then return end
 

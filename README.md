@@ -4,4 +4,4 @@ Simple script to control Podman containers.
 
 ## Testing
 
-lua pods.lua --test create all
+lua pods.lua --config config_test create all
