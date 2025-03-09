@@ -6,7 +6,7 @@ return {
     -- Pod Values
     pod = {
         registry = "superpods.io",
-        commands = {
+        options = {
             "--publish 8088:80/tcp",
         },
     },

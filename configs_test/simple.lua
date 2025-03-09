@@ -10,7 +10,7 @@ return {
     pod = {
         name = pod_name,
         registry = "superpods.io",
-        commands = {
+        options = {
             "--publish 8081:80/tcp",
         },
     },

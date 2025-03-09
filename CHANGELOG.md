@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - define a different registry per container
 
+### Changed
+
+- renamed commands to options
+
 ## [1.0.0] - 2024-09-22
 
 ### Added

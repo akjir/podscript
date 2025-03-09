@@ -221,11 +221,7 @@ local function container__create(container, pod, config)
         commands[#commands + 1] = "--restart"
         commands[#commands + 1] = container.restart
     end
-    -- container commands
-    -- commands can be uncomment for single or special use
-    if container.commands ~= nil and table__size(container.commands) > 0 then
-        commands[#commands + 1] = table.concat(container.commands, " ")
-    end
+
     -- container volumes
     if (container.volumes ~= nil) then
         for i = 1, #container.volumes do
@@ -255,10 +251,21 @@ local function container__create(container, pod, config)
             end
         end
     end
+
+    -- container options
+    -- if not supported by pods, add them directly to the podman run command 
+    if container.options ~= nil and table__size(container.options) > 0 then
+        commands[#commands + 1] = table.concat(container.options, " ")
+    end
+
     -- container image
     local registry = table__get_or_default(container, "registry", pod.registry)
     commands[#commands + 1] = registry .. "/" .. container.image
     exec(table.concat(commands, " "), config.dryrun)
+
+    -- commands
+    -- see: podman run --detach image:tag command
+    -- TODO
 end
 
 ---Stop and removes a container.
@@ -287,14 +294,20 @@ end
 local function pod__create(pod_config, config)
     print("Create pod '" .. pod_config.name .. "' ...")
     local commands = { "podman pod create" }
+    
     -- pod name
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = pod_config.pod.name
-    -- pod commands
-    if pod_config.pod.commands ~= nil then
-        commands[#commands + 1] = table.concat(pod_config.pod.commands, " ")
+    
+    -- pod options
+    -- if not supported by pods, add them directly to the podman run command  
+    if pod_config.pod.options ~= nil then
+        commands[#commands + 1] = table.concat(pod_config.pod.options, " ")
     end
+    
+    -- create pod
     exec(table.concat(commands, " "), config.dryrun)
+    
     -- create containers
     local containers = pod_config.containers
     for id = 1, #containers do
