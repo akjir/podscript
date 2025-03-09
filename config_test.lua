@@ -7,7 +7,7 @@ return {
     configs = {
         path = "./configs_test",
         cluster = { "simple", "invalid" },
-        single = { "notfound", "nameless" },
+        single = { "notfound", "nameless", "registry" },
     },
 
     -- Pod Values

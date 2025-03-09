@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.0.0"
+local VERSION <const> = "1.0.0dev"
 
 -- ------------------------------------------------------------------------- --
 --      Print
@@ -120,6 +120,19 @@ local function table__contains(table, value)
         if (table[i] == value) then return true end
     end
     return false
+end
+
+---Get value from table or default if key not found
+---@param table table
+---@param key any
+---@param default any
+local function table__get_or(table, key, default)
+    local value = table[key]
+    if value == nil then
+        return default
+    else
+        return value
+    end
 end
 
 ---Get table size.
@@ -243,7 +256,8 @@ local function container__create(container, pod, config)
         end
     end
     -- container image
-    commands[#commands + 1] = pod.registry .. "/" .. container.image
+    local registry = table__get_or(container, "registry", pod.registry)
+    commands[#commands + 1] = registry .. "/" .. container.image
     exec(table.concat(commands, " "), config.dryrun)
 end
 
