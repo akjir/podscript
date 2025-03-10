@@ -56,22 +56,32 @@ local function print_help()
     print("  --help             display this help and exit")
 end
 
+---Internal print function. Write to print_hook if not nil.
+---@param message string
+local function print_internal(message)
+    if print_hook ~= nil then
+        print_hook(message)
+    else
+        print(message)
+    end
+end
+
 ---Print info.
 ---@param message string
 local function print_info(message)
-    print("INFO: " .. message)
+    print_internal("INFO: " .. message)
 end
 
 ---Print warning.
 ---@param message string
 local function print_warning(message)
-    print("WARNING: " .. message)
+    print_internal("WARNING: " .. message)
 end
 
 ---Print error.
 ---@param message string
 local function print_error(message)
-    print("ERROR: " .. message)
+    print_internal("ERROR: " .. message)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -167,6 +177,7 @@ local function build_full_path(path, file_name, file_extension)
 end
 
 ---Execute a command.
+---Only executes a command, if dryrun is set to false.
 ---@param command string
 ---@param dryrun boolean
 local function exec(command, dryrun)
@@ -174,11 +185,11 @@ local function exec(command, dryrun)
         command = command .. ";"
     end
     if dryrun then
-        print(command)
+        print_internal(command)
     else
         local handle = io.popen(command)
         if handle == nil then return end
-        print(handle:read("*l"))
+        print_internal(handle:read("*l"))
         handle:close()
     end
 end
@@ -308,7 +319,7 @@ end
 ---@param pod_config table
 ---@param config table
 local function pod__create(pod_config, config)
-    print("Create pod '" .. pod_config.name .. "' ...")
+    print_internal("Create pod '" .. pod_config.name .. "' ...")
     local commands = { "podman pod create" }
 
     -- pod name
@@ -338,7 +349,7 @@ end
 ---@param pod_config table
 ---@param config table
 local function pod__remove(pod_config, config)
-    print("Remove pod '" .. pod_config.name .. "' ...")
+    print_internal("Remove pod '" .. pod_config.name .. "' ...")
     -- remove containers
     local containers = pod_config.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
@@ -363,7 +374,7 @@ end
 ---@param pod_config table
 ---@param config table
 local function pod__update(pod_config, config)
-    print("Update pod '" .. pod_config.name .. "' ...")
+    print_internal("Update pod '" .. pod_config.name .. "' ...")
     local containers = pod_config.containers
     -- update containers
     for id = 1, #containers do
@@ -596,11 +607,12 @@ end
 ---@param arguments string[]
 function main(arguments)
     -- default options
-    local options = {}
-    options.action = ""  -- action for target pod config
-    options.config = "config"  -- config name to use
-    options.help = false -- print help
-    options.target = ""  -- target pod config name
+    local options = {
+        action = "",       -- action for target pod config
+        config = "config", -- config name to use
+        help = false,      -- print help
+        target = "",       -- target pod config name
+    }
 
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
@@ -645,8 +657,7 @@ function main(arguments)
     end
 end
 
--- necessary for using as a libray, but you cannot rename
--- the script without changing this if statement 
-if arg[0] == "pods.lua" then
+-- prevent excecution when imported from test_pods
+if arg[0] ~= "test_pods.lua" then
     main(arg)
 end
