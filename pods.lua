@@ -206,16 +206,21 @@ end
 local function container__create(container, pod, config)
     -- main command
     local commands = { "podman run" }
+
     -- container name
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = container.name
+    
     -- pod name
     commands[#commands + 1] = "--pod"
     commands[#commands + 1] = pod.name
+    
     -- detach
+    -- default is false
     if container.detach then
         commands[#commands + 1] = "--detach"
     end
+    
     -- container restart
     if not string__is_nil_or_empty(container.restart) then
         commands[#commands + 1] = "--restart"
@@ -261,11 +266,15 @@ local function container__create(container, pod, config)
     -- container image
     local registry = table__get_or_default(container, "registry", pod.registry)
     commands[#commands + 1] = registry .. "/" .. container.image
-    exec(table.concat(commands, " "), config.dryrun)
-
+    
     -- commands
     -- see: podman run --detach image:tag command
-    -- TODO
+    if container.commands ~= nil and table__size(container.commands) > 0 then
+        commands[#commands + 1] = table.concat(container.commands, " ")
+    end
+    
+    -- create and execute final podman command
+    exec(table.concat(commands, " "), config.dryrun)
 end
 
 ---Stop and removes a container.

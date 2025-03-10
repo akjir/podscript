@@ -15,7 +15,6 @@ return {
     -- Container Values
     container = {
         app = {
-            detach = true,
             image = "nameless:latest",
         },
     },
