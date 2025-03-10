@@ -24,6 +24,13 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 local VERSION <const> = "1.0.0dev"
 
 -- ------------------------------------------------------------------------- --
+--      Debug and Testing
+-- ------------------------------------------------------------------------- --
+
+-- global hook to handle output
+print_hook = nil
+
+-- ------------------------------------------------------------------------- --
 --      Print
 -- ------------------------------------------------------------------------- --
 
@@ -586,7 +593,8 @@ local function main__parse_arguments(arguments, options)
 end
 
 ---Main function.
-local function main()
+---@param arguments string[]
+function main(arguments)
     -- default options
     local options = {}
     options.action = ""  -- action for target pod config
@@ -595,7 +603,7 @@ local function main()
     options.target = ""  -- target pod config name
 
     -- parse arguments
-    if main__parse_arguments(arg, options) then return end
+    if main__parse_arguments(arguments, options) then return end
 
     -- print help
     if (options.help) then
@@ -637,4 +645,8 @@ local function main()
     end
 end
 
-main()
+-- necessary for using as a libray, but you cannot rename
+-- the script without changing this if statement 
+if arg[0] == "pods.lua" then
+    main(arg)
+end
