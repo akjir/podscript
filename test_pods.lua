@@ -67,7 +67,7 @@ local function execute_test(config_name, test_name, test_table)
             if result == nil then result = "nil" end
             print("## Test '" .. test_name .. "' failed at line " .. line .. ".")
             if description ~= "" then print(" Description: " .. test_table.description) end
-            print(" Arguments: " .. table.concat(arguments, " "))
+            print(" Call: lua pods.lua " .. table.concat(arguments, " "))
             print()
             print("  Result:   '" .. result .. "'")
             print("  Expected: '" .. expected_result .. "'")
