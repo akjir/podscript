@@ -8,11 +8,10 @@ return {
         registry = "podreg.io";
     },
 
-    containers = { "app" },
     -- Container Values
+    containers = { "app" },
     container = {
         app = {
-            detach = true,
             image = "comands:latest",
             commands = {
                 "command1",
