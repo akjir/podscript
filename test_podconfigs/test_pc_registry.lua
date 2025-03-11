@@ -8,15 +8,13 @@ return {
         registry = "superpods.io",
     },
 
-    containers = { "super", "mega" },
     -- Container Values
+    containers = { "super", "mega" },
     container = {
         super = {
-            detach = true,
             image = "super_container:latest",
         },
         mega = {
-            detach = true,
             registry = "megapods.io",
             image = "mega_container:latest",
         },

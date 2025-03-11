@@ -228,17 +228,17 @@ local function container__create(container, pod, config)
     -- container name
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = container.name
-    
+
     -- pod name
     commands[#commands + 1] = "--pod"
     commands[#commands + 1] = pod.name
-    
+
     -- detach
     -- default is false
     if container.detach then
         commands[#commands + 1] = "--detach"
     end
-    
+
     -- container restart
     if not string__is_nil_or_empty(container.restart) then
         commands[#commands + 1] = "--restart"
@@ -284,13 +284,13 @@ local function container__create(container, pod, config)
     -- container image
     local registry = table__get_or_default(container, "registry", pod.registry)
     commands[#commands + 1] = registry .. "/" .. container.image
-    
+
     -- commands
     -- see: podman run --detach image:tag command
     if container.commands ~= nil and table__size(container.commands) > 0 then
         commands[#commands + 1] = table.concat(container.commands, " ")
     end
-    
+
     -- create and execute final podman command
     exec(table.concat(commands, " "), config.dryrun)
 end
@@ -325,16 +325,16 @@ local function pod__create(pod_config, config)
     -- pod name
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = pod_config.pod.name
-    
+
     -- pod options
     -- if not supported by pods, add them directly to the podman run command  
     if pod_config.pod.options ~= nil then
         commands[#commands + 1] = table.concat(pod_config.pod.options, " ")
     end
-    
+
     -- create pod
     exec(table.concat(commands, " "), config.dryrun)
-    
+
     -- create containers
     local containers = pod_config.containers
     for id = 1, #containers do
@@ -386,10 +386,10 @@ local function pod__update(pod_config, config)
 end
 
 -- ------------------------------------------------------------------------- --
---      Pod Config Handling
+--      PodConfig Handling
 -- ------------------------------------------------------------------------- --
 
----Set path to default for pod configs if not defined in config.
+---Set path to default for PodConfigs if not defined in config.
 ---@param config table
 ---@return string
 local function pod_config__ensure_path(config)
@@ -400,7 +400,7 @@ local function pod_config__ensure_path(config)
     return pod_config_path
 end
 
----Load pod config.
+---Load PodConfig.
 ---@param pod_config_path string
 ---@param pod_config_name string
 ---@return table|nil
@@ -409,7 +409,7 @@ local function pod_config__load(pod_config_path, pod_config_name)
     local pod_config, error = load_lua_file(pod_config_path)
     if error then print_error(error) end
     if pod_config == nil then
-        print_error("Couldn't load pod config '" .. pod_config_name .. "'! (" .. pod_config_path .. ")")
+        print_error("Couldn't load PodConfig '" .. pod_config_name .. "'! (" .. pod_config_path .. ")")
     end
     return pod_config
 end
@@ -421,7 +421,7 @@ end
 local function pod_config__validate_and_handle(pod_config, target, action, config)
     -- test for pod config name
     if string__is_nil_or_empty(pod_config.name) then
-        print_error("No pod config name in config '" .. target .. "' set!")
+        print_error("No PodConfig name in config '" .. target .. "' set!")
         return
     end
     -- test for pod section
@@ -469,12 +469,12 @@ local function pod_config__validate_and_handle(pod_config, target, action, confi
     end
 end
 
----Loadn and handle single pod config.
+---Loadn and handle single PodConfig.
 ---@param config table
 ---@param target string
 ---@param action string
 local function pod_config__handle_single(config, target, action)
-    -- assert pod config name
+    -- assert PodConfig name
     local pod_config_name = ""
     if config.configs.cluster ~= nil then
         if table__contains(config.configs.cluster, target) then
@@ -487,32 +487,32 @@ local function pod_config__handle_single(config, target, action)
         end
     end
     if pod_config_name == "" then
-        print_error("Pod config '" .. target .. "' not defined in config!")
+        print_error("PodConfig '" .. target .. "' not defined in config!")
         return
     end
-    -- load pod config
+    -- load PodConfig
     local pod_config_path = pod_config__ensure_path(config)
     local pod_config = pod_config__load(pod_config_path, pod_config_name)
-    -- handle pod config
+    -- handle PodConfig
     if pod_config ~= nil then
         pod_config__validate_and_handle(pod_config, target, action, config)
     end
 end
 
----Load and handle all pod configs in cluster.
+---Load and handle all PodConfigs in cluster.
 ---@param config table
 ---@param action string
 local function pod_config__handle_all(config, action)
     local cluster = config.configs.cluster
     if cluster == nil or table__size(cluster) == 0 then
-        print_error("No pod config names defined in config under cluster.")
+        print_error("No PodConfig names defined in config under cluster.")
         return
     end
     local pod_config_path = pod_config__ensure_path(config)
     for i = 1, #cluster do
-        -- load pod config
+        -- load PodConfig
         local pod_config = pod_config__load(pod_config_path, cluster[i])
-        -- handle pod config
+        -- handle PodConfig
         if pod_config ~= nil then
             pod_config__validate_and_handle(pod_config, cluster[i], action, config)
         end
@@ -608,10 +608,10 @@ end
 function main(arguments)
     -- default options
     local options = {
-        action = "",       -- action for target pod config
+        action = "",       -- action for target PodConfig
         config = "config", -- config name to use
         help = false,      -- print help
-        target = "",       -- target pod config name
+        target = "",       -- target PodConfig name
     }
 
     -- parse arguments
@@ -638,9 +638,9 @@ function main(arguments)
     local config = config__load_and_validate(config_name)
     if config == nil then return end
 
-    -- assert pod configs values
+    -- assert config values
     if config.configs == nil then
-        print_error("No pod config values defined in config!")
+        print_error("No config values defined in config!")
         return
     end
 
@@ -649,7 +649,7 @@ function main(arguments)
         print_info("Dryrun mode is active.")
     end
 
-    -- hande pod configs
+    -- hande PodConfigs
     if options.target == "all" then
         pod_config__handle_all(config, options.action)
     else

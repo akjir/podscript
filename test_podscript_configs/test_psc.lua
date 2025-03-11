@@ -5,9 +5,12 @@ return {
 
     -- PodConfigs Values
     configs = {
-        path = "./configs_test",
-        cluster = { "simple", "invalid", "registry", "options", "commands" },
-        single = { "notfound", "nameless" },
+        path = "./test_podconfigs",
+        cluster = {},
+        single = {
+            "test_pc_registry",
+            "test_pc_commands",
+        },
     },
 
     -- Pod Values
@@ -15,3 +18,4 @@ return {
         path = "/pods"
     },
 }
+ 
