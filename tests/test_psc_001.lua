@@ -31,7 +31,7 @@ return {
             action = "create",
             target = "test_pc_publish",
             expectations = {
-                {4, "podman pod create --name pod-publish -p 8433:433 -p 8080:80/TCP -p 127.0.0.1::42 -p 127.0.0.1:62:43/UDP -p 600-500 -p 83 -p 124 -p 12/UDP;"},
+                {4, "podman pod create --name pod-publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;"},
             },
         },
     },

@@ -332,19 +332,19 @@ local function pod__create(pod_config, config)
         for _, entry in pairs(publish) do
             local size = table__size(entry)
             if size == 1 then
-                commands[#commands + 1] = "-p " .. entry[1]
+                commands[#commands + 1] = "--publish " .. entry[1]
             elseif size == 2 then
                 local e1 = entry[1]
                 local e2 = entry[2]
                 if e1 == "" then
-                    commands[#commands + 1] = "-p " .. e2
+                    commands[#commands + 1] = "--publish " .. e2
                 elseif e2 == "TCP" or e2 == "UDP" then
-                    commands[#commands + 1] = "-p " .. e1 .. "/" .. e2
+                    commands[#commands + 1] = "--publish " .. e1 .. "/" .. e2
                 else
-                    commands[#commands + 1] = "-p " .. e1 .. ":" .. e2
+                    commands[#commands + 1] = "--publish " .. e1 .. ":" .. e2
                 end
             elseif size > 2 then
-                commands[#commands + 1] = "-p " .. entry[1] .. ":" .. entry[2] .. "/" .. entry[3]
+                commands[#commands + 1] = "--publish " .. entry[1] .. ":" .. entry[2] .. "/" .. entry[3]
             end
         end
     end
