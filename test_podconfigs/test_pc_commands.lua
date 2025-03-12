@@ -5,7 +5,7 @@ return {
 
     -- Pod Values
     pod = {
-        registry = "podreg.io";
+        registry = "podreg.io",
     },
 
     -- Container Values

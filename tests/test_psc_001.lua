@@ -26,5 +26,13 @@ return {
                 {3, "ERROR: PodConfig 'test_pc_none' not defined in config!"},
             },
         },
+        T00104 = {
+            description = "Publish argument support for pods.",
+            action = "create",
+            target = "test_pc_publish",
+            expectations = {
+                {4, "podman pod create --name pod-publish -p 8433:433 -p 8080:80/TCP -p 127.0.0.1::42 -p 127.0.0.1:62:43/UDP -p 600-500 -p 83 -p 124 -p 12/UDP;"},
+            },
+        },
     },
 }

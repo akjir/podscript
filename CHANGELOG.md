@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## Added
 
 - define a different registry per container
-- config option
+- option for PodConfigs and PodScript configs
+- publish for pods
 - define commands to excute inside a container
 
 ### Changed
