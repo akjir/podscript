@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.1.0dev"
+local VERSION <const> = "1.1.0"
 
 -- ------------------------------------------------------------------------- --
 --      Debug and Testing
@@ -276,7 +276,7 @@ local function container__create(container, pod, config)
     end
 
     -- container options
-    -- if not supported by pods, add them directly to the podman run command 
+    -- if not supported by pods, add them directly to the podman run command
     if container.options ~= nil and table__size(container.options) > 0 then
         commands[#commands + 1] = table.concat(container.options, " ")
     end
@@ -350,7 +350,7 @@ local function pod__create(pod_config, config)
     end
 
     -- pod options
-    -- if not supported by pods, add them directly to the podman run command  
+    -- if not supported by pods, add them directly to the podman run command
     if pod_config.pod.options ~= nil then
         commands[#commands + 1] = table.concat(pod_config.pod.options, " ")
     end
@@ -590,7 +590,7 @@ local function main__parse_arguments(arguments, options)
         return false
     end
     -- parse arguments
-    local skip = false -- bad way to do it, but works
+    local skip = false       -- bad way to do it, but works
     for i = 1, #arguments do
         if skip == true then -- skips the next argument to allow "--option value"
             skip = false
