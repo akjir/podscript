@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.0.0dev"
+local VERSION <const> = "1.1.0dev"
 
 -- ------------------------------------------------------------------------- --
 --      Debug and Testing
@@ -48,8 +48,8 @@ local function print_help()
     print("  update             update all defined images of the pod")
     print()
     print("TARGET:")
-    print("  *                  name of a valid pod config")
-    print("  all                names of valid pod configs defined at a config")
+    print("  *                  name of a valid PodConfig defined in a config")
+    print("  all                all valid PodConfigs defined at cluster in a config")
     print()
     print("OPTIONS:")
     print("  --config [NAME]    use config with given name")
@@ -592,7 +592,7 @@ local function main__parse_arguments(arguments, options)
     -- parse arguments
     local skip = false -- bad way to do it, but works
     for i = 1, #arguments do
-        if skip == true then
+        if skip == true then -- skips the next argument to allow "--option value"
             skip = false
         else
             if arguments[i] == "--help" then
