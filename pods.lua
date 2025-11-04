@@ -93,16 +93,16 @@ end
 ---@return table|nil
 ---@return string|nil
 local function load_lua_file(full_path)
-    local ok, error = pcall(dofile, full_path)
+    local ok, result = pcall(dofile, full_path)
     if not ok then
-        return nil, error
+        return nil, result
     end
-    return dofile(full_path), nil
+    return result, nil
 end
 
 ---Test if a string begins with another string.
 ---@param str string
----@paran prefix string
+---@param prefix string
 ---@return boolean
 local function string__begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
@@ -429,11 +429,11 @@ end
 ---@param pod_config_name string
 ---@return table|nil
 local function pod_config__load(pod_config_path, pod_config_name)
-    local pod_config_path = build_full_path(pod_config_path, pod_config_name, ".lua")
-    local pod_config, error = load_lua_file(pod_config_path)
-    if error then print_error(error) end
+    local full_path = build_full_path(pod_config_path, pod_config_name, ".lua")
+    local pod_config, err = load_lua_file(full_path)
+    if err then print_error(err) end
     if pod_config == nil then
-        print_error("Couldn't load PodConfig '" .. pod_config_name .. "'! (" .. pod_config_path .. ")")
+        print_error("Couldn't load PodConfig '" .. pod_config_name .. "'! (" .. full_path .. ")")
     end
     return pod_config
 end
@@ -554,9 +554,9 @@ local function config__load_and_validate(config_name)
     if not string__ends_with(config_name, ".lua") then
         config_name = config_name .. ".lua"
     end
-    local config, error = load_lua_file(config_name)
+    local config, err = load_lua_file(config_name)
     if config == nil then
-        if error then print_error(error) end
+        if err then print_error(err) end
         print_error("Could not load '" .. config_name .. "'!")
         return nil
     end
@@ -604,18 +604,19 @@ local function main__parse_arguments(arguments, options)
                 local config_name = arguments[i + 1]
                 if config_name == nil or config_name == "" or string__begins_with(config_name, "--") then
                     print_warning("Config name invalid or not defined.")
+                else
+                    print_info("Config '" .. config_name .. "' is used.")
+                    options.config = config_name
                 end
-                print_info("Config '" .. config_name .. "' is used.")
-                options.config = config_name
             else
                 if string__begins_with(arguments[i], "--") then
                     print_error("Unknown option '" .. arguments[i] .. "'.")
                     return true
                 elseif options.action == "" then
-                    -- first argument is target
+                    -- first argument is action
                     options.action = arguments[i]
                 elseif options.target == "" then
-                    -- second argument is action
+                    -- second argument is target
                     options.target = arguments[i]
                 else
                     print_error("Too many arguments.")
