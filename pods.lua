@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.1.0"
+local VERSION <const> = "1.1.1"
 
 -- ------------------------------------------------------------------------- --
 --      Debug and Testing
@@ -308,7 +308,8 @@ end
 ---@param pod table
 ---@param config table
 local function container__update(container, pod, config)
-    exec("podman pull " .. pod.registry .. "/" .. container.image, config.dryrun)
+    local registry = table__get_or_default(container, "registry", pod.registry)
+    exec("podman pull " .. registry .. "/" .. container.image, config.dryrun)
 end
 
 -- ------------------------------------------------------------------------- --
