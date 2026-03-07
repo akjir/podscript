@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.1.1"
+local VERSION <const> = "1.1.2"
 
 -- ------------------------------------------------------------------------- --
 --      Debug and Testing
