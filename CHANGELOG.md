@@ -6,37 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- Corrected an issue that could cause a file to be executed twice.
-- Added validation for the `--config` argument to handle invalid names.
+- Added support for user-defined recipe groups in the PodScript configuration.
+- Added the ability to target recipe groups using the '@' prefix in the target argument.
 
 ### Changed
 
-- Improved internal code quality by fixing typos and renaming variables.
+- Renamed 'PodConfig' to 'Recipe' for better clarity.
+- Improved internal code quality by fixing typos and renaming variables for consistency.
+
+### Removed
+
+- Removed the default 'all' target argument.
+- Removed the 'cluster' and 'single' configurations from the PodScript config file in favor of recipe groups.
+
+### Fixed
+
+- Fixed an issue that could cause a recipe file to be executed multiple times.
+- Added validation for the `--config` argument to prevent errors from invalid names.
 
 ## [1.1.1] - 2025-11-04
 
 ### Fixed
 
-- Update now respects the container registry.
+- The 'update' command now correctly respects the container registry.
 
 ## [1.1.0] - 2025-05-29
 
 ### Added
 
-- Added an option to define a different registry per container.
-- Added support for PodConfigs and PodScript configs.
-- Added the ability to publish pods.
-- Added the ability to define commands to execute inside a container.
+- Added the ability to specify a different registry for each container.
+- Added a generic 'options' field to pod and container configurations for custom flags.
+- Added a 'publish' option to pods for exposing ports.
+- Added a 'commands' field to containers for running commands on startup.
 
 ### Changed
 
-- Renamed 'commands' to 'options' for clarity.
+- Renamed the generic 'commands' field to 'options' to avoid confusion with container startup commands.
 
 ### Removed
 
-- Removed the internal 'test' option.
+- Removed an internal 'test' option.
 
 ## [1.0.0] - 2024-09-22
 

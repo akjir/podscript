@@ -1,7 +1,7 @@
 --[[
 
 PodScript
-Copyright (C) 2025  Stefan Stark
+Copyright (C) 2026  Stefan Stark
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.1.2"
+local VERSION <const> = "1.2.0"
 
 -- ------------------------------------------------------------------------- --
 --      Debug and Testing
@@ -38,8 +38,8 @@ print_hook = nil
 local function print_help()
     print("PODSCRIPT " .. VERSION)
     print()
-    print("Usage: pods [OPTIONS] ACTION TARGET")
-    print("   or: lua pods.lua [OPTIONS] ACTION TARGET")
+    print("Usage: pods [OPTIONS] ACTION TARGETS")
+    print("   or: lua pods.lua [OPTIONS] ACTION TARGETS")
     print()
     print("ACTION:")
     print("  create             create a new pod")
@@ -47,9 +47,8 @@ local function print_help()
     print("  remove             remove a running pod")
     print("  update             update all defined images of the pod")
     print()
-    print("TARGET:")
-    print("  *                  name of a valid PodConfig defined in a config")
-    print("  all                all valid PodConfigs defined at cluster in a config")
+    print("TARGETS:")
+    print("  *                  names of recipes or groups defined in a config")
     print()
     print("OPTIONS:")
     print("  --config [NAME]    use config with given name")

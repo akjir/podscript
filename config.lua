@@ -1,17 +1,22 @@
--- PodScript Config
+-- PodScript Configuration
 return {
-    -- Options
-    dryrun = true, -- default is true to prevent unintentional executions
+    -- If true, commands will be printed but not executed.
+    dryrun = true,
 
-    -- PodConfigs Values
-    configs = {
-        path = ".",   -- path for pod config file
-        cluster = {}, -- active pod configs, single use and with 'all', respects order
-        single = {},  -- active pods config, only single use
+    -- Defines where to find recipe files for pod creation.
+    recipes = {
+        -- The default search path for recipe files.
+        path = ".",
+        -- Defines groups of recipes that can be run together. All active recipes must be in a group.
+        groups = {
+            -- An example of a recipe group.
+            all = {},
+        },
     },
 
-    -- Pod Values
+    -- Pod-specific configurations.
     pods = {
-        path = "/pods" -- default path for pod data
+        -- The default root directory for all pod-related data.
+        path = "/pods",
     },
 }
