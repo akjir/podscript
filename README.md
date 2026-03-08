@@ -36,6 +36,7 @@ lua pods.lua [OPTIONS] ACTION [TARGETS]
 
 *   `--config <config_name>`: Use a specific configuration file.
 *   `--help`: Display the help message.
+*   `--simulate`: Force simulate mode, overrides config file option.
 
 ## Configuration
 

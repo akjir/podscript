@@ -58,6 +58,7 @@ local function print_help()
     print("OPTIONS:")
     print("  --config [NAME]    use config with given name")
     print("  --help             display this help and exit")
+    print("  --simulate         forces simulate mode")
 end
 
 ---Print info.
@@ -671,6 +672,8 @@ local function main__parse_arguments(arguments, options)
             if arguments[i] == "--help" then
                 options.help = true
                 break
+            elseif arguments[i] == "--simulate" then
+                options.simulate = true
             elseif arguments[i] == "--config" then
                 skip = true
                 local config_name = arguments[i + 1]
@@ -720,10 +723,11 @@ end
 ---@param arguments string[]
 function main(arguments)
     -- default options
-    local options = {
+        local options = {
         action = "",       -- action for targets
         config = "config", -- config name to use
         help = false,      -- print help
+        simulate = false,    -- simulate all commands
         targets = {},      -- target recipe names
     }
 
@@ -741,8 +745,13 @@ function main(arguments)
 
     -- parse config
     local config_name = options.config
-    local config = config__load_and_validate(config_name)
+        local config = config__load_and_validate(config_name)
     if config == nil then return end
+
+    -- enforce simulate from arguments
+    if options.simulate then
+        config.simulate = true
+    end
 
     -- assert recipes
     if table__is_nil_or_empty(config.recipes) then

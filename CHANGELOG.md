@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added a `--simulate` argument to override the config file option.
 - Added support for user-defined recipe groups in the PodScript configuration.
 - Added the ability to target recipe groups using the `@` prefix in the target argument.
 
