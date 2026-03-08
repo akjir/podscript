@@ -1,7 +1,7 @@
 -- PodScript Config
 return {
     -- Options
-    dryrun = true,
+        simulate = true,
 
     -- PodConfigs Values
     configs = {

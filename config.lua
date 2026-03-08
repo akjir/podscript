@@ -1,7 +1,7 @@
 -- PodScript Configuration
 return {
     -- If true, commands will be printed but not executed.
-    dryrun = true,
+    simulate = true,
 
     -- Defines where to find recipe files for pod creation.
     recipes = {

@@ -226,14 +226,14 @@ local function build_full_path(path, file_name, file_extension)
 end
 
 ---Execute a command.
----Only executes a command, if dryrun is set to false.
+---Only executes a command, if simulate is set to false.
 ---@param command string
----@param dryrun boolean
-local function exec(command, dryrun)
+---@param simulate boolean
+local function exec(command, simulate)
     if not string__ends_with(command, ";") then
         command = command .. ";"
     end
-    if dryrun then
+    if simulate then
         print_internal(command)
     else
         local handle = io.popen(command)
@@ -273,8 +273,8 @@ end
 ---Create a container.
 ---@param container table
 ---@param pod table
----@param dryrun boolean
-local function container__create(container, pod, dryrun)
+---@param simulate boolean
+local function container__create(container, pod, simulate)
     -- main command
     local commands = { "podman run" }
 
@@ -345,24 +345,24 @@ local function container__create(container, pod, dryrun)
     end
 
     -- create and execute final podman command
-    exec(table.concat(commands, " "), dryrun)
+    exec(table.concat(commands, " "), simulate)
 end
 
 ---Stop and removes a container.
 ---@param container table
----@param dryrun boolean
-local function container__remove(container, dryrun)
-    exec("podman stop " .. container.name, dryrun)
-    exec("podman rm " .. container.name, dryrun)
+---@param simulate boolean
+local function container__remove(container, simulate)
+    exec("podman stop " .. container.name, simulate)
+    exec("podman rm " .. container.name, simulate)
 end
 
 ---Update a container image.
 ---@param container table
 ---@param pod table
----@param dryrun boolean
-local function container__update(container, pod, dryrun)
+---@param simulate boolean
+local function container__update(container, pod, simulate)
     local registry = table__get_or_default(container, "registry", pod.registry)
-    exec("podman pull " .. registry .. "/" .. container.image, dryrun)
+    exec("podman pull " .. registry .. "/" .. container.image, simulate)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -375,8 +375,8 @@ end
 
 ---Create pod and containers.
 ---@param pod_config table
----@param dryrun boolean
-local function pod__create(pod_config, dryrun)
+---@param simulate boolean
+local function pod__create(pod_config, simulate)
     print_internal("Create pod '" .. pod_config.name .. "' ...")
     local commands = { "podman pod create" }
 
@@ -414,7 +414,7 @@ local function pod__create(pod_config, dryrun)
     end
 
     -- create pod
-    exec(table.concat(commands, " "), dryrun)
+    exec(table.concat(commands, " "), simulate)
 
     -- create containers
     local containers = pod_config.containers
@@ -422,47 +422,47 @@ local function pod__create(pod_config, dryrun)
         local container_value_name = containers[id]
         local container = pod_config.container[container_value_name]
         if container__validate(container, pod_config.pod.name, container_value_name) then
-            container__create(container, pod_config.pod, dryrun)
+            container__create(container, pod_config.pod, simulate)
         end
     end
 end
 
 ---Remove pod and containers.
 ---@param pod_config table
----@param dryrun boolean
-local function pod__remove(pod_config, dryrun)
+---@param simulate boolean
+local function pod__remove(pod_config, simulate)
     print_internal("Remove pod '" .. pod_config.name .. "' ...")
     -- remove containers
     local containers = pod_config.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
         local container = pod_config.container[containers[id]]
         if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__remove(container, dryrun)
+            container__remove(container, simulate)
         end
     end
     -- remove pod
-    exec("podman pod rm " .. pod_config.pod.name, dryrun)
+    exec("podman pod rm " .. pod_config.pod.name, simulate)
 end
 
 ---Remove and create pod and containers.
 ---@param pod_config table
----@param dryrun boolean
-local function pod__recreate(pod_config, dryrun)
-    pod__remove(pod_config, dryrun)
-    pod__create(pod_config, dryrun)
+---@param simulate boolean
+local function pod__recreate(pod_config, simulate)
+    pod__remove(pod_config, simulate)
+    pod__create(pod_config, simulate)
 end
 
 ---Update containers of the pod.
 ---@param pod_config table
----@param dryrun boolean
-local function pod__update(pod_config, dryrun)
+---@param simulate boolean
+local function pod__update(pod_config, simulate)
     print_internal("Update pod '" .. pod_config.name .. "' ...")
     local containers = pod_config.containers
     -- update containers
     for id = 1, #containers do
         local container = pod_config.container[containers[id]]
         if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__update(container, pod_config.pod, dryrun)
+            container__update(container, pod_config.pod, simulate)
         end
     end
 end
@@ -540,19 +540,19 @@ local function recipe__validate_and_handle(pod_config, target, action, config)
 
     -- switch for correct function
     if (action == "update") then
-        pod__update(pod_config, config.dryrun)
+        pod__update(pod_config, config.simulate)
         return
     end
     if action == "recreate" then
-        pod__recreate(pod_config, config.dryrun)
+        pod__recreate(pod_config, config.simulate)
         return
     end
     if action == "remove" then
-        pod__remove(pod_config, config.dryrun)
+        pod__remove(pod_config, config.simulate)
         return
     end
     if action == "create" then
-        pod__create(pod_config, config.dryrun)
+        pod__create(pod_config, config.simulate)
         return
     end
 end
@@ -628,9 +628,9 @@ local function config__load_and_validate(config_name)
         print_error("Could not load '" .. config_name .. "'!")
         return nil
     end
-    -- dryrun default is true
-    if config.dryrun == nil then
-        config.dryrun = true
+    -- simulate default is true
+    if config.simulate == nil then
+        config.simulate = true
     end
     -- default pod values
     if config.pods == nil then
@@ -750,9 +750,9 @@ function main(arguments)
         return
     end
 
-    -- print info for active dryrun
-    if config.dryrun then
-        print_info("Dryrun mode is active.")
+    -- print info for active simulate
+    if config.simulate then
+        print_info("Simulate mode is active.")
     end
 
     -- handle
