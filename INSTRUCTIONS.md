@@ -72,5 +72,5 @@ This section lists practices that are strictly forbidden.
 
 *   **Do not create new source files**: All core logic must be within `pods.lua` and all test logic must be within `test_suite.lua`. The only exception is for new test files.
 *   **Do not add external dependencies**: The project must remain dependency-free.
-*   **Do not use single-letter variable names**: Use descriptive names (e.g., `index` instead of `i`).
+*   **Do not use single-letter or numbered variable names**: Use descriptive names (e.g., `index` instead of `i`, `user_table` instead of `t2`). An exception is made for compact variable names when they are programmatically or mathematically idiomatic, such as using `x` and `y` for coordinates.
 *   **Avoid global variables**: Use local variables whenever possible. Global variables are strongly discouraged and should only be used if absolutely necessary.
