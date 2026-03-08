@@ -41,15 +41,20 @@ print_internal = print_to_stack
 -- ------------------------------------------------------------------------- --
 
 local function execute_test(default_config_name, test_code, test_table)
-    -- replace default config if the test have a specific config set
-    local config_name = table.get_or_default(test_table, "config", default_config_name)
-    if config_name ~= "" then
-        config_name = "tests/configs/" .. config_name
-    end
+    local config_name = table.get_or_default(test_table, "config", "")
+    local arguments = {}
 
-    local arguments = {"--config"}
-    if config_name ~= "" then
-        table.insert(arguments, config_name)
+    if config_name == "" then
+        if default_config_name ~= "" then
+            table.insert(arguments, "--config")
+            table.insert(arguments, "tests/configs/" .. default_config_name)
+        end
+    else
+        table.insert(arguments, "--config")
+        table.insert(arguments, "tests/configs/" .. config_name)
+    end
+    if test_table.help then
+        table.insert(arguments, "--help")
     end
     if test_table.simulate then
         table.insert(arguments, "--simulate")
@@ -92,19 +97,20 @@ end
 
 local function execute_test_group(test_group)
     local tests = test_group.tests
+    local default_config_name = table.get_or_default(test_group, "config", "")
     for test_code, test_table in pairs(tests) do
         tests_count = tests_count + 1
-        if not execute_test(test_group.default_config, test_code, test_table) then
+        if not execute_test(default_config_name, test_code, test_table) then
             tests_count_failed = tests_count_failed + 1
         end
     end
 end
 
 -- ------------------------------------------------------------------------- --
---      Tests
+--      Test Suits
 -- ------------------------------------------------------------------------- --
 
-execute_test_group(require "tests/suite_001_main")
+execute_test_group(require "tests/suite_001_argument_options")
 
 -- ------------------------------------------------------------------------- --
 --      Summary

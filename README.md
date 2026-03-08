@@ -19,7 +19,6 @@ This is a personal hobby project created for the primary purposes of learning Lu
 ```bash
 lua pods.lua [OPTIONS] ACTION [TARGETS]
 ```
-
 ### Actions
 
 *   `create`: Create a new pod and its containers.

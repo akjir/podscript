@@ -1,5 +1,6 @@
 return {
-    config = "default_config",
+    -- config = none,
+    description = "Tests for arguments options like --config and --simulate.",
     tests = {
         T00101 = {
             description = "Complete empty config.",
@@ -47,12 +48,19 @@ return {
             },
         },
         T00105 = {
-            description = "Config not defined.",
-            config = "",
-            action = "create",
-            targets = {"target"},
+            description = "No arguments at all. Print help.",
             expectations = {
-                {1, "ERROR: Unknown action 'target'."},
+                {3, "Usage: pods [OPTIONS] ACTION [TARGETS]"},
+            },
+        },
+        T00106 = {
+            description = "Set help flag. Print help.",
+            config = "",
+            action = "",
+            targets = {},
+            help = true,
+            expectations = {
+                {3, "Usage: pods [OPTIONS] ACTION [TARGETS]"},
             },
         },
     }
