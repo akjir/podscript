@@ -17,7 +17,7 @@ This is a personal hobby project created for the primary purposes of learning Lu
 ## Usage
 
 ```bash
-lua pods.lua [OPTIONS] ACTION TARGETS
+lua pods.lua [OPTIONS] ACTION [TARGETS]
 ```
 
 ### Actions
@@ -39,7 +39,7 @@ lua pods.lua [OPTIONS] ACTION TARGETS
 
 ## Configuration
 
-Configuration is done in the a specific file. This file allows you to define:
+Configuration is done in a specific file. This file allows you to define:
 
 *   'dryrun': If 'true', commands will be printed but not executed.
 *   'recipes': The path to your recipe files and groups of recipes.

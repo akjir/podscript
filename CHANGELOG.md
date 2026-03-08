@@ -19,12 +19,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Removed
 
 - Removed the default 'all' target argument.
-- Removed the 'cluster' and 'single' configurations from the PodScript config file in favor of recipe groups.
+- Removed the 'cluster' and 'single' parameters from the PodScript config file in favor of recipe groups.
 
 ### Fixed
 
 - Fixed an issue that could cause a recipe file to be executed multiple times.
-- Added validation for the `--config` argument to prevent errors from invalid names.
+- Added validation for the '--config' argument to prevent errors from invalid names.
 
 ## [1.1.1] - 2025-11-04
 

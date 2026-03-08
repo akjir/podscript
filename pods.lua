@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 --[[
 
 PodScript
@@ -18,28 +19,32 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 
 -- ------------------------------------------------------------------------- --
---   PODSCRIPT
+--
+--
+--       PODSCRIPT
+--
+--
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.2.0"
 
 -- ------------------------------------------------------------------------- --
---      Debug and Testing
+--
+--
+--         SECTION Print
+--
+--
 -- ------------------------------------------------------------------------- --
 
 -- global hook to handle output
-print_hook = nil
-
--- ------------------------------------------------------------------------- --
---      Print
--- ------------------------------------------------------------------------- --
+print_internal = nil
 
 ---Print help.
 local function print_help()
     print("PODSCRIPT " .. VERSION)
     print()
-    print("Usage: pods [OPTIONS] ACTION TARGETS")
-    print("   or: lua pods.lua [OPTIONS] ACTION TARGETS")
+    print("Usage: pods [OPTIONS] ACTION [TARGETS]")
+    print("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
     print()
     print("ACTION:")
     print("  create             create a new pod")
@@ -53,16 +58,6 @@ local function print_help()
     print("OPTIONS:")
     print("  --config [NAME]    use config with given name")
     print("  --help             display this help and exit")
-end
-
----Internal print function. Write to print_hook if not nil.
----@param message string
-local function print_internal(message)
-    if print_hook ~= nil then
-        print_hook(message)
-    else
-        print(message)
-    end
 end
 
 ---Print info.
@@ -84,20 +79,12 @@ local function print_error(message)
 end
 
 -- ------------------------------------------------------------------------- --
---      Helper
+--
+--
+--         SECTION String
+--
+--
 -- ------------------------------------------------------------------------- --
-
----Load a lua file.
----@param full_path string
----@return table|nil
----@return string|nil
-local function load_lua_file(full_path)
-    local ok, result = pcall(dofile, full_path)
-    if not ok then
-        return nil, result
-    end
-    return result, nil
-end
 
 ---Test if a string begins with another string.
 ---@param str string
@@ -127,11 +114,20 @@ end
 --     return str:gsub("%s+", "")
 --- end
 
----Test if a table contains a value.
+-- ------------------------------------------------------------------------- --
+--
+--
+--         SECTION Table
+--
+--
+-- ------------------------------------------------------------------------- --
+
+---Test if a table contains a value. Returns false if is nil.
 ---@param table table
 ---@param value any
 ---@return boolean
 local function table__contains(table, value)
+    if table == nil then return false end
     for i = 1, #table do
         if (table[i] == value) then return true end
     end
@@ -143,6 +139,7 @@ end
 ---@param key any
 ---@param default any
 local function table__get_or_default(table, key, default)
+    if table == nil then return default end
     local value = table[key]
     if value == nil then
         return default
@@ -160,6 +157,33 @@ local function table__size(table)
         count = count + 1
     end
     return count
+end
+
+---Test if a table is nil or empty.
+---@param table table
+---@return boolean
+local function table__is_nil_or_empty(table)
+    return table == nil or next(table) == nil
+end
+
+-- ------------------------------------------------------------------------- --
+--
+--
+--         SECTION Helper
+--
+--
+-- ------------------------------------------------------------------------- --
+
+---Load a lua file.
+---@param full_path string
+---@return table|nil
+---@return string|nil
+local function load_lua_file(full_path)
+    local ok, result = pcall(dofile, full_path)
+    if not ok then
+        return nil, result
+    end
+    return result, nil
 end
 
 ---Build a full path with given parts.
@@ -194,7 +218,11 @@ local function exec(command, dryrun)
 end
 
 -- ------------------------------------------------------------------------- --
---      Container Handling
+--
+--
+--         SECTION Container
+--
+--
 -- ------------------------------------------------------------------------- --
 
 ---Validate container values.
@@ -219,8 +247,8 @@ end
 ---Create a container.
 ---@param container table
 ---@param pod table
----@param config table
-local function container__create(container, pod, config)
+---@param dryrun boolean
+local function container__create(container, pod, dryrun)
     -- main command
     local commands = { "podman run" }
 
@@ -228,7 +256,7 @@ local function container__create(container, pod, config)
     commands[#commands + 1] = "--name"
     commands[#commands + 1] = container.name
 
-    -- pod name
+    -- add container to pod
     commands[#commands + 1] = "--pod"
     commands[#commands + 1] = pod.name
 
@@ -291,34 +319,38 @@ local function container__create(container, pod, config)
     end
 
     -- create and execute final podman command
-    exec(table.concat(commands, " "), config.dryrun)
+    exec(table.concat(commands, " "), dryrun)
 end
 
 ---Stop and removes a container.
 ---@param container table
----@param config table
-local function container__remove(container, config)
-    exec("podman stop " .. container.name, config.dryrun)
-    exec("podman rm " .. container.name, config.dryrun)
+---@param dryrun boolean
+local function container__remove(container, dryrun)
+    exec("podman stop " .. container.name, dryrun)
+    exec("podman rm " .. container.name, dryrun)
 end
 
 ---Update a container image.
 ---@param container table
 ---@param pod table
----@param config table
-local function container__update(container, pod, config)
+---@param dryrun boolean
+local function container__update(container, pod, dryrun)
     local registry = table__get_or_default(container, "registry", pod.registry)
-    exec("podman pull " .. registry .. "/" .. container.image, config.dryrun)
+    exec("podman pull " .. registry .. "/" .. container.image, dryrun)
 end
 
 -- ------------------------------------------------------------------------- --
---      Pod Handling
+--
+--
+--         SECTION Pod
+--
+--
 -- ------------------------------------------------------------------------- --
 
 ---Create pod and containers.
 ---@param pod_config table
----@param config table
-local function pod__create(pod_config, config)
+---@param dryrun boolean
+local function pod__create(pod_config, dryrun)
     print_internal("Create pod '" .. pod_config.name .. "' ...")
     local commands = { "podman pod create" }
 
@@ -356,92 +388,98 @@ local function pod__create(pod_config, config)
     end
 
     -- create pod
-    exec(table.concat(commands, " "), config.dryrun)
+    exec(table.concat(commands, " "), dryrun)
 
     -- create containers
     local containers = pod_config.containers
     for id = 1, #containers do
         local container = pod_config.container[containers[id]]
         if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__create(container, pod_config.pod, config)
+            container__create(container, pod_config.pod, dryrun)
         end
     end
 end
 
 ---Remove pod and containers.
 ---@param pod_config table
----@param config table
-local function pod__remove(pod_config, config)
+---@param dryrun boolean
+local function pod__remove(pod_config, dryrun)
     print_internal("Remove pod '" .. pod_config.name .. "' ...")
     -- remove containers
     local containers = pod_config.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
         local container = pod_config.container[containers[id]]
         if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__remove(container, config)
+            container__remove(container, dryrun)
         end
     end
     -- remove pod
-    exec("podman pod rm " .. pod_config.pod.name, config.dryrun)
+    exec("podman pod rm " .. pod_config.pod.name, dryrun)
 end
 
 ---Remove and create pod and containers.
 ---@param pod_config table
----@param config table
-local function pod__recreate(pod_config, config)
-    pod__remove(pod_config, config)
-    pod__create(pod_config, config)
+---@param dryrun boolean
+local function pod__recreate(pod_config, dryrun)
+    pod__remove(pod_config, dryrun)
+    pod__create(pod_config, dryrun)
 end
 
 ---Update containers of the pod.
 ---@param pod_config table
----@param config table
-local function pod__update(pod_config, config)
+---@param dryrun boolean
+local function pod__update(pod_config, dryrun)
     print_internal("Update pod '" .. pod_config.name .. "' ...")
     local containers = pod_config.containers
     -- update containers
     for id = 1, #containers do
         local container = pod_config.container[containers[id]]
         if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__update(container, pod_config.pod, config)
+            container__update(container, pod_config.pod, dryrun)
         end
     end
 end
 
 -- ------------------------------------------------------------------------- --
---      PodConfig Handling
+--
+--
+--         SECTION Recipe
+--
+--
 -- ------------------------------------------------------------------------- --
 
----Set path to default for PodConfigs if not defined in config.
----@param config table
+---Set path to default for PodScript recipes if not defined in config.
+---@param recipes table
 ---@return string
-local function pod_config__ensure_path(config)
-    local pod_config_path = "."
-    if not string__is_nil_or_empty(config.configs.path) then
-        pod_config_path = config.configs.path
+local function recipe__ensure_path(recipes)
+    -- at this point recipes should be valid
+    local recipe_path = recipes.path
+    if not string__is_nil_or_empty(recipe_path) then
+        return recipe_path
+    else
+        return "."
     end
-    return pod_config_path
 end
 
----Load PodConfig.
----@param pod_config_path string
----@param pod_config_name string
+---Load PodScript recipe.
+---@param recipe_path string
+---@param recipe_name string
 ---@return table|nil
-local function pod_config__load(pod_config_path, pod_config_name)
-    local full_path = build_full_path(pod_config_path, pod_config_name, ".lua")
-    local pod_config, err = load_lua_file(full_path)
+local function recipe__load(recipe_path, recipe_name)
+    local full_path = build_full_path(recipe_path, recipe_name, ".lua")
+    local recipe, err = load_lua_file(full_path)
     if err then print_error(err) end
-    if pod_config == nil then
-        print_error("Couldn't load PodConfig '" .. pod_config_name .. "'! (" .. full_path .. ")")
+    if recipe == nil then
+        print_error("Couldn't load PodConfig '" .. recipe_name .. "'! (" .. full_path .. ")")
     end
-    return pod_config
+    return recipe
 end
 
 ---Switch correct pod function and test pod values.
 ---@param pod_config table
 ---@param action string
 ---@param config table
-local function pod_config__validate_and_handle(pod_config, target, action, config)
+local function recipe__validate_and_handle(pod_config, target, action, config)
     -- test for pod config name
     if string__is_nil_or_empty(pod_config.name) then
         print_error("No PodConfig name in config '" .. target .. "' set!")
@@ -475,75 +513,79 @@ local function pod_config__validate_and_handle(pod_config, target, action, confi
 
     -- switch for correct function
     if (action == "update") then
-        pod__update(pod_config, config)
+        pod__update(pod_config, config.dryrun)
         return
     end
     if action == "recreate" then
-        pod__recreate(pod_config, config)
+        pod__recreate(pod_config, config.dryrun)
         return
     end
     if action == "remove" then
-        pod__remove(pod_config, config)
+        pod__remove(pod_config, config.dryrun)
         return
     end
     if action == "create" then
-        pod__create(pod_config, config)
+        pod__create(pod_config, config.dryrun)
         return
     end
 end
 
----Loadn and handle single PodConfig.
+---Loads and handle single PodScript recipe.
 ---@param config table
 ---@param target string
 ---@param action string
-local function pod_config__handle_single(config, target, action)
-    -- assert PodConfig name
-    local pod_config_name = ""
+local function recipe__handle_single(config, target, action)
+    -- assert recipe name
+    local recipe_name = ""
     if config.configs.cluster ~= nil then
         if table__contains(config.configs.cluster, target) then
-            pod_config_name = target
+            recipe_name = target
         end
     end
     if config.configs.single ~= nil then
         if table__contains(config.configs.single, target) then
-            pod_config_name = target
+            recipe_name = target
         end
     end
-    if pod_config_name == "" then
+    if recipe_name == "" then
         print_error("PodConfig '" .. target .. "' not defined in config!")
         return
     end
-    -- load PodConfig
-    local pod_config_path = pod_config__ensure_path(config)
-    local pod_config = pod_config__load(pod_config_path, pod_config_name)
-    -- handle PodConfig
+    -- load recipe
+    local pod_config_path = recipe__ensure_path(config)
+    local pod_config = recipe__load(pod_config_path, recipe_name)
+    -- handle recipe
     if pod_config ~= nil then
-        pod_config__validate_and_handle(pod_config, target, action, config)
+        recipe__validate_and_handle(pod_config, target, action, config)
     end
 end
 
----Load and handle all PodConfigs in cluster.
+---Load and handle all PodScript recipes in a cluster.
 ---@param config table
 ---@param action string
-local function pod_config__handle_all(config, action)
+local function recipe__handle_all(config, action)
     local cluster = config.configs.cluster
     if cluster == nil or table__size(cluster) == 0 then
         print_error("No PodConfig names defined in config under cluster.")
         return
     end
-    local pod_config_path = pod_config__ensure_path(config)
+    local recipe_path = recipe__ensure_path(config)
     for i = 1, #cluster do
-        -- load PodConfig
-        local pod_config = pod_config__load(pod_config_path, cluster[i])
-        -- handle PodConfig
+        -- load recipe
+        local pod_config = recipe__load(recipe_path, cluster[i])
+        -- handle recipe
         if pod_config ~= nil then
-            pod_config__validate_and_handle(pod_config, cluster[i], action, config)
+            recipe__validate_and_handle(pod_config, cluster[i], action, config)
         end
     end
 end
 
 -- ------------------------------------------------------------------------- --
---      Config Handling
+--
+--
+--         SECTION Config
+--
+--
 -- ------------------------------------------------------------------------- --
 
 ---Load and test podscript config.
@@ -575,7 +617,11 @@ local function config__load_and_validate(config_name)
 end
 
 -- ------------------------------------------------------------------------- --
---      Main
+--
+--
+--         SECTION Main
+--
+--
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
@@ -627,61 +673,73 @@ local function main__parse_arguments(arguments, options)
     return false
 end
 
+---Validate options.
+---@param options table
+---@return boolean
+local function main__validate_options(options)
+    -- validate action
+    if options.action == nil or options.action == "" then
+        print_error("No action set.")
+        return false
+    end
+    if not table__contains({ "create", "recreate", "remove", "update" }, options.action) then
+        print_error("Unknown action '" .. options.action .. "'.")
+        return false
+    end
+    return true
+end
+
 ---Main function.
 ---@param arguments string[]
 function main(arguments)
     -- default options
     local options = {
-        action = "",       -- action for target PodConfig
+        action = "",       -- action for targets
         config = "config", -- config name to use
         help = false,      -- print help
-        target = "",       -- target PodConfig name
+        targets = {},      -- target recipe names
     }
 
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
-
+    
     -- print help
     if (options.help) then
         print_help()
         return
     end
 
-    -- validate action
-    if options.action == nil or options.action == "" then
-        print_error("No action set.")
-        return
-    end
-    if not table__contains({ "create", "recreate", "remove", "update" }, options.action) then
-        print_error("Unknown action '" .. options.action .. "'.")
-        return
-    end
+    -- validate options
+    if main__validate_options(options) then return end
 
     -- parse config
     local config_name = options.config
     local config = config__load_and_validate(config_name)
     if config == nil then return end
 
-    -- assert config values
-    if config.configs == nil then
-        print_error("No config values defined in config!")
+    -- assert recipes
+    if table__is_nil_or_empty(config.recipes) then
+        print_error("No recipes defined in config!")
         return
     end
 
-    -- info dryrun
+    -- print info for active dryrun
     if config.dryrun then
         print_info("Dryrun mode is active.")
     end
 
-    -- hande PodConfigs
+    -- handle
     if options.target == "all" then
-        pod_config__handle_all(config, options.action)
+        recipe__handle_all(config, options.action)
     else
-        pod_config__handle_single(config, options.target, options.action)
+        recipe__handle_single(config, options.target, options.action)
     end
 end
 
--- prevent excecution when imported from test_pods
-if arg[0] ~= "test_pods.lua" then
+-- prevent excecution when imported from test_suite
+if arg[0] ~= "test_suite.lua" then
+    -- initalize print_internal
+    print_internal = print
+    -- execute main
     main(arg)
 end
