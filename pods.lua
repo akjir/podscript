@@ -90,7 +90,7 @@ end
 ---@param str string
 ---@param prefix string
 ---@return boolean
-local function string__begins_with(str, prefix)
+function string__begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -98,14 +98,14 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-local function string__ends_with(str, suffix)
+function string__ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
 ---Test if string is empty or nil.
 ---@param str string
 ---@return boolean
-local function string__is_nil_or_empty(str)
+function string__is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
@@ -121,6 +121,19 @@ end
 --
 --
 -- ------------------------------------------------------------------------- --
+
+---Appends a sequential table to another.
+---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
+---@param target table
+---@param source table
+---@return table
+function table__append(target, source)
+    if source == nil then return target end
+    for _, v in ipairs(source) do
+        table.insert(target, v)
+    end
+    return target
+end
 
 ---Test if a table contains a value. Returns false if is nil.
 ---@param table table
@@ -138,7 +151,7 @@ end
 ---@param table table
 ---@param key any
 ---@param default any
-local function table__get_or_default(table, key, default)
+function table__get_or_default(table, key, default)
     if table == nil then return default end
     local value = table[key]
     if value == nil then
@@ -148,22 +161,35 @@ local function table__get_or_default(table, key, default)
     end
 end
 
+---Test if a table is nil or empty.
+---@param table table
+---@return boolean
+function table__is_nil_or_empty(table)
+    return table == nil or next(table) == nil
+end
+
+---Merges two tables by adding key-value pairs from one table to another.
+---If a key from the source table already exists in the target table, its value will be overwritten.
+---@param target table 
+---@param source table
+---@return table
+function table__merge(target, source)
+    if source == nil then return target end
+    for key, value in pairs(source) do
+        target[key] = value
+    end
+    return target
+end
+
 ---Get table size.
 ---@param table table
 ---@return integer
-local function table__size(table)
+function table__size(table)
     local count = 0
     for _, _ in pairs(table) do
         count = count + 1
     end
     return count
-end
-
----Test if a table is nil or empty.
----@param table table
----@return boolean
-local function table__is_nil_or_empty(table)
-    return table == nil or next(table) == nil
 end
 
 -- ------------------------------------------------------------------------- --
@@ -228,9 +254,9 @@ end
 ---Validate container values.
 ---@param container table
 ---@param pod_name string
----@param container_id string
+---@param container_alternate_name string
 ---@return boolean
-local function container__validate(container, pod_name, container_id)
+local function container__validate(container, pod_name, container_alternate_name)
     -- test for container image
     if string__is_nil_or_empty(container.image) then
         print_error("Image not set for container '" .. container.name .. "'!")
@@ -239,7 +265,7 @@ local function container__validate(container, pod_name, container_id)
     -- test for container name
     -- container name is optional
     if string__is_nil_or_empty(container.name) then
-        container.name = pod_name .. "-" .. container_id
+        container.name = pod_name .. "-" .. container_alternate_name
     end
     return true
 end
@@ -393,8 +419,9 @@ local function pod__create(pod_config, dryrun)
     -- create containers
     local containers = pod_config.containers
     for id = 1, #containers do
-        local container = pod_config.container[containers[id]]
-        if container__validate(container, pod_config.pod.name, containers[id]) then
+        local container_value_name = containers[id]
+        local container = pod_config.container[container_value_name]
+        if container__validate(container, pod_config.pod.name, container_value_name) then
             container__create(container, pod_config.pod, dryrun)
         end
     end
