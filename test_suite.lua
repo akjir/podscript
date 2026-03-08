@@ -40,17 +40,17 @@ print_internal = print_to_stack
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
-local function execute_test(default_config_name, test_name, test_table)
+local function execute_test(default_config_name, test_code, test_table)
     -- replace default config if the test have a specific config set
     local config_name = table.get_or_default(test_table, "config", default_config_name)
     if config_name ~= "" then
         config_name = "tests/configs/" .. config_name
     end
 
-    local arguments = {
-        "--config",
-        config_name,
-    }
+    local arguments = {"--config"}
+    if config_name ~= "" then
+        table.insert(arguments, config_name)
+    end
     if test_table.simulate then
         table.insert(arguments, "--simulate")
     end
@@ -70,7 +70,7 @@ local function execute_test(default_config_name, test_name, test_table)
             local description = test_table.description
             if description == nil then description = "" end
             if result == nil then result = "nil" end
-            print("## Test '" .. test_name .. "' failed at line " .. line .. ".")
+            print("## Test '" .. test_code .. "' failed at line " .. line .. ".")
             if description ~= "" then print(" Description: " .. test_table.description) end
             print(" Call: lua pods.lua " .. table.concat(arguments, " "))
             print()
