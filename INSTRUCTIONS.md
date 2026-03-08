@@ -53,13 +53,14 @@ Each section has a specific purpose and a strict function naming convention.
 ## 4. Coding Style and Formatting
 
 *   **Indentation:** Use 4 spaces for indentation, not tabs.
+*   **Function Order**: When adding new functions, order them alphabetically by name within their section, as long as it does not conflict with Lua's requirement that functions must be declared before they are called.
 *   **Style Consistency:** Adhere strictly to the coding style of existing code in `pods.lua`.
 *   **Comments:**
     *   Add comments only to explain complex or non-obvious logic.
     *   Write all comments and variable names in English.
 *   **Naming Conventions:**
     *   Follow the function naming conventions outlined in Section 3.2.
-    *   Use descriptive variable names. Single-letter variables are not permitted.
+    *   Use descriptive variable names.
 
 ## 5. Versioning and Commit Messages
 

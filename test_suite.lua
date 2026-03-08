@@ -42,7 +42,7 @@ print_internal = print_to_stack
 
 local function execute_test(default_config_name, test_name, test_table)
     -- replace default config if the test have a specific config set
-    local config_name = table__get_or_default(test_table, "config", default_config_name)
+    local config_name = table.get_or_default(test_table, "config", default_config_name)
     if config_name ~= "" then
         config_name = "tests/configs/" .. config_name
     end
@@ -50,9 +50,12 @@ local function execute_test(default_config_name, test_name, test_table)
     local arguments = {
         "--config",
         config_name,
-        test_table.action
     }
-    arguments = table__append(arguments, test_table.targets)
+    if test_table.simulate then
+        table.insert(arguments, "--simulate")
+    end
+    table.insert(arguments, test_table.action)
+    table.append(arguments, test_table.targets)
 
     -- execute pods.lua with arguments
     main(arguments)
@@ -101,7 +104,7 @@ end
 --      Tests
 -- ------------------------------------------------------------------------- --
 
-execute_test_group(require "suite_001_main")
+execute_test_group(require "tests/suite_001_main")
 
 -- ------------------------------------------------------------------------- --
 --      Summary

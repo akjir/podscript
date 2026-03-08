@@ -91,7 +91,7 @@ end
 ---@param str string
 ---@param prefix string
 ---@return boolean
-function string__begins_with(str, prefix)
+local function string__begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -99,14 +99,14 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-function string__ends_with(str, suffix)
+local function string__ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
 ---Test if string is empty or nil.
 ---@param str string
 ---@return boolean
-function string__is_nil_or_empty(str)
+local function string__is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
@@ -114,6 +114,12 @@ end
 -- local function string__trim(str)
 --     return str:gsub("%s+", "")
 --- end
+
+-- add table helper functions to global table object
+string.begins_with = string__begins_with
+string.ends_with = string__ends_with
+string.is_nil_or_empty = string__is_nil_or_empty
+-- string.trim = string__trim
 
 -- ------------------------------------------------------------------------- --
 --
@@ -127,13 +133,11 @@ end
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table
 ---@param source table
----@return table
-function table__append(target, source)
-    if source == nil then return target end
+local function table__append(target, source)
+    if source == nil then return end
     for _, v in ipairs(source) do
         table.insert(target, v)
     end
-    return target
 end
 
 ---Test if a table contains a value. Returns false if is nil.
@@ -152,7 +156,7 @@ end
 ---@param table table
 ---@param key any
 ---@param default any
-function table__get_or_default(table, key, default)
+local function table__get_or_default(table, key, default)
     if table == nil then return default end
     local value = table[key]
     if value == nil then
@@ -165,7 +169,7 @@ end
 ---Test if a table is nil or empty.
 ---@param table table
 ---@return boolean
-function table__is_nil_or_empty(table)
+local function table__is_nil_or_empty(table)
     return table == nil or next(table) == nil
 end
 
@@ -173,25 +177,31 @@ end
 ---If a key from the source table already exists in the target table, its value will be overwritten.
 ---@param target table 
 ---@param source table
----@return table
-function table__merge(target, source)
+local function table__merge(target, source)
     if source == nil then return target end
     for key, value in pairs(source) do
         target[key] = value
     end
-    return target
 end
 
 ---Get table size.
 ---@param table table
 ---@return integer
-function table__size(table)
+local function table__size(table)
     local count = 0
     for _, _ in pairs(table) do
         count = count + 1
     end
     return count
 end
+
+-- add table helper functions to global table object
+table.append = table__append
+table.contains = table__contains
+table.get_or_default = table__get_or_default
+table.is_nil_or_empty = table__is_nil_or_empty
+table.merge = table__merge
+table.size = table__size
 
 -- ------------------------------------------------------------------------- --
 --
@@ -219,7 +229,7 @@ end
 ---@param file_extension string
 ---@return string
 local function build_full_path(path, file_name, file_extension)
-    if string__ends_with(path, "/") or string__begins_with(file_name, "/") then
+    if string.ends_with(path, "/") or string.begins_with(file_name, "/") then
         return path .. file_name .. file_extension
     else
         return path .. "/" .. file_name .. file_extension
@@ -231,7 +241,7 @@ end
 ---@param command string
 ---@param simulate boolean
 local function exec(command, simulate)
-    if not string__ends_with(command, ";") then
+    if not string.ends_with(command, ";") then
         command = command .. ";"
     end
     if simulate then
@@ -259,13 +269,13 @@ end
 ---@return boolean
 local function container__validate(container, pod_name, container_alternate_name)
     -- test for container image
-    if string__is_nil_or_empty(container.image) then
+    if string.is_nil_or_empty(container.image) then
         print_error("Image not set for container '" .. container.name .. "'!")
         return false
     end
     -- test for container name
     -- container name is optional
-    if string__is_nil_or_empty(container.name) then
+    if string.is_nil_or_empty(container.name) then
         container.name = pod_name .. "-" .. container_alternate_name
     end
     return true
@@ -294,7 +304,7 @@ local function container__create(container, pod, simulate)
     end
 
     -- container restart
-    if not string__is_nil_or_empty(container.restart) then
+    if not string.is_nil_or_empty(container.restart) then
         commands[#commands + 1] = "--restart"
         commands[#commands + 1] = container.restart
     end
@@ -305,21 +315,21 @@ local function container__create(container, pod, simulate)
             local host_dir = container.volumes[i][1]
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
-            if string__is_nil_or_empty(host_dir) then
+            if string.is_nil_or_empty(host_dir) then
                 print_error("Host dir cannot be empty! (" .. container.name .. ")")
             else
                 -- we check nil and empty but not if it's a valid path
-                if string__is_nil_or_empty(container_dir) then
+                if string.is_nil_or_empty(container_dir) then
                     print_error("Container dir cannot be empty! (" .. container.name .. ")")
                 else
                     -- at this point we know that we have a valid path
                     -- but want to check if there is a separate path wanted
                     -- we don't check this earlier so no default or pod path will still be an error
-                    if not string__begins_with(host_dir, "/") then
+                    if not string.begins_with(host_dir, "/") then
                         host_dir = build_full_path(pod.path, host_dir, "")
                     end
                     local command = host_dir .. ":" .. container_dir
-                    if not string__is_nil_or_empty(options) then
+                    if not string.is_nil_or_empty(options) then
                         command = command .. ":" .. options
                     end
                     commands[#commands + 1] = "--volume"
@@ -336,12 +346,12 @@ local function container__create(container, pod, simulate)
     end
 
     -- container image
-    local registry = table__get_or_default(container, "registry", pod.registry)
+    local registry = table.get_or_default(container, "registry", pod.registry)
     commands[#commands + 1] = registry .. "/" .. container.image
 
     -- commands
     -- see: podman run --detach image:tag command
-    if container.commands ~= nil and table__size(container.commands) > 0 then
+    if container.commands ~= nil and table.size(container.commands) > 0 then
         commands[#commands + 1] = table.concat(container.commands, " ")
     end
 
@@ -482,7 +492,7 @@ end
 local function recipe__ensure_path(recipes)
     -- at this point recipes should be valid
     local recipe_path = recipes.path
-    if not string__is_nil_or_empty(recipe_path) then
+    if not string.is_nil_or_empty(recipe_path) then
         return recipe_path
     else
         return "."
@@ -509,7 +519,7 @@ end
 ---@param config table
 local function recipe__validate_and_handle(pod_config, target, action, config)
     -- test for pod config name
-    if string__is_nil_or_empty(pod_config.name) then
+    if string.is_nil_or_empty(pod_config.name) then
         print_error("No PodConfig name in config '" .. target .. "' set!")
         return
     end
@@ -519,7 +529,7 @@ local function recipe__validate_and_handle(pod_config, target, action, config)
         return
     end
     -- test for pod registry
-    if string__is_nil_or_empty(pod_config.pod.registry) then
+    if string.is_nil_or_empty(pod_config.pod.registry) then
         print_error("No pod registry in config '" .. target .. "' set!")
         return
     end
@@ -535,7 +545,7 @@ local function recipe__validate_and_handle(pod_config, target, action, config)
     end
     -- test for pod name
     -- pod name is optional
-    if string__is_nil_or_empty(pod_config.pod.name) then
+    if string.is_nil_or_empty(pod_config.pod.name) then
         pod_config.pod.name = "pod-" .. pod_config.name
     end
 
@@ -565,18 +575,18 @@ end
 local function recipe__handle_single(config, target, action)
     -- assert recipe name
     local recipe_name = ""
-    if config.configs.cluster ~= nil then
-        if table__contains(config.configs.cluster, target) then
-            recipe_name = target
-        end
-    end
-    if config.configs.single ~= nil then
-        if table__contains(config.configs.single, target) then
-            recipe_name = target
-        end
-    end
+    -- if config.recipes.groups ~= nil then
+    --    if table__contains(config.configs.cluster, target) then
+    --        recipe_name = target
+    --    end
+    --end
+    --if config.configs.single ~= nil then
+    --    if table__contains(config.configs.single, target) then
+    --        recipe_name = target
+    --    end
+    --end
     if recipe_name == "" then
-        print_error("PodConfig '" .. target .. "' not defined in config!")
+        print_error("Recipe '" .. target .. "' not defined in config!")
         return
     end
     -- load recipe
@@ -616,11 +626,11 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Load and test podscript config.
+---Loads PodScript config. Sets default values if missing.
 ---@param config_name string
 ---@return table|nil
-local function config__load_and_validate(config_name)
-    if not string__ends_with(config_name, ".lua") then
+local function config__load(config_name)
+    if not string.ends_with(config_name, ".lua") then
         config_name = config_name .. ".lua"
     end
     local config, err = load_lua_file(config_name)
@@ -664,38 +674,32 @@ local function main__parse_arguments(arguments, options)
         return false
     end
     -- parse arguments
-    local skip = false       -- bad way to do it, but works
+    local skip = false
     for i = 1, #arguments do
-        if skip == true then -- skips the next argument to allow "--option value"
+        if skip == true then -- skips to allow "--argument value"
             skip = false
         else
+            -- reset skip if used
+            if skip then skip = false end
+
             if arguments[i] == "--help" then
                 options.help = true
-                break
+                break -- print help and ignore the rest
             elseif arguments[i] == "--simulate" then
                 options.simulate = true
             elseif arguments[i] == "--config" then
                 skip = true
-                local config_name = arguments[i + 1]
-                if config_name == nil or config_name == "" or string__begins_with(config_name, "--") then
-                    print_warning("Config name invalid or not defined.")
-                else
-                    print_info("Config '" .. config_name .. "' is used.")
-                    options.config = config_name
-                end
+                options.config = table.get_or_default(arguments, i + 1, "")
             else
-                if string__begins_with(arguments[i], "--") then
+                if string.begins_with(arguments[i], "--") then
                     print_error("Unknown option '" .. arguments[i] .. "'.")
                     return true
                 elseif options.action == "" then
                     -- first argument is action
                     options.action = arguments[i]
-                elseif options.target == "" then
-                    -- second argument is target
-                    options.target = arguments[i]
                 else
-                    print_error("Too many arguments.")
-                    return true
+                    -- followed arguments are targets
+                    table.insert(options.targets, arguments[i])
                 end
             end
         end
@@ -703,20 +707,32 @@ local function main__parse_arguments(arguments, options)
     return false
 end
 
----Validate options.
+---Handle target recipes and execute them.
+---@param config table
+---@param action string
+---@param targets table
+local function main__handle(config, action, targets)
+    -- assert recipes
+    if table.is_nil_or_empty(config.recipes) then
+        print_error("No recipes defined in config!")
+        return
+    end
+end
+
+---Validate options. Returns true if error.
 ---@param options table
 ---@return boolean
 local function main__validate_options(options)
     -- validate action
     if options.action == nil or options.action == "" then
         print_error("No action set.")
-        return false
+        return true
     end
     if not table__contains({ "create", "recreate", "remove", "update" }, options.action) then
         print_error("Unknown action '" .. options.action .. "'.")
-        return false
+        return true
     end
-    return true
+    return false
 end
 
 ---Main function.
@@ -727,13 +743,13 @@ function main(arguments)
         action = "",       -- action for targets
         config = "config", -- config name to use
         help = false,      -- print help
-        simulate = false,    -- simulate all commands
+        simulate = false,   -- simulate all commands
         targets = {},      -- target recipe names
     }
 
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
-    
+
     -- print help
     if (options.help) then
         print_help()
@@ -745,31 +761,26 @@ function main(arguments)
 
     -- parse config
     local config_name = options.config
-        local config = config__load_and_validate(config_name)
+    local config = config__load(config_name)
     if config == nil then return end
+
 
     -- enforce simulate from arguments
     if options.simulate then
         config.simulate = true
     end
 
-    -- assert recipes
-    if table__is_nil_or_empty(config.recipes) then
-        print_error("No recipes defined in config!")
-        return
-    end
-
-    -- print info for active simulate
-    if config.simulate then
+    -- print info if simulate mode is active
+    if config.simulate == true then
         print_info("Simulate mode is active.")
     end
 
-    -- handle
-    if options.target == "all" then
-        recipe__handle_all(config, options.action)
-    else
-        recipe__handle_single(config, options.target, options.action)
+    -- print info if non default confi is used
+    if config_name ~= "config" then
+        print_info("Config '" .. config_name .. "' is used.")
     end
+
+    main__handle(config, options.action, options.targets)
 end
 
 -- prevent excecution when imported from test_suite
