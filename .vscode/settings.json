@@ -1,6 +1,0 @@
-{
-    "Lua.diagnostics.globals": [
-        "print_hook",
-        "main"
-    ]
-}
