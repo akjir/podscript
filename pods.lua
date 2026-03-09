@@ -175,7 +175,7 @@ end
 
 ---Merges two tables by adding key-value pairs from one table to another.
 ---If a key from the source table already exists in the target table, its value will be overwritten.
----@param target table 
+---@param target table
 ---@param source table
 local function table__merge(target, source)
     if source == nil then return target end
@@ -184,10 +184,11 @@ local function table__merge(target, source)
     end
 end
 
----Get table size.
+---Get table size, including non-numeric keys.
 ---@param table table
 ---@return integer
 local function table__size(table)
+    if table == nil then return 0 end
     local count = 0
     for _, _ in pairs(table) do
         count = count + 1
@@ -739,11 +740,11 @@ end
 ---@param arguments string[]
 function main(arguments)
     -- default options
-        local options = {
+    local options = {
         action = "",       -- action for targets
         config = "config", -- config name to use
         help = false,      -- print help
-        simulate = false,   -- simulate all commands
+        simulate = false,  -- simulate all commands
         targets = {},      -- target recipe names
     }
 

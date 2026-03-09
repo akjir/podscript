@@ -22,6 +22,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 -- ------------------------------------------------------------------------- --
 
 require "pods"
+require "tests/test_helpers"
 
 local tests_count = 0
 local tests_count_failed = 0
@@ -40,7 +41,7 @@ print_internal = print_to_stack
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
-local function execute_test(default_config_name, test_code, test_table)
+local function execute_normal_test(default_config_name, test_code, test_table)
     local config_name = table.get_or_default(test_table, "config", "")
     local arguments = {}
 
@@ -73,13 +74,13 @@ local function execute_test(default_config_name, test_code, test_table)
 
         if result ~= expected_result then
             local description = test_table.description
-            if description == nil then description = "" end
-            if result == nil then result = "nil" end
             print("## Test '" .. test_code .. "' failed at line " .. line .. ".")
-            if description ~= "" then print(" Description: " .. test_table.description) end
+            if not string.is_nil_or_empty(description) then
+                print(" Description: " .. test_table.description)
+            end
             print(" Call: lua pods.lua " .. table.concat(arguments, " "))
             print()
-            print("  Result:   '" .. result .. "'")
+            print("  Result:   '" .. tostring(result) .. "'")
             print("  Expected: '" .. expected_result .. "'")
             print()
             -- clear output_stack
@@ -88,20 +89,45 @@ local function execute_test(default_config_name, test_code, test_table)
             return false
         end
     end
-
     -- clear output_stack
     output_stack = {}
     -- test successfull, retrun true
     return true
 end
 
+---Executes a code test. Test has to have a run() function and an expected value.
+---@param test_code string
+---@param test_table table
+local function execute_code_test(test_code, test_table)
+    local result = test_table.run()
+    if result ~= test_table.expected then
+        local description = test_table.description
+        print("## Test '" .. test_code .. "' failed.")
+        if not string.is_nil_or_empty(description) then
+            print(" Description: " .. test_table.description)
+        end
+        print()
+        print("  Result:   '" .. tostring(result) .. "'")
+        print("  Expected: '" .. tostring(test_table.expected) .. "'")
+        print()
+        return false
+    end
+    return true
+end
+
 local function execute_test_group(test_group)
     local tests = test_group.tests
-    local default_config_name = table.get_or_default(test_group, "config", "")
     for test_code, test_table in pairs(tests) do
         tests_count = tests_count + 1
-        if not execute_test(default_config_name, test_code, test_table) then
-            tests_count_failed = tests_count_failed + 1
+        if test_table.run ~= nil then
+            if not execute_code_test(test_code, test_table) then
+                tests_count_failed = tests_count_failed + 1
+            end
+        else
+            local default_config_name = table.get_or_default(test_group, "config", "")
+            if not execute_normal_test(default_config_name, test_code, test_table) then
+                tests_count_failed = tests_count_failed + 1
+            end
         end
     end
 end
@@ -111,6 +137,8 @@ end
 -- ------------------------------------------------------------------------- --
 
 execute_test_group(require "tests/suite_001_argument_options")
+execute_test_group(require "tests/suite_002_helper_string")
+execute_test_group(require "tests/suite_003_helper_table")
 
 -- ------------------------------------------------------------------------- --
 --      Summary
