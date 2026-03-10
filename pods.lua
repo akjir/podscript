@@ -145,9 +145,7 @@ string.is_nil_or_empty = string__is_nil_or_empty
 local function table__append(target, source)
     if target == nil then return end
     if source == nil then return end
-    for _, v in ipairs(source) do
-        table.insert(target, v)
-    end
+    table.move(source, 1, #source, #target + 1, target)
 end
 
 ---Test if a table contains a value. Returns false if nil.
@@ -710,7 +708,7 @@ end
 
 ---Untangles recipe groups. Respects target order.
 ---First appearance of target stays, duplicates will be removed.
----Returns nil if a group or recipe is not found.
+---Returns nil if a group or a recipe is not found.
 ---@param groups table
 ---@param targets table
 ---@return table|nil
