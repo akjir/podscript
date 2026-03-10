@@ -148,7 +148,8 @@ local function table__append(target, source)
     table.move(source, 1, #source, #target + 1, target)
 end
 
----Test if a table contains a value. Returns false if nil.
+---Test if a table contains a value. Only works with sequential tables.
+---Returns false if table is nil or value is not found.
 ---@param table table|nil
 ---@param value any
 ---@return boolean

@@ -156,5 +156,12 @@ return {
             end,
             expected = table.to_string({ "a", "b", "c" })
         },
+        T00315 = {
+            description = "table.contains - value present in and an integer",
+            run = function()
+                return table.contains({ false, 1, "2", 3, 4 }, 3)
+            end,
+            expected = true
+        },
     },
 }
