@@ -55,7 +55,7 @@ local function table__to_string(tbl)
         if type(key) == "string" then
             key_string = '"' .. key .. '"'
         else
-            key_string = ' .. tostring(key) .. '
+            key_string = tostring(key)
         end
 
         local value_string

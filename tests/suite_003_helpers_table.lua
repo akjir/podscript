@@ -134,6 +134,27 @@ return {
                 return table.size({})
             end,
             expected = 0
-        }
+        },
+        T00312 = {
+            description = "table.remove_duplicates - double a",
+            run = function()
+                return table.to_string(table.remove_duplicates({ "a", "a" }))
+            end,
+            expected = table.to_string({ "a" })
+        },
+        T00313 = {
+            description = "table.remove_duplicates - double a and one b",
+            run = function()
+                return table.to_string(table.remove_duplicates({ "a", "b", "a" }))
+            end,
+            expected = table.to_string({ "a", "b" })
+        },
+        T00314 = {
+            description = "table.remove_duplicates - triple a, one b and two c",
+            run = function()
+                return table.to_string(table.remove_duplicates({ "a", "b", "c", "c", "a" }))
+            end,
+            expected = table.to_string({ "a", "b", "c" })
+        },
     },
 }

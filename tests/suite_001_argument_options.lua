@@ -9,33 +9,29 @@ return {
             targets = { "target" },
             simulate = false,
             expectations = {
-                { 1, "INFO: Simulate mode is active." },
-                { 2, "INFO: Config 'tests/configs/config_001_empty' is used." },
-                { 3, "ERROR: No recipes defined in config!" },
+                { 1, "ERROR: No recipes defined in config 'tests/configs/config_001_empty.lua'!" },
             },
         },
         T00102 = {
             description = "Force simulate mode through argument and ignore config.",
-            config = "config_002_empty_simulate_false",
+            config = "config_002_simulate_false",
             action = "create",
             targets = { "target" },
             simulate = true,
             expectations = {
                 { 1, "INFO: Simulate mode is active." },
-                { 2, "INFO: Config 'tests/configs/config_002_empty_simulate_false' is used." },
-                { 3, "ERROR: No recipes defined in config!" },
+                { 2, "INFO: Config 'tests/configs/config_002_simulate_false' is used." },
             },
         },
         T00103 = {
             description = "Activate simulate mode through config. Ignore missing argument.",
-            config = "config_003_empty_simulate_true",
+            config = "config_003_simulate_true",
             action = "create",
             targets = { "target" },
             simulate = false,
             expectations = {
                 { 1, "INFO: Simulate mode is active." },
-                { 2, "INFO: Config 'tests/configs/config_003_empty_simulate_true' is used." },
-                { 3, "ERROR: No recipes defined in config!" },
+                { 2, "INFO: Config 'tests/configs/config_003_simulate_true' is used." },
             },
         },
         T00104 = {

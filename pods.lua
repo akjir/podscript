@@ -39,6 +39,9 @@ local VERSION <const> = "1.2.0"
 -- global hook to handle output
 print_internal = nil
 
+-- debug flag
+debug = false
+
 ---Print help.
 local function print_help()
     print_internal("PODSCRIPT " .. VERSION)
@@ -59,6 +62,12 @@ local function print_help()
     print_internal("  --config [NAME]    use config with given name or path")
     print_internal("  --help             display this help and exit")
     print_internal("  --simulate         forces simulate mode")
+end
+
+---Print debug.
+---@param message string
+local function print_debug(message)
+    print_internal("DEBUG: " .. message)
 end
 
 ---Print info.
@@ -104,7 +113,7 @@ local function string__ends_with(str, suffix)
 end
 
 ---Test if string is empty or nil.
----@param str string
+---@param str string|nil
 ---@return boolean
 local function string__is_nil_or_empty(str)
     return str == nil or str == ""
@@ -131,17 +140,18 @@ string.is_nil_or_empty = string__is_nil_or_empty
 
 ---Appends a sequential table to another.
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
----@param target table
----@param source table
+---@param target table|nil
+---@param source table|nil
 local function table__append(target, source)
+    if target == nil then return end
     if source == nil then return end
     for _, v in ipairs(source) do
         table.insert(target, v)
     end
 end
 
----Test if a table contains a value. Returns false if is nil.
----@param table table
+---Test if a table contains a value. Returns false if nil.
+---@param table table|nil
 ---@param value any
 ---@return boolean
 local function table__contains(table, value)
@@ -152,8 +162,29 @@ local function table__contains(table, value)
     return false
 end
 
----Get value from table or default if key not found
+---Remove duplicates from a table. Returns a new table and don't modify the original.
 ---@param table table
+---@return table
+local function table__remove_duplicates(table)
+    local seen = {}   -- Keeps track of values we've already encountered
+    local result = {} -- The new table with unique values
+    local index = 1   -- Manual index tracker is faster than table.insert
+
+    for i = 1, #table do
+        local value = table[i]
+        -- If the value hasn't been added to 'seen' yet...
+        if not seen[value] then
+            seen[value] = true    -- Mark it as seen
+            result[index] = value -- Add it to the result array
+            index = index + 1     -- Increment the index
+        end
+    end
+
+    return result
+end
+
+---Get value from table or default if key not found
+---@param table table|nil
 ---@param key any
 ---@param default any
 local function table__get_or_default(table, key, default)
@@ -167,7 +198,7 @@ local function table__get_or_default(table, key, default)
 end
 
 ---Test if a table is nil or empty.
----@param table table
+---@param table table|nil
 ---@return boolean
 local function table__is_nil_or_empty(table)
     return table == nil or next(table) == nil
@@ -175,9 +206,10 @@ end
 
 ---Merges two tables by adding key-value pairs from one table to another.
 ---If a key from the source table already exists in the target table, its value will be overwritten.
----@param target table
----@param source table
+---@param target table|nil
+---@param source table|nil
 local function table__merge(target, source)
+    if target == nil then return source end
     if source == nil then return target end
     for key, value in pairs(source) do
         target[key] = value
@@ -199,6 +231,7 @@ end
 -- add table helper functions to global table object
 table.append = table__append
 table.contains = table__contains
+table.remove_duplicates = table__remove_duplicates
 table.get_or_default = table__get_or_default
 table.is_nil_or_empty = table__is_nil_or_empty
 table.merge = table__merge
@@ -628,9 +661,10 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Loads PodScript config. Sets default values if missing.
+---Returns nil if fails to load a file or no recipes are defined.
 ---@param config_name string
 ---@return table|nil
-local function config__load(config_name)
+local function config__load_and_set_defaults(config_name)
     if not string.ends_with(config_name, ".lua") then
         config_name = config_name .. ".lua"
     end
@@ -640,19 +674,89 @@ local function config__load(config_name)
         print_error("Could not load '" .. config_name .. "'!")
         return nil
     end
+
+    if config.recipes == nil then
+        print_error("No recipes defined in config '" .. config_name .. "'!")
+        return nil
+    else
+        if table.is_nil_or_empty(config.recipes.groups) then
+            print_error("No recipes groups defined in config '" .. config_name .. "'!")
+            return nil
+        end
+
+        -- set default path for recipes
+        if config.recipes.path == nil then
+            config.recipes.path = "."
+        end
+    end
+
     -- simulate default is true
     if config.simulate == nil then
         config.simulate = true
     end
+
     -- default pod values
     if config.pods == nil then
         config.pods = {}
     end
+
     -- default pod path
     if config.pods.path == nil then
         config.pods.path = "" -- no path set, pods need to define a path
     end
+
     return config
+end
+
+---Untangles recipe groups. Respects target order.
+---First appearance of target stays, duplicates will be removed.
+---Returns nil if a group or recipe is not found.
+---@param groups table
+---@param targets table
+---@return table|nil
+local function config__untangle_recipes(groups, targets)
+    if debug then
+        print_debug("Targets   - " .. table.concat(targets, " "))
+    end
+
+    local untangled = {}
+    for i = 1, #targets do
+        local target = targets[i]
+
+        -- handle group
+        if string.begins_with(target, "@") then
+            local group_recipes = groups[target:sub(2)] -- remove @ from target
+
+            if group_recipes == nil then
+                print_error("Unknown recipe group '" .. target .. "'.")
+                return nil
+            end
+
+            table.append(untangled, group_recipes)
+        else -- handle single target
+            local found = nil
+
+            for _, group_targets in pairs(groups) do
+                if table.contains(group_targets, target) then
+                    found = target
+                    break
+                end
+            end
+
+            if found == nil then
+                print_error("Unknown target '" .. target .. "'.")
+                return nil
+            else
+                table.insert(untangled, found)
+            end
+        end
+    end
+
+    untangled = table.remove_duplicates(untangled)
+    if debug then
+        print_debug("Untangled - " .. table.concat(untangled, " "))
+    end
+    return untangled
 end
 
 -- ------------------------------------------------------------------------- --
@@ -708,32 +812,26 @@ local function main__parse_arguments(arguments, options)
     return false
 end
 
----Handle target recipes and execute them.
----@param config table
----@param action string
----@param targets table
-local function main__handle(config, action, targets)
-    -- assert recipes
-    if table.is_nil_or_empty(config.recipes) then
-        print_error("No recipes defined in config!")
-        return
-    end
-end
-
----Validate options. Returns true if error.
+---Validate options. Returns false if error.
 ---@param options table
 ---@return boolean
 local function main__validate_options(options)
     -- validate action
-    if options.action == nil or options.action == "" then
+    if string.is_nil_or_empty(options.action) then
         print_error("No action set.")
-        return true
+        return false
     end
-    if not table__contains({ "create", "recreate", "remove", "update" }, options.action) then
+    if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
         print_error("Unknown action '" .. options.action .. "'.")
-        return true
+        return false
     end
-    return false
+
+    -- validate targets
+    if table.is_nil_or_empty(options.targets) then
+        print_error("No targets set.")
+        return false
+    end
+    return true
 end
 
 ---Main function.
@@ -758,13 +856,12 @@ function main(arguments)
     end
 
     -- validate options
-    if main__validate_options(options) then return end
+    if not main__validate_options(options) then return end
 
     -- parse config
     local config_name = options.config
-    local config = config__load(config_name)
+    local config = config__load_and_set_defaults(config_name)
     if config == nil then return end
-
 
     -- enforce simulate from arguments
     if options.simulate then
@@ -781,7 +878,9 @@ function main(arguments)
         print_info("Config '" .. config_name .. "' is used.")
     end
 
-    main__handle(config, options.action, options.targets)
+    -- main workload
+    local untangled_targets = config__untangle_recipes(config.recipes.groups, options.targets)
+    if untangled_targets == nil then return end
 end
 
 -- prevent excecution when imported from test_suite
