@@ -144,6 +144,7 @@ execute_test_group(require "tests/suite_002_helpers_string")
 execute_test_group(require "tests/suite_003_helpers_table")
 execute_test_group(require "tests/suite_004_actions")
 execute_test_group(require "tests/suite_005_targets")
+execute_test_group(require "tests/suite_006_recipes")
 
 -- ------------------------------------------------------------------------- --
 --      Summary

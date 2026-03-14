@@ -9,7 +9,7 @@ return {
             targets = { "target" },
             simulate = false,
             expectations = {
-                { 1, "ERROR: No recipes defined in config 'tests/configs/config_001_empty.lua'!" },
+                { 1, "ERROR: No recipes defined in config 'tests/configs/config_001_empty'!" },
             },
         },
         T00102 = {
@@ -40,7 +40,7 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 1, "ERROR: cannot open tests/configs/config_missing.lua: No such file or directory" },
+                { 1, "ERROR: Couldn't load Config './tests/configs/config_missing.lua'!" },
             },
         },
         T00105 = {

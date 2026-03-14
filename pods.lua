@@ -262,7 +262,18 @@ end
 ---@param file_extension string
 ---@return string
 local function build_full_path(path, file_name, file_extension)
-    if string.ends_with(path, "/") or string.begins_with(file_name, "/") then
+    if not string.begins_with(path, "/") and
+        not string.begins_with(path, "./")
+    then
+        path = "./" .. path
+    end
+    if string.is_nil_or_empty(file_name) then
+        if string.is_nil_or_empty(file_extension) then
+            return path
+        else
+            return path .. file_extension
+        end
+    elseif string.ends_with(path, "/") or string.begins_with(file_name, "/") then
         return path .. file_name .. file_extension
     else
         return path .. "/" .. file_name .. file_extension
@@ -497,16 +508,16 @@ local function pod__recreate(pod_config, simulate)
 end
 
 ---Update containers of the pod.
----@param pod_config table
+---@param recipe table
 ---@param simulate boolean
-local function pod__update(pod_config, simulate)
-    print_internal("Update pod '" .. pod_config.name .. "' ...")
-    local containers = pod_config.containers
+local function pod__update(recipe, simulate)
+    print_internal("Update pod '" .. recipe.name .. "' ...")
+    local containers = recipe.containers
     -- update containers
     for id = 1, #containers do
-        local container = pod_config.container[containers[id]]
-        if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__update(container, pod_config.pod, simulate)
+        local container = recipe.container[containers[id]]
+        if container__validate(container, recipe.pod.name, containers[id]) then
+            container__update(container, recipe.pod, simulate)
         end
     end
 end
@@ -519,135 +530,77 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Set path to default for PodScript recipes if not defined in config.
----@param recipes table
----@return string
-local function recipe__ensure_path(recipes)
-    -- at this point recipes should be valid
-    local recipe_path = recipes.path
-    if not string.is_nil_or_empty(recipe_path) then
-        return recipe_path
-    else
-        return "."
-    end
-end
-
 ---Load PodScript recipe.
 ---@param recipe_path string
 ---@param recipe_name string
 ---@return table|nil
 local function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, err = load_lua_file(full_path)
-    if err then print_error(err) end
+    local recipe, _ = load_lua_file(full_path)
     if recipe == nil then
-        print_error("Couldn't load PodConfig '" .. recipe_name .. "'! (" .. full_path .. ")")
+        print_error("Couldn't load Recipe '" .. full_path .. "'!")
+        return nil
+    else
+        return recipe
     end
-    return recipe
 end
 
 ---Switch correct pod function and test pod values.
----@param pod_config table
+---@param recipe table
 ---@param action string
 ---@param config table
-local function recipe__validate_and_handle(pod_config, target, action, config)
+local function recipe__validate_and_handle(recipe, target, action, config)
     -- test for pod config name
-    if string.is_nil_or_empty(pod_config.name) then
-        print_error("No PodConfig name in config '" .. target .. "' set!")
+    if string.is_nil_or_empty(recipe.name) then
+        print_error("No recipe name in recipe '" .. target .. "' set!")
         return
     end
+
     -- test for pod section
-    if pod_config.pod == nil then
-        print_error("No pod section in config '" .. target .. "' defined!")
+    if recipe.pod == nil then
+        print_error("No pod section in recipe '" .. target .. "' defined!")
         return
     end
+
     -- test for pod registry
-    if string.is_nil_or_empty(pod_config.pod.registry) then
-        print_error("No pod registry in config '" .. target .. "' set!")
+    if string.is_nil_or_empty(recipe.pod.registry) then
+        print_error("No default registry in recipe '" .. target .. "' set!")
         return
     end
+
     -- test for valid pod path
-    if pod_config.pod.path == nil or pod_config.pod.path == "" then
+    if string.is_nil_or_empty(recipe.pod.path) then
         if config.pods.path == "" then
-            print_error("No pod path or default pod path in '" .. target .. "' set!")
+            print_error("No pod path or default pod path in recipe '" .. target .. "' set!")
             return
         else
             -- if pod path not set use default path with name from PodConfig as folder name
-            pod_config.pod.path = config.pods.path .. "/" .. pod_config.name
+            recipe.pod.path = config.pods.path .. "/" .. recipe.name
         end
     end
+
     -- test for pod name
     -- pod name is optional
-    if string.is_nil_or_empty(pod_config.pod.name) then
-        pod_config.pod.name = "pod-" .. pod_config.name
+    if string.is_nil_or_empty(recipe.pod.name) then
+        recipe.pod.name = "pod-" .. recipe.name
     end
 
     -- switch for correct function
     if (action == "update") then
-        pod__update(pod_config, config.simulate)
+        pod__update(recipe, config.simulate)
         return
     end
     if action == "recreate" then
-        pod__recreate(pod_config, config.simulate)
+        pod__recreate(recipe, config.simulate)
         return
     end
     if action == "remove" then
-        pod__remove(pod_config, config.simulate)
+        pod__remove(recipe, config.simulate)
         return
     end
     if action == "create" then
-        pod__create(pod_config, config.simulate)
+        pod__create(recipe, config.simulate)
         return
-    end
-end
-
----Loads and handle single PodScript recipe.
----@param config table
----@param target string
----@param action string
-local function recipe__handle_single(config, target, action)
-    -- assert recipe name
-    local recipe_name = ""
-    -- if config.recipes.groups ~= nil then
-    --    if table__contains(config.configs.cluster, target) then
-    --        recipe_name = target
-    --    end
-    --end
-    --if config.configs.single ~= nil then
-    --    if table__contains(config.configs.single, target) then
-    --        recipe_name = target
-    --    end
-    --end
-    if recipe_name == "" then
-        print_error("Recipe '" .. target .. "' not defined in config!")
-        return
-    end
-    -- load recipe
-    local pod_config_path = recipe__ensure_path(config)
-    local pod_config = recipe__load(pod_config_path, recipe_name)
-    -- handle recipe
-    if pod_config ~= nil then
-        recipe__validate_and_handle(pod_config, target, action, config)
-    end
-end
-
----Load and handle all PodScript recipes in a cluster.
----@param config table
----@param action string
-local function recipe__handle_all(config, action)
-    local cluster = config.configs.cluster
-    if cluster == nil or table__size(cluster) == 0 then
-        print_error("No PodConfig names defined in config under cluster.")
-        return
-    end
-    local recipe_path = recipe__ensure_path(config)
-    for i = 1, #cluster do
-        -- load recipe
-        local pod_config = recipe__load(recipe_path, cluster[i])
-        -- handle recipe
-        if pod_config ~= nil then
-            recipe__validate_and_handle(pod_config, cluster[i], action, config)
-        end
     end
 end
 
@@ -664,13 +617,10 @@ end
 ---@param config_name string
 ---@return table|nil
 local function config__load_and_set_defaults(config_name)
-    if not string.ends_with(config_name, ".lua") then
-        config_name = config_name .. ".lua"
-    end
-    local config, err = load_lua_file(config_name)
+    local config_path = build_full_path(config_name, "", ".lua")
+    local config, _ = load_lua_file(config_path)
     if config == nil then
-        if err then print_error(err) end
-        print_error("Could not load '" .. config_name .. "'!")
+        print_error("Couldn't load Config '" .. config_path .. "'!")
         return nil
     end
 
@@ -683,9 +633,9 @@ local function config__load_and_set_defaults(config_name)
             return nil
         end
 
-        -- set default path for recipes
-        if config.recipes.path == nil then
-            config.recipes.path = "."
+        -- set default path for recipes or correct them
+        if string.is_nil_or_empty(config.recipes.path) then
+            config.recipes.path = "./"
         end
     end
 
@@ -877,9 +827,21 @@ function main(arguments)
         print_info("Config '" .. config_name .. "' is used.")
     end
 
-    -- main workload
+    -- clean up targets
     local untangled_targets = config__untangle_recipes(config.recipes.groups, options.targets)
     if untangled_targets == nil then return end
+
+    -- handle recipes
+    local recipe_path = config.recipes.path
+    for i = 1, #untangled_targets do
+        local target = untangled_targets[i]
+        -- load recipe
+        local recipe = recipe__load(recipe_path, target)
+        -- handle recipe
+        if recipe ~= nil then
+            recipe__validate_and_handle(recipe, target, options.action, config)
+        end
+    end
 end
 
 -- prevent excecution when imported from test_suite
