@@ -9,7 +9,7 @@ return {
             targets = { "target" },
             simulate = false,
             expectations = {
-                { 1, "ERROR: No recipes defined in config 'tests/configs/config_001_empty'!" },
+                { 1, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
             },
         },
         T00102 = {
@@ -20,7 +20,7 @@ return {
             simulate = true,
             expectations = {
                 { 1, "INFO: Simulate mode is active." },
-                { 2, "INFO: Config 'tests/configs/config_002_simulate_false' is used." },
+                { 2, "INFO: Config './tests/configs/config_002_simulate_false.lua' is used." },
             },
         },
         T00103 = {
@@ -31,7 +31,7 @@ return {
             simulate = false,
             expectations = {
                 { 1, "INFO: Simulate mode is active." },
-                { 2, "INFO: Config 'tests/configs/config_003_simulate_true' is used." },
+                { 2, "INFO: Config './tests/configs/config_003_simulate_true.lua' is used." },
             },
         },
         T00104 = {

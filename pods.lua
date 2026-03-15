@@ -538,7 +538,7 @@ local function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, _ = load_lua_file(full_path)
     if recipe == nil then
-        print_error("Couldn't load Recipe '" .. full_path .. "'!")
+        print_error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
         return recipe
@@ -557,25 +557,33 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     end
 
     -- test for pod section
-    if recipe.pod == nil then
-        print_error("No pod section in recipe '" .. target .. "' defined!")
+    if table.is_nil_or_empty(recipe.pod) then
+        print_error("Pod section in recipe '" .. target .. "' not defined! or empty")
         return
     end
 
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
-        print_error("No default registry in recipe '" .. target .. "' set!")
+        print_error("No default registry in recipe '" .. target .. "' set or empty!")
+        return
+    end
+
+    -- test for container section
+    if table.is_nil_or_empty(recipe.containers) then
+        print_error("Container section in recipe '" .. target .. "' not defined or empty!")
         return
     end
 
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
-        if config.pods.path == "" then
-            print_error("No pod path or default pod path in recipe '" .. target .. "' set!")
+        if string.is_nil_or_empty(config.pods.path) then
+            print_error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
-            -- if pod path not set use default path with name from PodConfig as folder name
-            recipe.pod.path = config.pods.path .. "/" .. recipe.name
+            -- if pod path not set use default path with name from config as folder name
+            local path = build_full_path(config.pods.path, recipe.name, "")
+            print_info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
+            recipe.pod.path = path
         end
     end
 
@@ -614,22 +622,21 @@ end
 
 ---Loads PodScript config. Sets default values if missing.
 ---Returns nil if fails to load a file or no recipes are defined.
----@param config_name string
+---@param config_full_path string
 ---@return table|nil
-local function config__load_and_set_defaults(config_name)
-    local config_path = build_full_path(config_name, "", ".lua")
-    local config, _ = load_lua_file(config_path)
+local function config__load_and_set_defaults(config_full_path)
+    local config, _ = load_lua_file(config_full_path)
     if config == nil then
-        print_error("Couldn't load Config '" .. config_path .. "'!")
+        print_error("Couldn't load Config '" .. config_full_path .. "'!")
         return nil
     end
 
     if config.recipes == nil then
-        print_error("No recipes defined in config '" .. config_name .. "'!")
+        print_error("No recipes defined in config '" .. config_full_path .. "'!")
         return nil
     else
         if table.is_nil_or_empty(config.recipes.groups) then
-            print_error("No recipes groups defined in config '" .. config_name .. "'!")
+            print_error("No recipes groups defined in config '" .. config_full_path .. "'!")
             return nil
         end
 
@@ -693,7 +700,7 @@ local function config__untangle_recipes(groups, targets)
             end
 
             if found == nil then
-                print_error("Unknown target '" .. target .. "'.")
+                print_error("Target '" .. target .. "' not found in config.")
                 return nil
             else
                 table.insert(untangled, found)
@@ -809,7 +816,8 @@ function main(arguments)
 
     -- parse config
     local config_name = options.config
-    local config = config__load_and_set_defaults(config_name)
+    local config_full_path = build_full_path(config_name, "", ".lua")
+    local config = config__load_and_set_defaults(config_full_path)
     if config == nil then return end
 
     -- enforce simulate from arguments
@@ -824,7 +832,7 @@ function main(arguments)
 
     -- print info if non default confi is used
     if config_name ~= "config" then
-        print_info("Config '" .. config_name .. "' is used.")
+        print_info("Config '" .. config_full_path .. "' is used.")
     end
 
     -- clean up targets

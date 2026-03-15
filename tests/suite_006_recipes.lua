@@ -8,7 +8,7 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 4, "ERROR: Couldn't load Recipe './target.lua'!" },
+                { 4, "ERROR: Couldn't load recipe './target.lua'!" },
             },
         },
         T00602 = {
@@ -16,7 +16,7 @@ return {
             action = "create",
             targets = { "recipe_000_unkown" },
             expectations = {
-                { 4, "ERROR: Couldn't load Recipe './tests/recipes/recipe_000_unkown.lua'!" },
+                { 4, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
             },
         },
         T00603 = {
@@ -25,6 +25,55 @@ return {
             targets = { "recipe_001_empty" },
             expectations = {
                 { 4, "ERROR: No recipe name in recipe 'recipe_001_empty' set!" },
+            },
+        },
+        T00604 = {
+            description = "Pod section is missing.",
+            action = "create",
+            targets = { "recipe_002_no_pod" },
+            expectations = {
+                { 4, "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty" },
+            },
+        },
+        T00605 = {
+            description = "Pod section is empty.",
+            action = "create",
+            targets = { "recipe_003_empty_pod" },
+            expectations = {
+                { 4, "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty" },
+            },
+        },
+        T00606 = {
+            description = "No default registry set in pod section.",
+            action = "create",
+            targets = { "recipe_004_no_registry" },
+            expectations = {
+                { 4, "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!" },
+            },
+        },
+        T00607 = {
+            description = "No default path and pod path set in pod section.",
+            action = "create",
+            targets = { "recipe_005_no_path" },
+            expectations = {
+                { 4, "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!" },
+            },
+        },
+        T00608 = {
+            description = "No containers section defined.",
+            action = "create",
+            targets = { "recipe_006_no_containers" },
+            expectations = {
+                { 4, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
+            },
+        },
+        T00609 = {
+            description = "Only default path for pod path set.",
+            config = "config_006_recipes_with_pod_path",
+            action = "create",
+            targets = { "recipe_005_no_path" },
+            expectations = {
+                { 4, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
             },
         },
     },

@@ -14,7 +14,7 @@ return {
             action = "create",
             targets = { "invalid" },
             expectations = {
-                { 3, "ERROR: Unknown target 'invalid'." },
+                { 3, "ERROR: Target 'invalid' not found in config." },
             },
         },
         T00503 = {
@@ -49,7 +49,7 @@ return {
             targets = { "push", "invalid", "pop" },
             expectations = {
                 { 2, "DEBUG: Targets   - push invalid pop" },
-                { 3, "ERROR: Unknown target 'invalid'." },
+                { 3, "ERROR: Target 'invalid' not found in config." },
             },
         },
         T00507 = {
