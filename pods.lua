@@ -306,17 +306,33 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Test if container is valid.
+---@param container table
+---@param pod_name string
+---@return boolean
+local function container__is_valid(container, pod_name)
+    if table.is_nil_or_empty(container) then
+        print_error("A container in pod '" .. pod_name .. "' is empty!")
+        return false
+    end
+
+    -- container.name is optional, will be later set
+
+    -- test for container image
+    if string.is_nil_or_empty(container.image) then
+        print_error("Image not set for container '" .. container.name .. "'!")
+        return false
+    end
+
+    return true
+end
+
 ---Validate container values.
 ---@param container table
 ---@param pod_name string
 ---@param container_alternate_name string
 ---@return boolean
 local function container__validate(container, pod_name, container_alternate_name)
-    -- test for container image
-    if string.is_nil_or_empty(container.image) then
-        print_error("Image not set for container '" .. container.name .. "'!")
-        return false
-    end
     -- test for container name
     -- container name is optional
     if string.is_nil_or_empty(container.name) then
@@ -362,7 +378,7 @@ local function container__create(container, pod, simulate)
             if string.is_nil_or_empty(host_dir) then
                 print_error("Host dir cannot be empty! (" .. container.name .. ")")
             else
-                -- we check nil and empty but not if it's a valid path
+                -- we checINFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used.k nil and empty but not if it's a valid path
                 if string.is_nil_or_empty(container_dir) then
                     print_error("Container dir cannot be empty! (" .. container.name .. ")")
                 else
@@ -429,19 +445,19 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Create pod and containers.
----@param pod_config table
+---@param recipe table
 ---@param simulate boolean
-local function pod__create(pod_config, simulate)
-    print_internal("Create pod '" .. pod_config.name .. "' ...")
+local function pod__create(recipe, simulate)
+    print_internal("Create pod '" .. recipe.name .. "' ...")
     local commands = { "podman pod create" }
 
     -- pod name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = pod_config.pod.name
+    commands[#commands + 1] = recipe.pod.name
 
     -- pod publish
-    if pod_config.pod.publish ~= nil then
-        local publish = pod_config.pod.publish
+    if recipe.pod.publish ~= nil then
+        local publish = recipe.pod.publish
         for _, entry in pairs(publish) do
             local size = table__size(entry)
             if size == 1 then
@@ -464,21 +480,21 @@ local function pod__create(pod_config, simulate)
 
     -- pod options
     -- if not supported by pods, add them directly to the podman run command
-    if pod_config.pod.options ~= nil then
-        commands[#commands + 1] = table.concat(pod_config.pod.options, " ")
+    if not table.is_nil_or_empty(recipe.pod.options) then
+        commands[#commands + 1] = table.concat(recipe.pod.options, " ")
     end
 
     -- create pod
     exec(table.concat(commands, " "), simulate)
 
     -- create containers
-    local containers = pod_config.containers
+    local containers = recipe.containers
     for id = 1, #containers do
-        local container_value_name = containers[id]
-        local container = pod_config.container[container_value_name]
-        if container__validate(container, pod_config.pod.name, container_value_name) then
-            container__create(container, pod_config.pod, simulate)
-        end
+        -- local container_value_name = containers[id]
+        -- local container = recipe.container[container_value_name]
+        -- if container__validate(container, recipe.pod.name, container_value_name) then
+        --    container__create(container, recipe.pod, simulate)
+        -- end
     end
 end
 
@@ -486,17 +502,17 @@ end
 ---@param pod_config table
 ---@param simulate boolean
 local function pod__remove(pod_config, simulate)
-    print_internal("Remove pod '" .. pod_config.name .. "' ...")
+    -- print_internal("Remove pod '" .. pod_config.name .. "' ...")
     -- remove containers
-    local containers = pod_config.containers
-    for id = #containers, 1, -1 do -- reverse order when shutting down containers
-        local container = pod_config.container[containers[id]]
-        if container__validate(container, pod_config.pod.name, containers[id]) then
-            container__remove(container, simulate)
-        end
-    end
+    -- local containers = pod_config.containers
+    --  for id = #containers, 1, -1 do -- reverse order when shutting down containers
+    --     local container = pod_config.container[containers[id]]
+    --      if container__validate(container, pod_config.pod.name, containers[id]) then
+    --         container__remove(container, simulate)
+    --     end
+    --  end
     -- remove pod
-    exec("podman pod rm " .. pod_config.pod.name, simulate)
+    -- exec("podman pod rm " .. pod_config.pod.name, simulate)
 end
 
 ---Remove and create pod and containers.
@@ -511,15 +527,15 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__update(recipe, simulate)
-    print_internal("Update pod '" .. recipe.name .. "' ...")
-    local containers = recipe.containers
+    -- print_internal("Update pod '" .. recipe.name .. "' ...")
+    -- local containers = recipe.containers
     -- update containers
-    for id = 1, #containers do
-        local container = recipe.container[containers[id]]
-        if container__validate(container, recipe.pod.name, containers[id]) then
-            container__update(container, recipe.pod, simulate)
-        end
-    end
+    -- for id = 1, #containers do
+    --     local container = recipe.container[containers[id]]
+    --     if container__validate(container, recipe.pod.name, containers[id]) then
+    --         container__update(container, recipe.pod, simulate)
+    --     end
+    -- end
 end
 
 -- ------------------------------------------------------------------------- --
@@ -562,15 +578,15 @@ local function recipe__validate_and_handle(recipe, target, action, config)
         return
     end
 
+    -- test for pod name
+    -- pod name is optional
+    if string.is_nil_or_empty(recipe.pod.name) then
+        recipe.pod.name = "pod-" .. recipe.name
+    end
+
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
         print_error("No default registry in recipe '" .. target .. "' set or empty!")
-        return
-    end
-
-    -- test for container section
-    if table.is_nil_or_empty(recipe.containers) then
-        print_error("Container section in recipe '" .. target .. "' not defined or empty!")
         return
     end
 
@@ -587,10 +603,18 @@ local function recipe__validate_and_handle(recipe, target, action, config)
         end
     end
 
-    -- test for pod name
-    -- pod name is optional
-    if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = "pod-" .. recipe.name
+    -- test for container section
+    if table.is_nil_or_empty(recipe.containers) then
+        print_error("Container section in recipe '" .. target .. "' not defined or empty!")
+        return
+    end
+
+    -- test if containers are valid
+    local pod_name = recipe.pod.name
+    for id = 1, #recipe.containers do
+        if not container__is_valid(recipe.containers[id], pod_name) then
+            return
+        end
     end
 
     -- switch for correct function

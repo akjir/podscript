@@ -60,20 +60,30 @@ return {
             },
         },
         T00608 = {
-            description = "No containers section defined.",
-            action = "create",
-            targets = { "recipe_006_no_containers" },
-            expectations = {
-                { 4, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
-            },
-        },
-        T00609 = {
             description = "Only default path for pod path set.",
             config = "config_006_recipes_with_pod_path",
             action = "create",
             targets = { "recipe_005_no_path" },
             expectations = {
                 { 4, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
+            },
+        },
+        T00609 = {
+            description = "No containers section defined.",
+            config = "config_006_recipes_with_pod_path",
+            action = "create",
+            targets = { "recipe_006_no_containers" },
+            expectations = {
+                { 5, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
+            },
+        },
+        T0060A = {
+            description = "One empty Container.",
+            config = "config_006_recipes_with_pod_path",
+            action = "create",
+            targets = { "recipe_005_no_path" },
+            expectations = {
+                { 5, "ERROR: A container in pod 'pod-nopathpod' is empty!" },
             },
         },
     },

@@ -8,6 +8,7 @@ return {
         groups = {
             all = {
                 "recipe_005_no_path",
+                "recipe_006_no_containers",
             },
         },
     },
