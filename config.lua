@@ -7,10 +7,6 @@ return {
     pods = {
         -- The default root directory for all pod-related data.
         path = "/pods",
-
-        -- TODO
-        -- registry - default registry for all recipes
-        -- prefix - defines prefix. can be emtpy?
     },
 
     -- Defines where to find recipe files for pod creation.
