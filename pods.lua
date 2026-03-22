@@ -346,7 +346,7 @@ local function container__create(container, pod, simulate)
     end
 
     -- container volumes
-    if (container.volumes ~= nil) then
+    if not table.is_nil_or_empty(container.volumes) then
         for i = 1, #container.volumes do
             local host_dir = container.volumes[i][1]
             local container_dir = container.volumes[i][2]
@@ -354,7 +354,7 @@ local function container__create(container, pod, simulate)
             if string.is_nil_or_empty(host_dir) then
                 print_error("Host dir cannot be empty! (" .. container.name .. ")")
             else
-                -- we checINFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used.k nil and empty but not if it's a valid path
+                -- we check nil and empty but not if it's a valid path
                 if string.is_nil_or_empty(container_dir) then
                     print_error("Container dir cannot be empty! (" .. container.name .. ")")
                 else
@@ -377,7 +377,7 @@ local function container__create(container, pod, simulate)
 
     -- container options
     -- if not supported by pods, add them directly to the podman run command
-    if container.options ~= nil and table__size(container.options) > 0 then
+    if not table.is_nil_or_empty(container.options) then
         commands[#commands + 1] = table.concat(container.options, " ")
     end
 
@@ -387,7 +387,7 @@ local function container__create(container, pod, simulate)
 
     -- commands
     -- see: podman run --detach image:tag command
-    if container.commands ~= nil and table.size(container.commands) > 0 then
+    if not table.is_nil_or_empty(container.commands) then
         commands[#commands + 1] = table.concat(container.commands, " ")
     end
 
@@ -468,10 +468,10 @@ local function pod__create(recipe, simulate)
     commands[#commands + 1] = recipe.pod.name
 
     -- pod publish
-    if recipe.pod.publish ~= nil then
+    if not table.is_nil_or_empty(recipe.pod.publish) then
         local publish = recipe.pod.publish
         for _, entry in pairs(publish) do
-            local size = table__size(entry)
+            local size = table.size(entry)
             if size == 1 then
                 commands[#commands + 1] = "--publish " .. entry[1]
             elseif size == 2 then
