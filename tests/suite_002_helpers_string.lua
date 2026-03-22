@@ -72,5 +72,26 @@ return {
             end,
             expected = false
         },
+        T0020B = {
+            description = "string.lower (library) - simple test case",
+            run = function()
+                return string.lower("PodScript is CoOl!1!")
+            end,
+            expected = "podscript is cool!1!"
+        },
+        T0020C = {
+            description = "string.gsup (library) - replace multiple spaces",
+            run = function()
+                return string.gsub("The  anwser is 42! ", " ", "_")
+            end,
+            expected = "The__anwser_is_42!_"
+        },
+        T0020D = {
+            description = "string.trim - remove leading and trailing spaces",
+            run = function()
+                return string.trim("  The  anwser is 42! ")
+            end,
+            expected = "The  anwser is 42!"
+        },
     },
 }

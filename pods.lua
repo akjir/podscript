@@ -119,16 +119,16 @@ local function string__is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
--- not tested, maybe for future use
--- local function string__trim(str)
---     return str:gsub("%s+", "")
---- end
+
+local function string__trim(str)
+    return str:gsub("^%s*(.-)%s*$", "%1")
+end
 
 -- add table helper functions to global table object
 string.begins_with = string__begins_with
 string.ends_with = string__ends_with
 string.is_nil_or_empty = string__is_nil_or_empty
--- string.trim = string__trim
+string.trim = string__trim
 
 -- ------------------------------------------------------------------------- --
 --

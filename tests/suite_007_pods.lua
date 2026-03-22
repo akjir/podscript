@@ -1,9 +1,9 @@
 return {
     -- Tests for targets.
-    config = "config_007_pod",
+    config = "config_007_pods",
     tests = {
         T00701 = {
-            description = "Create simple pod.",
+            description = "Create simple pod. Names are mixed case and have spaces.",
             action = "create",
             targets = { "@all" },
             expectations = {

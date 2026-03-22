@@ -1,14 +1,14 @@
 return {
-    name = "Simple Pod",
+    name = " Simple Pod  ",
     pod = {
         registry = "registry.io",
     },
     containers = {
         {
-            name = "app",
+            name = " supR App  ",
             detach = true,
             restart = "never",
-            image = "alpine",
+            image = "alpine:latest",
             volumes = {
                 { "config", "/config", "Z" },
             },
