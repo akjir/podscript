@@ -316,7 +316,7 @@ local function container__is_valid(container, pod_name)
         return false
     end
 
-    -- container.name is optional, will be later set
+    -- container.name is optional, will be set later
 
     -- test for container image
     if string.is_nil_or_empty(container.image) then
