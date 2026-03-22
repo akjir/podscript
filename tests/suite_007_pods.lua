@@ -17,5 +17,34 @@ return {
                 { 8, "podman run --name supr_app --pod si__po --detach --restart never --volume /pods/simple_pod/config:/config:Z registry.io/alpine:latest;" },
             },
         },
+        T00702 = {
+            description = "Remove simple pod. Names are mixed case and have spaces and there is no pod path.",
+            action = "remove",
+            targets = { "@nona" },
+            expectations = {
+                { 6, "Remove pod 'Simple Pod' ..." },
+                { 7, "podman stop supr_app;" },
+                { 8, "podman rm supr_app;" },
+                { 9, "podman pod rm si__po;" },
+            },
+        },
+        T00703 = {
+            description = "Update simple pod. Names are mixed case and have spaces and there is no pod path.",
+            action = "update",
+            targets = { "@nona" },
+            expectations = {
+                { 6, "Update pod 'Simple Pod' ..." },
+                { 7, "podman pull registry.io/alpine:latest;" },
+            },
+        },
+        T00704 = {
+            description = "Recreate simple pod. Names are mixed case and have spaces and there is no pod path.",
+            action = "recreate",
+            targets = { "@nona" },
+            expectations = {
+                { 6,  "Remove pod 'Simple Pod' ..." },
+                { 10, "Create pod 'Simple Pod' ..." },
+            },
+        },
     },
 }
