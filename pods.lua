@@ -119,9 +119,12 @@ local function string__is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
-
+---Removes leading and trailing whitespaces.
+---@param str string
+---@return string
 local function string__trim(str)
-    return str:gsub("^%s*(.-)%s*$", "%1")
+    -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
+    return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
 -- add table helper functions to global table object

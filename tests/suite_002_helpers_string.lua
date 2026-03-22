@@ -93,5 +93,12 @@ return {
             end,
             expected = "The  anwser is 42!"
         },
+        T0020E = {
+            description = "string.trim - do noting",
+            run = function()
+                return string.trim("The  anwser is 42!")
+            end,
+            expected = "The  anwser is 42!"
+        },
     },
 }
