@@ -1,6 +1,7 @@
 return {
     name = " Simple Pod  ",
     pod = {
+        name = "      si  po",
         registry = "registry.io",
     },
     containers = {

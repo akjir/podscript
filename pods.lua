@@ -247,18 +247,6 @@ table.size = table__size
 --
 -- ------------------------------------------------------------------------- --
 
----Load a lua file.
----@param full_path string
----@return table|nil
----@return string|nil
-local function load_lua_file(full_path)
-    local ok, result = pcall(dofile, full_path)
-    if not ok then
-        return nil, result
-    end
-    return result, nil
-end
-
 ---Build a full path with given parts.
 ---@param path string
 ---@param file_name string
@@ -299,6 +287,25 @@ local function exec(command, simulate)
         print_internal(handle:read("*l"))
         handle:close()
     end
+end
+
+---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
+---@param str string The input string to be normalized.
+---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
+local function normalize_name(str)
+    return string.lower(str:trim():gsub("%s", "_"))
+end
+
+---Load a lua file.
+---@param full_path string
+---@return table|nil
+---@return string|nil
+local function load_lua_file(full_path)
+    local ok, result = pcall(dofile, full_path)
+    if not ok then
+        return nil, result
+    end
+    return result, nil
 end
 
 -- ------------------------------------------------------------------------- --
@@ -456,7 +463,7 @@ local function pod__create(recipe, simulate)
 
     -- pod name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = recipe.pod.name
+    commands[#commands + 1] = normalize_name(recipe.pod.name)
 
     -- pod publish
     if recipe.pod.publish ~= nil then
@@ -573,6 +580,8 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     if string.is_nil_or_empty(recipe.name) then
         print_error("No recipe name in recipe '" .. target .. "' set!")
         return
+    else
+        recipe.name = string.trim(recipe.name)
     end
 
     -- test for pod section
@@ -584,7 +593,7 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     -- test for pod name
     -- pod name is optional
     if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = "pod-" .. recipe.name
+        recipe.pod.name = "pod-" .. normalize_name(recipe.name)
     end
 
     -- test for pod registry
@@ -599,8 +608,9 @@ local function recipe__validate_and_handle(recipe, target, action, config)
             print_error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
-            -- if pod path not set use default path with name from config as folder name
-            local path = build_full_path(config.pods.path, recipe.name, "")
+            -- if pod path not set use default path with normalized name from config as folder name
+            local normalized_name = normalize_name(recipe.name)
+            local path = build_full_path(config.pods.path, normalized_name, "")
             print_info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end

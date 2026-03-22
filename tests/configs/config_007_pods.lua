@@ -6,8 +6,8 @@ return {
     recipes = {
         path = "tests/recipes",
         groups = {
-            all = {
-                "recipe_007_simple_pod",
+            nona = {
+                "recipe_007_simple_pod_no_name_and_path",
             },
         },
     },
