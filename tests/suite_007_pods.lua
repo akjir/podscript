@@ -14,6 +14,7 @@ return {
                 { 5, "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/simple_pod' used." },
                 { 6, "Create pod 'Simple Pod' ..." },
                 { 7, "podman pod create --name si__po;" },
+                { 8, "podman run --name supr_app --pod si__po --detach --restart never --volume /pods/simple_pod/config:/config:Z registry.io/alpine:latest;" },
             },
         },
     },

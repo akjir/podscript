@@ -293,6 +293,7 @@ end
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
 local function normalize_name(str)
+    -- if string.is_nil_or_empty(str) then return "" end -- shouldn't necessary
     return string.lower(str:trim():gsub("%s", "_"))
 end
 
@@ -315,41 +316,6 @@ end
 --
 --
 -- ------------------------------------------------------------------------- --
-
----Test if container is valid.
----@param container table
----@param pod_name string
----@return boolean
-local function container__is_valid(container, pod_name)
-    if table.is_nil_or_empty(container) then
-        print_error("A container in pod '" .. pod_name .. "' is empty!")
-        return false
-    end
-
-    -- container.name is optional, will be set later
-
-    -- test for container image
-    if string.is_nil_or_empty(container.image) then
-        print_error("Image not set for container '" .. container.name .. "'!")
-        return false
-    end
-
-    return true
-end
-
----Validate container values.
----@param container table
----@param pod_name string
----@param container_alternate_name string
----@return boolean
-local function container__validate(container, pod_name, container_alternate_name)
-    -- test for container name
-    -- container name is optional
-    if string.is_nil_or_empty(container.name) then
-        container.name = pod_name .. "-" .. container_alternate_name
-    end
-    return true
-end
 
 ---Create a container.
 ---@param container table
@@ -429,6 +395,42 @@ local function container__create(container, pod, simulate)
     exec(table.concat(commands, " "), simulate)
 end
 
+---Ensure container name.
+---@param container table
+---@param pod_name string
+---@param container_alternate_name string
+---@return boolean
+local function container__ensure_name(container, pod_name, container_alternate_name)
+    -- container name is optional
+    if string.is_nil_or_empty(container.name) then
+        container.name = pod_name .. "-" .. container_alternate_name
+    else
+        container.name = normalize_name(container.name)
+    end
+    return true
+end
+
+---Test if container is valid.
+---@param container table
+---@param pod_name string
+---@return boolean
+local function container__is_valid(container, pod_name)
+    if table.is_nil_or_empty(container) then
+        print_error("A container in pod '" .. pod_name .. "' is empty!")
+        return false
+    end
+
+    -- container.name is optional, will be set later
+
+    -- test for container image
+    if string.is_nil_or_empty(container.image) then
+        print_error("Image not set for container '" .. container.name .. "'!")
+        return false
+    end
+
+    return true
+end
+
 ---Stop and removes a container.
 ---@param container table
 ---@param simulate boolean
@@ -463,7 +465,7 @@ local function pod__create(recipe, simulate)
 
     -- pod name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = normalize_name(recipe.pod.name)
+    commands[#commands + 1] = recipe.pod.name
 
     -- pod publish
     if recipe.pod.publish ~= nil then
@@ -500,52 +502,49 @@ local function pod__create(recipe, simulate)
     -- create containers
     local containers = recipe.containers
     for id = 1, #containers do
-        -- local container_value_name = containers[id]
-        -- local container = recipe.container[container_value_name]
-        -- if container__validate(container, recipe.pod.name, container_value_name) then
-        --    container__create(container, recipe.pod, simulate)
-        -- end
+        local container = containers[id]
+        container__ensure_name(container, recipe.pod.name, tostring(id))
+        container__create(container, recipe.pod, simulate)
     end
 end
 
 ---Remove pod and containers.
----@param pod_config table
+---@param recipe table
 ---@param simulate boolean
-local function pod__remove(pod_config, simulate)
-    -- print_internal("Remove pod '" .. pod_config.name .. "' ...")
+local function pod__remove(recipe, simulate)
+    print_internal("Remove pod '" .. recipe.name .. "' ...")
+
     -- remove containers
-    -- local containers = pod_config.containers
-    --  for id = #containers, 1, -1 do -- reverse order when shutting down containers
-    --     local container = pod_config.container[containers[id]]
-    --      if container__validate(container, pod_config.pod.name, containers[id]) then
-    --         container__remove(container, simulate)
-    --     end
-    --  end
+    local containers = recipe.containers
+    for id = #containers, 1, -1 do -- reverse order when shutting down containers
+        local container = containers[id]
+        container__ensure_name(container, recipe.pod.name, tostring(id))
+        container__remove(container, simulate)
+    end
+
     -- remove pod
-    -- exec("podman pod rm " .. pod_config.pod.name, simulate)
+    exec("podman pod rm " .. recipe.pod.name, simulate)
 end
 
 ---Remove and create pod and containers.
----@param pod_config table
+---@param recipe table
 ---@param simulate boolean
-local function pod__recreate(pod_config, simulate)
-    pod__remove(pod_config, simulate)
-    pod__create(pod_config, simulate)
+local function pod__recreate(recipe, simulate)
+    pod__remove(recipe, simulate)
+    pod__create(recipe, simulate)
 end
 
 ---Update containers of the pod.
 ---@param recipe table
 ---@param simulate boolean
 local function pod__update(recipe, simulate)
-    -- print_internal("Update pod '" .. recipe.name .. "' ...")
-    -- local containers = recipe.containers
+    print_internal("Update pod '" .. recipe.name .. "' ...")
+    local containers = recipe.containers
+
     -- update containers
-    -- for id = 1, #containers do
-    --     local container = recipe.container[containers[id]]
-    --     if container__validate(container, recipe.pod.name, containers[id]) then
-    --         container__update(container, recipe.pod, simulate)
-    --     end
-    -- end
+    for id = 1, #containers do
+        container__update(containers[id], recipe.pod, simulate)
+    end
 end
 
 -- ------------------------------------------------------------------------- --
@@ -594,6 +593,8 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     -- pod name is optional
     if string.is_nil_or_empty(recipe.pod.name) then
         recipe.pod.name = "pod-" .. normalize_name(recipe.name)
+    else
+        recipe.pod.name = normalize_name(recipe.pod.name)
     end
 
     -- test for pod registry
@@ -632,6 +633,7 @@ local function recipe__validate_and_handle(recipe, target, action, config)
 
     -- switch for correct function
     if (action == "update") then
+        -- most of the tests above arn't necessary for update
         pod__update(recipe, config.simulate)
         return
     end
@@ -805,14 +807,16 @@ local function main__parse_arguments(arguments, options)
     return false
 end
 
----Validate options. Returns false if error.
+---Validate and normalize options. Returns false if error.
 ---@param options table
 ---@return boolean
-local function main__validate_options(options)
+local function main__validate_and_normalize_options(options)
     -- validate action
     if string.is_nil_or_empty(options.action) then
         print_error("No action set.")
         return false
+    else
+        options.action = normalize_name(options.action)
     end
     if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
         print_error("Unknown action '" .. options.action .. "'.")
@@ -823,6 +827,11 @@ local function main__validate_options(options)
     if table.is_nil_or_empty(options.targets) then
         print_error("No targets set.")
         return false
+    end
+
+    -- normalize config name
+    if not string.is_nil_or_empty(options.config) then
+        options.config = normalize_name(options.config)
     end
     return true
 end
@@ -849,7 +858,7 @@ function main(arguments)
     end
 
     -- validate options
-    if not main__validate_options(options) then return end
+    if not main__validate_and_normalize_options(options) then return end
 
     -- parse config
     local config_name = options.config
