@@ -46,5 +46,13 @@ return {
                 { 10, "Create pod 'Simple Pod' ..." },
             },
         },
+        T00705 = {
+            description = "Test for publish.",
+            action = "create",
+            targets = { "recipe_008_publish" },
+            expectations = {
+                { 7, "podman pod create --name pod-publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
+            },
+        },
     },
 }

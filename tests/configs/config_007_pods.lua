@@ -9,6 +9,9 @@ return {
             nona = {
                 "recipe_007_simple_pod_no_name_and_path",
             },
+            tests = {
+                "recipe_008_publish"
+            },
         },
     },
 }
