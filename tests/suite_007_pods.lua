@@ -1,5 +1,5 @@
 return {
-    -- Tests for targets.
+    -- Tests for pods.
     config = "config_007_pods",
     tests = {
         T00701 = {
@@ -52,6 +52,14 @@ return {
             targets = { "recipe_008_publish" },
             expectations = {
                 { 7, "podman pod create --name pod-publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
+            },
+        },
+        T00706 = {
+            description = "Test for options.",
+            action = "create",
+            targets = { "recipe_00A_pod_options" },
+            expectations = {
+                { 7, "podman pod create --name pod-options --some thing --another thing;" },
             },
         },
     },

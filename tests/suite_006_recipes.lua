@@ -1,5 +1,5 @@
 return {
-    -- Tests for targets.
+    -- Tests for recipes.
     config = "config_005_recipes",
     tests = {
         T00601 = {

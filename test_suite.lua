@@ -146,6 +146,7 @@ execute_test_group(require "tests/suite_004_actions")
 execute_test_group(require "tests/suite_005_targets")
 execute_test_group(require "tests/suite_006_recipes")
 execute_test_group(require "tests/suite_007_pods")
+execute_test_group(require "tests/suite_008_containers")
 
 -- ------------------------------------------------------------------------- --
 --      Summary
