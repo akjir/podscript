@@ -254,7 +254,7 @@ table.size = table__size
 ---@return string
 local function build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
-        not string.begins_with(path, "./")
+        not string.begins_with(path, ".")
     then
         path = "./" .. path
     end
@@ -666,7 +666,7 @@ end
 local function config__load_and_set_defaults(config_full_path)
     local config, _ = load_lua_file(config_full_path)
     if config == nil then
-        print_error("Couldn't load Config '" .. config_full_path .. "'!")
+        print_error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil
     end
 
@@ -675,7 +675,7 @@ local function config__load_and_set_defaults(config_full_path)
         return nil
     else
         if table.is_nil_or_empty(config.recipes.groups) then
-            print_error("No recipes groups defined in config '" .. config_full_path .. "'!")
+            print_error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
             return nil
         end
 

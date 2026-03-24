@@ -86,5 +86,14 @@ return {
                 { 5, "ERROR: A container in pod 'pod-nopathpod' is empty!" },
             },
         },
+        T0060B = {
+            description = "",
+            config = "config_009_same_directory",
+            action = "create",
+            targets = { "target" },
+            expectations = {
+                { 5, "ERROR: Couldn't load recipe './target.lua'!" },
+            }
+        }
     },
 }

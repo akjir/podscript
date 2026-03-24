@@ -40,7 +40,7 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 1, "ERROR: Couldn't load Config './tests/configs/config_missing.lua'!" },
+                { 1, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
             },
         },
         T00105 = {
