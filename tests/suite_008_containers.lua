@@ -77,5 +77,23 @@ return {
                 { 14, "podman pull obey.io/order:4;" },
             },
         },
+        T00809 = {
+            description = "Test for absolute and relative container names (update).",
+            action = "update",
+            targets = { "recipe_011_container_naming" },
+            expectations = {
+                { 7, "Update container 'absolute' ..." },
+                { 9, "Update container 'pod-con_name-relative' ..." },
+            },
+        },
+        T0080A = {
+            description = "Test for absolute and relative container names (create).",
+            action = "create",
+            targets = { "recipe_011_container_naming" },
+            expectations = {
+                { 8, "podman run --name absolute --pod pod-con_name registry.io/name:latest;" },
+                { 9, "podman run --name pod-con_name-relative --pod pod-con_name registry.io/name:latest;" },
+            },
+        },
     },
 }

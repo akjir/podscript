@@ -408,6 +408,9 @@ local function container__ensure_name(container, pod_name, container_alternate_n
         container.name = pod_name .. "-" .. container_alternate_name
     else
         container.name = normalize_name(container.name)
+        if string.begins_with(container.name, "*") then
+            container.name = pod_name .. "-" .. container.name:sub(2)
+        end
     end
     return true
 end

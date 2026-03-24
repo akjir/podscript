@@ -13,6 +13,7 @@ return {
                 "recipe_00D_container_commands",
                 "recipe_00E_registry_per_container",
                 "recipe_00F_container_order",
+                "recipe_011_container_naming",
             },
         },
     },
