@@ -62,5 +62,20 @@ return {
                 { 21, "podman run --name pod-order-4 --pod pod-order obey.io/order:4;" },
             },
         },
+        T00807 = {
+            description = "Update containers without names.",
+            action = "update",
+            targets = { "recipe_00F_container_order" },
+            expectations = {
+                { 7,  "Update container 'pod-order-1' ..." },
+                { 8,  "podman pull obey.io/order:1;" },
+                { 9,  "Update container 'pod-order-2' ..." },
+                { 10, "podman pull obey.io/order:2;" },
+                { 11, "Update container 'pod-order-3' ..." },
+                { 12, "podman pull obey.io/order:3;" },
+                { 13, "Update container 'pod-order-4' ..." },
+                { 14, "podman pull obey.io/order:4;" },
+            },
+        },
     },
 }

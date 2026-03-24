@@ -295,7 +295,7 @@ end
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
 local function normalize_name(str)
     -- if string.is_nil_or_empty(str) then return "" end -- shouldn't necessary
-    return string.lower(str:trim():gsub("%s", "_"))
+    return string.lower(str:trim():gsub("%s+", "_"))
 end
 
 ---Load a lua file.
@@ -463,7 +463,7 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__create(recipe, simulate)
-    print_internal("Create pod '" .. recipe.name .. "' ...")
+    print_internal("Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local commands = { "podman pod create" }
 
     -- pod name
@@ -515,7 +515,7 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__remove(recipe, simulate)
-    print_internal("Remove pod '" .. recipe.name .. "' ...")
+    print_internal("Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
 
     -- remove containers
     local containers = recipe.containers
@@ -541,11 +541,13 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__update(recipe, simulate)
-    print_internal("Update pod '" .. recipe.name .. "' ...")
+    print_internal("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 
     -- update containers
     for id = 1, #containers do
+        local container = containers[id]
+        container__ensure_name(container, recipe.pod.name, tostring(id))
         container__update(containers[id], recipe.pod, simulate)
     end
 end
