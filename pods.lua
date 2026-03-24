@@ -304,6 +304,7 @@ end
 local function load_lua_file(full_path)
     local ok, result = pcall(dofile, full_path)
     if not ok then
+        print_error(result)
         return nil, result
     end
     return result, nil

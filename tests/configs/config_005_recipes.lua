@@ -10,6 +10,7 @@ return {
                 "recipe_003_empty_pod",
                 "recipe_004_no_registry",
                 "recipe_005_no_path",
+                "recipe_010_container_lua_error",
             },
         },
     },

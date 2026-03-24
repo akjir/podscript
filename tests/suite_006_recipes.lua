@@ -8,7 +8,8 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 4, "ERROR: Couldn't load recipe './target.lua'!" },
+                { 4, "ERROR: cannot open ./target.lua: No such file or directory" },
+                { 5, "ERROR: Couldn't load recipe './target.lua'!" },
             },
         },
         T00602 = {
@@ -16,7 +17,8 @@ return {
             action = "create",
             targets = { "recipe_000_unkown" },
             expectations = {
-                { 4, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
+                { 4, "ERROR: cannot open ./tests/recipes/recipe_000_unkown.lua: No such file or directory" },
+                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
             },
         },
         T00603 = {
@@ -87,13 +89,23 @@ return {
             },
         },
         T0060B = {
-            description = "",
+            description = "Use pod path '.'.",
             config = "config_009_same_directory",
             action = "create",
             targets = { "target" },
             expectations = {
-                { 5, "ERROR: Couldn't load recipe './target.lua'!" },
+                { 5, "ERROR: cannot open ./target.lua: No such file or directory" },
+                { 6, "ERROR: Couldn't load recipe './target.lua'!" },
             }
-        }
+        },
+        T0060C = {
+            description = "Missing ',' in lua file.",
+            action = "create",
+            targets = { "recipe_010_container_lua_error" },
+            expectations = {
+                { 4, "ERROR: ./tests/recipes/recipe_010_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
+                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_010_container_lua_error.lua'!" },
+            }
+        },
     },
 }

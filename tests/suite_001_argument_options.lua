@@ -40,7 +40,8 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 1, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
+                { 1, "ERROR: cannot open ./tests/configs/config_missing.lua: No such file or directory" },
+                { 2, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
             },
         },
         T00105 = {
