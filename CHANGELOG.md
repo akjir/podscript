@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Renamed `dryrun` option to `simulate` for better clarity.
 - Renamed `PodConfig` to `Recipe` for better clarity.
 - Improved internal code quality by fixing typos and renaming variables for consistency.
+- Distinct between absolute and relative container naming. 
 
 ### Removed
 

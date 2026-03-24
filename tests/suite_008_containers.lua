@@ -95,5 +95,16 @@ return {
                 { 9, "podman run --name pod-con_name-relative --pod pod-con_name registry.io/name:latest;" },
             },
         },
+        T0080B = {
+            description = "Test for absolute and relative container names (remove).",
+            action = "remove",
+            targets = { "recipe_011_container_naming" },
+            expectations = {
+                { 7,  "podman stop pod-con_name-relative;" },
+                { 8,  "podman rm pod-con_name-relative;" },
+                { 9,  "podman stop absolute;" },
+                { 10, "podman rm absolute;" },
+            },
+        },
     },
 }
