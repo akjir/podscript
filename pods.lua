@@ -274,8 +274,9 @@ end
 ---Execute a command.
 ---Only executes a command, if simulate is set to false.
 ---@param command string
+---@param prefix string
 ---@param simulate boolean
-local function exec(command, simulate)
+local function exec(command, prefix, simulate)
     if not string.ends_with(command, ";") then
         command = command .. ";"
     end
@@ -284,7 +285,7 @@ local function exec(command, simulate)
     else
         local handle = io.popen(command)
         if handle == nil then return end
-        print_internal(handle:read("*l"))
+        print_internal(prefix .. handle:read("*l"))
         handle:close()
     end
 end
@@ -393,7 +394,7 @@ local function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    exec(table.concat(commands, " "), simulate)
+    exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
 end
 
 ---Ensure container name.
@@ -436,8 +437,8 @@ end
 ---@param container table
 ---@param simulate boolean
 local function container__remove(container, simulate)
-    exec("podman stop " .. container.name, simulate)
-    exec("podman rm " .. container.name, simulate)
+    exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
+    exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
 end
 
 ---Update a container image.
@@ -446,7 +447,8 @@ end
 ---@param simulate boolean
 local function container__update(container, pod, simulate)
     local registry = table__get_or_default(container, "registry", pod.registry)
-    exec("podman pull " .. registry .. "/" .. container.image, simulate)
+    print_internal("Update container '" .. container.name .. "' ...")
+    exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -498,7 +500,7 @@ local function pod__create(recipe, simulate)
     end
 
     -- create pod
-    exec(table.concat(commands, " "), simulate)
+    exec(table.concat(commands, " "), "", simulate)
 
     -- create containers
     local containers = recipe.containers
@@ -524,7 +526,7 @@ local function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    exec("podman pod rm " .. recipe.pod.name, simulate)
+    exec("podman pod rm " .. recipe.pod.name, "", simulate)
 end
 
 ---Remove and create pod and containers.
