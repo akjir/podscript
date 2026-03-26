@@ -286,11 +286,14 @@ local function exec(command, prefix, simulate)
         end
         print_internal(command)
     else
+        -- need better error handling, popen prints directly
         local handle = io.popen(command)
         if handle == nil then return end
         local output = handle:read("*l")
         if output ~= nil then
             print_internal(prefix .. output)
+        else
+            print_internal(prefix .. "...")
         end
         handle:close()
     end
@@ -604,7 +607,7 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     -- test for pod name
     -- pod name is optional
     if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = "pod-" .. normalize_name(recipe.name)
+        recipe.pod.name = normalize_name(recipe.name)
     else
         recipe.pod.name = normalize_name(recipe.pod.name)
     end

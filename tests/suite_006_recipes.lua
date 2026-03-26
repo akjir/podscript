@@ -85,7 +85,7 @@ return {
             action = "create",
             targets = { "recipe_005_no_path" },
             expectations = {
-                { 5, "ERROR: A container in pod 'pod-nopathpod' is empty!" },
+                { 5, "ERROR: A container in pod 'nopathpod' is empty!" },
             },
         },
         T0060B = {
