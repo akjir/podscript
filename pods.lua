@@ -277,19 +277,21 @@ end
 ---@param prefix string
 ---@param simulate boolean
 local function exec(command, prefix, simulate)
-    if prefix == nil then prefix = "" end
     if not string.ends_with(command, ";") then
         command = command .. ";"
     end
     if simulate then
-        if prefix ~= "" then
+        if not string.is_nil_or_empty(prefix) then
             print_internal(prefix)
         end
         print_internal(command)
     else
         local handle = io.popen(command)
         if handle == nil then return end
-        print_internal(prefix .. handle:read("*l"))
+        local output = handle:read("*l")
+        if output ~= nil then
+            print_internal(prefix .. output)
+        end
         handle:close()
     end
 end
