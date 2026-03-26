@@ -277,10 +277,14 @@ end
 ---@param prefix string
 ---@param simulate boolean
 local function exec(command, prefix, simulate)
+    if prefix == nil then prefix = "" end
     if not string.ends_with(command, ";") then
         command = command .. ";"
     end
     if simulate then
+        if prefix ~= "" then
+            print_internal(prefix)
+        end
         print_internal(command)
     else
         local handle = io.popen(command)
@@ -466,7 +470,6 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__create(recipe, simulate)
-    print_internal("Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local commands = { "podman pod create" }
 
     -- pod name
@@ -503,7 +506,7 @@ local function pod__create(recipe, simulate)
     end
 
     -- create pod
-    exec(table.concat(commands, " "), "", simulate)
+    exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ", simulate)
 
     -- create containers
     local containers = recipe.containers
@@ -518,8 +521,6 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__remove(recipe, simulate)
-    print_internal("Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
-
     -- remove containers
     local containers = recipe.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
@@ -529,7 +530,8 @@ local function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    exec("podman pod rm " .. recipe.pod.name, "", simulate)
+    exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate)
 end
 
 ---Remove and create pod and containers.
@@ -784,30 +786,31 @@ local function main__parse_arguments(arguments, options)
     -- parse arguments
     local skip = false
     for i = 1, #arguments do
+        local argument = arguments[i]
         if skip == true then -- skips to allow "--argument value"
             skip = false
         else
             -- reset skip if used
             if skip then skip = false end
 
-            if arguments[i] == "--help" then
+            if argument == "--help" then
                 options.help = true
                 break -- print help and ignore the rest
-            elseif arguments[i] == "--simulate" then
+            elseif argument == "--simulate" then
                 options.simulate = true
-            elseif arguments[i] == "--config" then
+            elseif argument == "--config" then
                 skip = true
                 options.config = table.get_or_default(arguments, i + 1, "")
             else
-                if string.begins_with(arguments[i], "--") then
-                    print_error("Unknown option '" .. arguments[i] .. "'.")
+                if string.begins_with(argument, "--") then
+                    print_error("Unknown option '" .. argument .. "'.")
                     return true
                 elseif options.action == "" then
                     -- first argument is action
-                    options.action = arguments[i]
+                    options.action = argument
                 else
                     -- followed arguments are targets
-                    table.insert(options.targets, arguments[i])
+                    table.insert(options.targets, argument)
                 end
             end
         end

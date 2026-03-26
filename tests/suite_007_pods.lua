@@ -12,9 +12,10 @@ return {
                 { 3, "DEBUG: Targets   - @nona" },
                 { 4, "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
                 { 5, "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/simple_pod' used." },
-                { 6, "Create pod 'Simple Pod' ('si_po') ..." },
+                { 6, "Create pod 'Simple Pod' ('si_po'): " },
                 { 7, "podman pod create --name si_po;" },
-                { 8, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/simple_pod/config:/config:Z registry.io/alpine:latest;" },
+                { 8, "Create container 'supr_app': " },
+                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/simple_pod/config:/config:Z registry.io/alpine:latest;" },
             },
         },
         T00702 = {
@@ -22,10 +23,12 @@ return {
             action = "remove",
             targets = { "@nona" },
             expectations = {
-                { 6, "Remove pod 'Simple Pod' ('si_po') ..." },
-                { 7, "podman stop supr_app;" },
-                { 8, "podman rm supr_app;" },
-                { 9, "podman pod rm si_po;" },
+                { 6,  "Stop container 'supr_app': " },
+                { 7,  "podman stop supr_app;" },
+                { 8,  "Remove container 'supr_app': " },
+                { 9,  "podman rm supr_app;" },
+                { 10, "Remove pod 'Simple Pod' ('si_po'): " },
+                { 11, "podman pod rm si_po;" },
             },
         },
         T00703 = {
@@ -43,8 +46,8 @@ return {
             action = "recreate",
             targets = { "@nona" },
             expectations = {
-                { 6,  "Remove pod 'Simple Pod' ('si_po') ..." },
-                { 10, "Create pod 'Simple Pod' ('si_po') ..." },
+                { 10, "Remove pod 'Simple Pod' ('si_po'): " },
+                { 12, "Create pod 'Simple Pod' ('si_po'): " },
             },
         },
         T00705 = {

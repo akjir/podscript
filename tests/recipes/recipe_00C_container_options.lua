@@ -5,7 +5,7 @@ return {
     },
     containers = {
         {
-            name = "snoitop",
+            name = "snoitpo",
             options = {
                 "--unknown thing",
                 "--another unknown",
