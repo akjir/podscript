@@ -24,9 +24,20 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 require "pods"
 require "tests/test_helpers"
 
+local output_stack = {}
+local single_test_name = ""
 local tests_count = 0
 local tests_count_failed = 0
-local output_stack = {}
+
+--- set mode and complete print
+if #arg ~= 0 then
+    for i = 1, #arg do
+        local argument = arg[i]
+        if single_test_name == "" then
+            single_test_name = argument
+        end
+    end
+end
 
 ---Print function
 ---@param str string
@@ -40,11 +51,22 @@ print_internal = print_to_stack
 -- set debug flag in pods.lua
 debug = true
 
+local function print_full_stack(stack)
+    print()
+    print("Stack:")
+    for i = 1, #stack do
+        local line = ""
+        if i > 9 then line = tostring(i) else line = " " .. tostring(i) end
+        print("  " .. line .. ": " .. stack[i])
+    end
+    print()
+end
+
 -- ------------------------------------------------------------------------- --
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
-local function execute_normal_test(default_config_name, test_code, test_table)
+local function execute_normal_test(default_config_name, test_code, test_table, print_stack)
     local config_name = table.get_or_default(test_table, "config", "")
     local arguments = {}
 
@@ -85,7 +107,7 @@ local function execute_normal_test(default_config_name, test_code, test_table)
             print()
             print("  Result:   '" .. tostring(result) .. "'")
             print("  Expected: '" .. expected_result .. "'")
-            print()
+            if print_stack then print_full_stack(output_stack) else print() end
             -- clear output_stack
             output_stack = {}
             -- test failed, return false
@@ -101,7 +123,7 @@ end
 ---Executes a code test. Test has to have a run() function and an expected value.
 ---@param test_code string
 ---@param test_table table
-local function execute_code_test(test_code, test_table)
+local function execute_code_test(test_code, test_table, print_stack)
     local result = test_table.run()
     if result ~= test_table.expected then
         local description = test_table.description
@@ -112,26 +134,33 @@ local function execute_code_test(test_code, test_table)
         print()
         print("  Result:   '" .. tostring(result) .. "'")
         print("  Expected: '" .. tostring(test_table.expected) .. "'")
-        print()
+        if print_stack then print_full_stack(output_stack) else print() end
         return false
     end
+    -- clear output_stack
+    output_stack = {}
+    -- test successfull, retrun true
     return true
 end
 
-local function execute_test_group(test_group)
-    local tests = test_group.tests
-    for test_code, test_table in pairs(tests) do
-        tests_count = tests_count + 1
-        if test_table.run ~= nil then
-            if not execute_code_test(test_code, test_table) then
-                tests_count_failed = tests_count_failed + 1
-            end
-        else
-            local default_config_name = table.get_or_default(test_group, "config", "")
-            if not execute_normal_test(default_config_name, test_code, test_table) then
-                tests_count_failed = tests_count_failed + 1
-            end
+local function execute_test(default_config_name, test_code, test_table, print_stack)
+    if test_table.run ~= nil then
+        if not execute_code_test(test_code, test_table, print_stack) then
+            tests_count_failed = tests_count_failed + 1
         end
+    else
+        if not execute_normal_test(default_config_name, test_code, test_table, print_stack) then
+            tests_count_failed = tests_count_failed + 1
+        end
+    end
+end
+
+local function execute_test_suite(test_suite)
+    local tests = test_suite.tests
+    for test_code, test_table in pairs(tests) do
+        local default_config_name = table.get_or_default(test_suite, "config", "")
+        tests_count = tests_count + 1
+        execute_test(default_config_name, test_code, test_table, false)
     end
 end
 
@@ -139,21 +168,54 @@ end
 --      Test Suits
 -- ------------------------------------------------------------------------- --
 
-execute_test_group(require "tests/suite_001_argument_options")
-execute_test_group(require "tests/suite_002_helpers_string")
-execute_test_group(require "tests/suite_003_helpers_table")
-execute_test_group(require "tests/suite_004_actions")
-execute_test_group(require "tests/suite_005_targets")
-execute_test_group(require "tests/suite_006_recipes")
-execute_test_group(require "tests/suite_007_pods")
-execute_test_group(require "tests/suite_008_containers")
+local test_suites = {}
+table.insert(test_suites, (require "tests/suite_001_argument_options"))
+table.insert(test_suites, (require "tests/suite_002_helpers_string"))
+table.insert(test_suites, (require "tests/suite_003_helpers_table"))
+table.insert(test_suites, (require "tests/suite_004_actions"))
+table.insert(test_suites, (require "tests/suite_005_targets"))
+table.insert(test_suites, (require "tests/suite_006_recipes"))
+table.insert(test_suites, (require "tests/suite_007_pods"))
+table.insert(test_suites, (require "tests/suite_008_containers"))
 
 -- ------------------------------------------------------------------------- --
---      Summary
+--      Main
 -- ------------------------------------------------------------------------- --
+
+local found = false -- define here to prevent "Test failed." if no test was found
+print()
+if single_test_name == "" then
+    found = true
+    for _, test_suite in pairs(test_suites) do
+        execute_test_suite(test_suite)
+    end
+else
+    tests_count = 1
+    for a, test_suite in pairs(test_suites) do
+        local test = test_suite.tests[single_test_name]
+        if test ~= nil then
+            local default_config_name = table.get_or_default(test_suite, "config", "")
+            found = true
+            execute_test(default_config_name, single_test_name, test, true)
+            break
+        end
+    end
+    if not found then
+        print("Test '" .. single_test_name .. "' not found.")
+        tests_count_failed = 1
+    end
+end
 
 if tests_count_failed == 0 then
-    print("All " .. tests_count .. " tests passed.")
-else
-    print(tests_count_failed .. " of " .. tests_count .. " tests failed.")
+    if tests_count == 1 then
+        print("Test passed.")
+    else
+        print("All " .. tests_count .. " tests passed.")
+    end
+elseif found == true then
+    if tests_count == 1 then
+        print("Test failed.")
+    else
+        print(tests_count_failed .. " of " .. tests_count .. " tests failed.")
+    end
 end
