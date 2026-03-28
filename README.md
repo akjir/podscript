@@ -6,6 +6,10 @@ A simple Lua script for managing Podman containers and pods using declarative re
 
 This is a personal hobby project created for the primary purposes of learning Lua and exploring the use of AI-assisted development tools in a practical coding scenario. While a portion of the code has been generated with the assistance of an AI model, the majority of the code is human-written. The project is intended for private use.
 
+**WARNING:** This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+
+**IMPORTANT:** Use this script at your own risk. It is strongly recommended to maintain current backups of your data and container configurations before using this script. The author is not responsible for any data loss, corruption, or system instability.
+
 ## Features
 
 *   Manage Podman pods and containers with simple commands (`create`, `recreate`, `remove`, `update`).
