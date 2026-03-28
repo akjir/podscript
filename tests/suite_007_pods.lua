@@ -11,11 +11,11 @@ return {
                 { 2, "INFO: Config './tests/configs/config_007_pods.lua' is used." },
                 { 3, "DEBUG: Targets   - @nona" },
                 { 4, "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
-                { 5, "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/simple_pod' used." },
+                { 5, "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used." },
                 { 6, "Create pod 'Simple Pod' ('si_po'): " },
                 { 7, "podman pod create --name si_po;" },
                 { 8, "Create container 'supr_app': " },
-                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/simple_pod/config:/config:Z registry.io/alpine:latest;" },
+                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
             },
         },
         T00702 = {
