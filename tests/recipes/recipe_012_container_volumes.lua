@@ -12,7 +12,8 @@ return {
                 { "named_volume",    "/container/dir/named",     "ro" },
                 { "/absolute/path",  "/container/dir/absolute",  "" },
                 { "./relative/path", "/container/dir/relative",  "z" },
-                { "relative/path2",  "/container/dir/relative2", "" },
+                { ".relative/path2", "/container/dir/relative2", "" },
+                { "relative/path3",  "/container/dir/relative3", "" },
             }
         }
     }
