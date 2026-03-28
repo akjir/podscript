@@ -56,6 +56,11 @@ An example configuration can be found in [config.lua](config.lua).
 
 Recipes are Lua files that define a pod and its containers. An example recipe can be found in [recipe.lua](recipe.lua).
 
+The order in which containers are defined within a recipe is significant:
+*   **Creation & Startup:** Containers are created and started in the order they are listed.
+*   **Removal & Shutdown:** When removing a pod, the containers are stopped and removed in reverse order.
+*   **Recreation:** Recreating a pod follows both behaviors—containers are first stopped and removed in reverse order, then created and started in the original order.
+
 ## Testing
 
 To run the entire test suite, execute the following command:
