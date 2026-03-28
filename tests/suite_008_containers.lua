@@ -111,7 +111,7 @@ return {
             action = "create",
             targets = { "recipe_012_container_volumes" },
             expectations = {
-                { 8, "podman run --name volumes-1 --pod volumes --volume /container/dir/anonymous --volume named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute --volume ./my_pod_path/./relative/path:/container/dir/relative:z --volume ./my_pod_path/../parent/path:/container/dir/parent:Z registry.io/name:latest;" },
+                { 8, "podman run --name volumes-1 --pod volumes --volume /container/dir/anonymous --volume /my_pod_path/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute --volume /my_pod_path/relative/path:/container/dir/relative:z --volume /my_pod_path/relative/path2:/container/dir/relative2 registry.io/name:latest;" },
             },
         },
     },
