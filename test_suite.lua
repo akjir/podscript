@@ -219,7 +219,7 @@ else
             end
         end
     end
-    
+
     tests_count = run_count
     if not found then
         print("Test or suite '" .. single_test_name .. "' not found.")

@@ -46,44 +46,11 @@ Configuration is done in a specific file. This file allows you to define:
 *   `recipes`: The path to your recipe files and `groups` of recipes.
 *   `pods`: The default path for pod data.
 
+An example configuration can be found in [config.lua](config.lua).
+
 ## Recipes
 
-Recipes are Lua files that define a pod and its containers. A recipe file returns a table with the following structure:
-
-```lua
-return {
-    name = "example-pod",
-    pod = {
-        name = "pod-example",
-        registry = "docker.io",
-        publish = {
-            { 8080, 80 }
-        },
-        options = {
-            "--userns=host"
-        }
-    },
-    containers = {
-        {
-            name = "db",
-            image = "postgres:15",
-            detach = true,
-            restart = "always",
-            volumes = {
-                { "data", "/var/lib/postgresql/data", "Z" }
-            },
-            options = {
-                "--env POSTGRES_PASSWORD=secret",
-            }
-        },
-        {
-            name = "web",
-            image = "nginx:latest",
-            detach = true
-        }
-    }
-}
-```
+Recipes are Lua files that define a pod and its containers. An example recipe can be found in [recipe.lua](recipe.lua).
 
 ## Testing
 
