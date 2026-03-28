@@ -36,6 +36,31 @@ lua pods.lua [OPTIONS] ACTION [TARGETS]
 *   `<recipe_name>`: The name of a recipe file.
 *   `@<group_name>`: The name of a recipe group defined in a configuration file.
 
+#### Execution Order and Recipe Groups
+
+Recipes can be declared in multiple groups. When multiple groups or individual recipes are specified as targets, their overall execution order is determined by their first appearance in the target list.
+
+**Key points:**
+
+*   **Order Matters:** The order of recipes within a group is significant; recipes are executed in the sequence they are listed.
+*   **First Appearance Rule:** If a recipe is mentioned multiple times (either directly or through multiple groups), only its first occurrence in the target list determines its execution position in all actions.
+
+**Examples:**
+
+*   **Multiple targets and groups:**
+    If `@glados` is defined as `{ "the", "cake", "lie" }`, then:
+    ```bash
+    lua pods.lua create the @glados lie
+    ```
+    The execution order will be: `the`, `cake`, `lie`.
+
+*   **Respecting first appearance:**
+    Using the same `@glados` group:
+    ```bash
+    lua pods.lua create lie cake @glados
+    ```
+    The execution order will be: `lie`, `cake`, `the`. (Since `lie` and `cake` appeared first as individual targets, they are executed before `the` from the group expansion).
+
 ### Options
 
 *   `--config <config_name>`: Use a specific configuration file.
@@ -52,6 +77,25 @@ Configuration is done in a specific file. This file allows you to define:
 
 An example configuration can be found in [config.lua](config.lua).
 
+## Examples
+
+1. **Create a pod using a recipe:**
+   ```bash
+   lua pods.lua create recipe
+   ```
+2. **Recreate a group of pods:**
+   ```bash
+   lua pods.lua recreate @mygroup
+   ```
+3. **Simulate removing a pod:**
+   ```bash
+   lua pods.lua --simulate remove recipe
+   ```
+4. **Use a specific configuration file:**
+   ```bash
+   lua pods.lua --config alternative_config_name create recipe
+   ```
+
 ## Recipes
 
 Recipes are Lua files that define a pod and its containers. An example recipe can be found in [recipe.lua](recipe.lua).
@@ -60,6 +104,35 @@ The order in which containers are defined within a recipe is significant:
 *   **Creation & Startup:** Containers are created and started in the order they are listed.
 *   **Removal & Shutdown:** When removing a pod, the containers are stopped and removed in reverse order.
 *   **Recreation:** Recreating a pod follows both behaviors—containers are first stopped and removed in reverse order, then created and started in the original order.
+
+## Helper Script
+
+For easier usage of PodScript from any directory, you can create a helper script in your PATH (e.g., `/usr/local/bin/pods`).
+
+**Example installation:**
+
+1. Create and edit the helper script:
+   ```bash
+   sudo vi /usr/local/bin/pods
+   ```
+
+2. Add the following content, ensuring the `cd` command points to your PodScript installation directory:
+   ```bash
+   #!/bin/bash
+
+   cd ~/podscript/
+   lua pods.lua "$@"
+   ```
+
+3. Make the script executable:
+   ```bash
+   sudo chmod +x /usr/local/bin/pods
+   ```
+
+This allows you to run PodScript commands simply by typing `pods` from any location:
+   ```bash
+   pods create recipe
+   ```
 
 ## Testing
 
