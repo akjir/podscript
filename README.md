@@ -24,6 +24,12 @@ This is a personal hobby project created for the primary purposes of learning Lu
 ```bash
 lua pods.lua [OPTIONS] ACTION [TARGETS]
 ```
+### Options
+
+*   `--config <config_name>`: Use a specific configuration file.
+*   `--help`: Display the help message.
+*   `--simulate`: Force simulate mode, overrides config file option.
+
 ### Actions
 
 *   `create`: Create a new pod and its containers.
@@ -60,12 +66,6 @@ Recipes can be declared in multiple groups. When multiple groups or individual r
     lua pods.lua create lie cake @glados
     ```
     The execution order will be: `lie`, `cake`, `the`. (Since `lie` and `cake` appeared first as individual targets, they are executed before `the` from the group expansion).
-
-### Options
-
-*   `--config <config_name>`: Use a specific configuration file.
-*   `--help`: Display the help message.
-*   `--simulate`: Force simulate mode, overrides config file option.
 
 ## Configuration
 
