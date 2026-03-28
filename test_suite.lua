@@ -169,14 +169,21 @@ end
 -- ------------------------------------------------------------------------- --
 
 local test_suites = {}
-table.insert(test_suites, (require "tests/suite_001_argument_options"))
-table.insert(test_suites, (require "tests/suite_002_helpers_string"))
-table.insert(test_suites, (require "tests/suite_003_helpers_table"))
-table.insert(test_suites, (require "tests/suite_004_actions"))
-table.insert(test_suites, (require "tests/suite_005_targets"))
-table.insert(test_suites, (require "tests/suite_006_recipes"))
-table.insert(test_suites, (require "tests/suite_007_pods"))
-table.insert(test_suites, (require "tests/suite_008_containers"))
+
+local function add_suite(name)
+    local suite = require("tests/" .. name)
+    suite.name = name
+    table.insert(test_suites, suite)
+end
+
+add_suite("suite_001_argument_options")
+add_suite("suite_002_helpers_string")
+add_suite("suite_003_helpers_table")
+add_suite("suite_004_actions")
+add_suite("suite_005_targets")
+add_suite("suite_006_recipes")
+add_suite("suite_007_pods")
+add_suite("suite_008_containers")
 
 -- ------------------------------------------------------------------------- --
 --      Main
@@ -190,19 +197,34 @@ if single_test_name == "" then
         execute_test_suite(test_suite)
     end
 else
-    tests_count = 1
+    local run_count = 0
     for a, test_suite in pairs(test_suites) do
-        local test = test_suite.tests[single_test_name]
-        if test ~= nil then
-            local default_config_name = table.get_or_default(test_suite, "config", "")
+        -- Check if it matches a suite name
+        if test_suite.name == single_test_name or test_suite.name .. ".lua" == single_test_name then
             found = true
-            execute_test(default_config_name, single_test_name, test, true)
-            break
+            for test_code, test_table in pairs(test_suite.tests) do
+                local default_config_name = table.get_or_default(test_suite, "config", "")
+                execute_test(default_config_name, test_code, test_table, true)
+                run_count = run_count + 1
+            end
+        else
+            -- Check individual tests by code
+            local default_config_name = table.get_or_default(test_suite, "config", "")
+            for test_code, test_table in pairs(test_suite.tests) do
+                if test_code == single_test_name then
+                    found = true
+                    execute_test(default_config_name, test_code, test_table, true)
+                    run_count = run_count + 1
+                end
+            end
         end
     end
+    
+    tests_count = run_count
     if not found then
-        print("Test '" .. single_test_name .. "' not found.")
+        print("Test or suite '" .. single_test_name .. "' not found.")
         tests_count_failed = 1
+        tests_count = 1
     end
 end
 

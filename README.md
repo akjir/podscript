@@ -10,6 +10,7 @@ This is a personal hobby project created for the primary purposes of learning Lu
 
 *   Manage Podman pods and containers with simple commands (`create`, `recreate`, `remove`, `update`).
 *   Define pods and containers in declarative Lua recipe files.
+*   Configure container specifics individually like registries, publish ports, lifecycle options, volumes, restart policies, and custom launch commands.
 *   Organize recipes into groups for managing multiple applications at once.
 *   Flexible configuration through a configuration file.
 *   Simulate mode to preview commands before execution.
@@ -41,8 +42,8 @@ lua pods.lua [OPTIONS] ACTION [TARGETS]
 
 Configuration is done in a specific file. This file allows you to define:
 
-*   `simulate`: If `true`, commands will be printed but not executed.
-*   `recipes`: The path to your recipe files and groups of recipes.
+*   `simulate`: If `true`, commands will be printed but not executed (replaces older `dryrun` terminology).
+*   `recipes`: The path to your recipe files and `groups` of recipes.
 *   `pods`: The default path for pod data.
 
 ## Recipes
@@ -51,28 +52,52 @@ Recipes are Lua files that define a pod and its containers. A recipe file return
 
 ```lua
 return {
-    name = "my-pod",
+    name = "example-pod",
     pod = {
-        name = "pod-my-pod",
+        name = "pod-example",
         registry = "docker.io",
-        -- ... pod options
-    },
-    containers = { "my-container" },
-    container = {
-        ["my-container"] = {
-            image = "my-image:latest",
-            -- ... container options
+        publish = {
+            { 8080, 80 }
         },
+        options = {
+            "--userns=host"
+        }
     },
+    containers = {
+        {
+            name = "db",
+            image = "postgres:15",
+            detach = true,
+            restart = "always",
+            volumes = {
+                { "data", "/var/lib/postgresql/data", "Z" }
+            },
+            options = {
+                "--env POSTGRES_PASSWORD=secret",
+            }
+        },
+        {
+            name = "web",
+            image = "nginx:latest",
+            detach = true
+        }
+    }
 }
 ```
 
 ## Testing
 
-To run the test suite, execute the following command:
+To run the entire test suite, execute the following command:
 
 ```bash
 lua test_suite.lua
+```
+
+To run a single test by its internal ID, or run a whole suite by its file name, provide the identifier or file name as an argument:
+
+```bash
+lua test_suite.lua T00101
+lua test_suite.lua suite_001_argument_options.lua
 ```
 
 ## License
