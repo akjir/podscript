@@ -14,6 +14,7 @@ return {
                 "recipe_00E_registry_per_container",
                 "recipe_00F_container_order",
                 "recipe_011_container_naming",
+                "recipe_012_container_volumes",
             },
         },
     },

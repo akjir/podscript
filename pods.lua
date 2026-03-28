@@ -362,26 +362,27 @@ local function container__create(container, pod, simulate)
             local host_dir = container.volumes[i][1]
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
-            if string.is_nil_or_empty(host_dir) then
-                print_error("Host dir cannot be empty! (" .. container.name .. ")")
+            if string.is_nil_or_empty(container_dir) then
+                print_error("Container dir cannot be empty! (" .. container.name .. ")")
             else
-                -- we check nil and empty but not if it's a valid path
-                if string.is_nil_or_empty(container_dir) then
-                    print_error("Container dir cannot be empty! (" .. container.name .. ")")
+                local command = ""
+                if string.is_nil_or_empty(host_dir) then
+                    command = container_dir
                 else
-                    -- at this point we know that we have a valid path
-                    -- but want to check if there is a separate path wanted
-                    -- we don't check this earlier so no default or pod path will still be an error
-                    if not string.begins_with(host_dir, "/") then
-                        host_dir = build_full_path(pod.path, host_dir, "")
+                    if not string.begins_with(host_dir, "/") and not string.begins_with(host_dir, ".") then
+                        command = host_dir .. ":" .. container_dir
+                    else
+                        if string.begins_with(host_dir, ".") then
+                            host_dir = build_full_path(pod.path, host_dir, "")
+                        end
+                        command = host_dir .. ":" .. container_dir
                     end
-                    local command = host_dir .. ":" .. container_dir
-                    if not string.is_nil_or_empty(options) then
-                        command = command .. ":" .. options
-                    end
-                    commands[#commands + 1] = "--volume"
-                    commands[#commands + 1] = command
                 end
+                if not string.is_nil_or_empty(options) then
+                    command = command .. ":" .. options
+                end
+                commands[#commands + 1] = "--volume"
+                commands[#commands + 1] = command
             end
         end
     end

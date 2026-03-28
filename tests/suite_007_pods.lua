@@ -15,7 +15,7 @@ return {
                 { 6, "Create pod 'Simple Pod' ('si_po'): " },
                 { 7, "podman pod create --name si_po;" },
                 { 8, "Create container 'supr_app': " },
-                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
+                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume config:/config:Z registry.io/alpine:latest;" },
             },
         },
         T00702 = {
