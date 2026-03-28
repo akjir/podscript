@@ -15,6 +15,7 @@ return {
                 "recipe_00F_container_order",
                 "recipe_011_container_naming",
                 "recipe_012_container_volumes",
+                "recipe_013_container_volumes_with_no_path",
             },
         },
     },

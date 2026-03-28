@@ -7,6 +7,8 @@ return {
     pod = {
         -- Name of pod. Will be pod_name.
         name = "Pod name",
+        -- Individual path for files of this pod. Default is defined in configuration file.
+        path = "/pod/path",
         -- Default registry for containers.
         registry = "registry.io",
         -- Ports to publish.
@@ -22,7 +24,7 @@ return {
     },
     containers = {
         { -- 1
-            -- Absolute name of the container
+            -- Absolute name of the container.
             name = "simple",
             -- Detached mode.
             detach = true,
@@ -32,21 +34,26 @@ return {
             image = "simple:latest",
         },
         { -- 2
-            -- Missing name will use pod name
-            -- Will be pod_name-2
+            -- Missing name will use pod name.
+            -- Will be "pod_name-2".
             detach = true,
             restart = "always",
             -- Separate registry for this container.
             registry = "another-registry.io",
             image = "simple2:latest",
             volumes = {
-                { "file.conf", "/path/file.conf", "ro,Z" },
-                { "folder",    "/path/folder",    "Z" },
+                -- Will be "/pod/path/file.conf:/path/file.conf:ro,Z".
+                { "file.conf",      "/path/file.conf", "ro,Z" },
+                -- Will be "/pod/path/folder:/path/folder:Z".
+                { "folder",         "/path/folder",    "Z" },
+                -- Will be "/absolute/path:/absolute/path".
+                -- Ignores invidual and default pod path.
+                { "/absolute/path", "/absolute/path",  "" },
             },
         },
-        {
-            -- Relative name for container
-            -- Will be pod_name-db
+        { -- 3
+            -- Relative name for container.
+            -- Will be "pod_name-db".
             name = "*db",
             detach = true,
             restart = "on-failure",

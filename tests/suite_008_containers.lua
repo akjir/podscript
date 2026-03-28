@@ -107,11 +107,19 @@ return {
             },
         },
         T0080C = {
-            description = "Test for correct parsing of volumes according to podman specs.",
+            description = "Test for correct parsing of volumes.",
             action = "create",
             targets = { "recipe_012_container_volumes" },
             expectations = {
                 { 8, "podman run --name volumes-1 --pod volumes --volume /container/dir/anonymous --volume /my_pod_path/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute --volume /my_pod_path/relative/path:/container/dir/relative:z --volume /my_pod_path/relative/path2:/container/dir/relative2 --volume /my_pod_path/relative/path3:/container/dir/relative3 registry.io/name:latest;" },
+            },
+        },
+        T0080D = {
+            description = "Test for correct parsing of volume with no indivudual pod path.",
+            action = "create",
+            targets = { "recipe_013_container_volumes_with_no_path" },
+            expectations = {
+                { 9, "podman run --name volumes-1 --pod volumes --volume /pods/volumes/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute registry.io/name:latest;" },
             },
         },
     },
