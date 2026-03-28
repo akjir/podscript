@@ -18,7 +18,11 @@ PodScript is a lightweight Lua script for managing Podman pods and containers. I
 
 ## 3. Codebase Architecture
 
-The entire application logic is located in the `pods.lua` file. This file is organized into distinct sections, each responsible for a specific aspect of the application.
+The core application logic is located in the `pods.lua` file. This file is organized into distinct sections, each responsible for a specific aspect of the application.
+
+*   `pods.lua`: Contains all core execution logic.
+*   `test_suite.lua`: The main entry point for the test runner.
+*   `config.lua` & `recipe.lua`: These files in the root directory serve as canonical configuration templates and structural blueprints for users.
 
 ### 3.1. Section Structure in `pods.lua`
 
@@ -50,6 +54,10 @@ Each section has a specific purpose and a strict function naming convention.
 | **Config**  | Manages the main `config.lua` file.           | `config__`      |                                              |
 | **Main**    | Contains the main application entry point.    | `main__`        | The main function is named `main`.           |
 
+### 3.3. Recipe Schema Reference
+
+For the definitive declarative schema used to configure pods and containers, always refer to the "Recipes" section of the `README.md` and the template in `recipe.lua`. This dictates the shape of tables evaluating properties like `registry`, `publish`, `image`, `volumes`, and `options`.
+
 ## 4. Coding Style and Formatting
 
 *   **Indentation:** Use 4 spaces for indentation, not tabs.
@@ -71,8 +79,30 @@ Each section has a specific purpose and a strict function naming convention.
 
 This section lists practices that are strictly forbidden.
 
-*   **Do not create new source files**: All core logic must be within `pods.lua` and all test logic must be within `test_suite.lua`. The only exception is for new test files.
+*   **Do not create new source files for core logic**: All core logic must be within `pods.lua`. Test execution must originate from `test_suite.lua`, with new test cases added to the `tests/` directory. `config.lua` and `recipe.lua` should only be altered if the user-facing schema fundamentally changes.
+*   **Standardized Error Handling**: When encountering failures (e.g., missing config, failed execution), print appropriate error messages (often mapped to an `ERROR:` prefix) and exit gracefully. Do not throw raw Lua errors unless dealing with terminal, unrecoverable states outside of standard validation.
 *   **Do not add external dependencies**: The project must remain dependency-free.
 *   **Do not use single-letter or numbered variable names**: Use descriptive names (e.g., `index` instead of `i`, `user_table` instead of `t2`). An exception is made for compact variable names when they are programmatically or mathematically idiomatic, such as using `x` and `y` for coordinates.
 *   **Avoid global variables**: Use local variables whenever possible. Global variables are strongly discouraged and should only be used if absolutely necessary.
 *   **Initialize variables with default values**: Avoid initializing variables with `nil`. Instead, use a sensible default value based on the expected type (e.g., `""` for a string, `0` for a number, `{}` for a table).
+
+## 7. Testing Framework & Verification Workflow
+
+*   **Mandatory Verification**: ALWAYS run `lua test_suite.lua` to verify your changes before declaring any task complete or requesting user review.
+*   **Custom Testing Paradigm**: The testing framework captures all output from `pods.lua` by redefining `print_internal` and pushing it to an `output_stack`. 
+*   **Test Suites**: Test suites are located in the `tests/` directory. When adding a new test, mimic the structure of existing suite files. 
+
+An example test verifies functionality by strictly matching entries in the `output_stack` using an `expectations` table:
+
+```lua
+T00101 = {
+    description = "Complete empty config throws error.",
+    config = "config_001_empty",
+    action = "create",
+    targets = { "target" },
+    simulate = false,
+    expectations = {
+        { 1, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
+    },
+}
+```
