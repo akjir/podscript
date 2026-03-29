@@ -19,6 +19,11 @@ This is a personal hobby project created for the primary purposes of learning Lu
 *   Flexible configuration through a configuration file.
 *   Simulate mode to preview commands before execution.
 
+## Specifications
+
+*   **Operating System:** Linux (Only Linux is supported).
+*   **Lua Version:** Lua 5.4 or higher.
+
 ## Usage
 
 ```bash

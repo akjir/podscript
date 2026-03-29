@@ -193,6 +193,7 @@ add_suite("suite_005_targets")
 add_suite("suite_006_recipes")
 add_suite("suite_007_pods")
 add_suite("suite_008_containers")
+add_suite("suite_009_system")
 
 -- ------------------------------------------------------------------------- --
 --      Main

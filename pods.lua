@@ -267,6 +267,20 @@ system = {
         return false
     end,
 
+    ---Check if the current operating system is Linux.
+    ---@return boolean
+    check_os = function()
+        local handle = io.popen("uname -s")
+        if handle == nil then return false end
+        local result = handle:read("*a")
+        handle:close()
+
+        -- we need to trim the result, because uname -s returns a newline
+        result = string.trim(result)
+
+        return result == "Linux"
+    end,
+
     ---Execute a command.
     ---Only executes a command, if simulate is set to false.
     ---@param command string
@@ -888,6 +902,12 @@ function main(arguments)
     -- check lua version
     if not system.check_lua_version() then
         log.error("Lua 5.4 or higher is required.")
+        return
+    end
+
+    -- check os
+    if not system.check_os() then
+        log.error("Only Linux is supported.")
         return
     end
 

@@ -41,6 +41,20 @@ system = {
         return false
     end,
 
+    ---Check if the current operating system is Linux.
+    ---@return boolean
+    check_os = function()
+        local handle = io.popen("uname -s")
+        if handle == nil then return false end
+        local result = handle:read("*a")
+        handle:close()
+
+        -- we need to trim the result, because uname -s returns a newline
+        result = string.trim(result)
+
+        return result == "Linux"
+    end,
+
     ---Execute a command.
     ---Only executes a command, if simulate is set to false.
     ---@param command string

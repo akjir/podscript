@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added Lua version 5.4+ check on startup to ensure compatibility.
+- Added a system check for Linux OS, as only Linux is supported.
 
 ## [1.2.0] - 2026-03-28
 

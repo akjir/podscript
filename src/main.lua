@@ -132,6 +132,12 @@ function main(arguments)
         return
     end
 
+    -- check os
+    if not system.check_os() then
+        log.error("Only Linux is supported.")
+        return
+    end
+
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
 
