@@ -40,12 +40,13 @@ require "src.system"
 ---Parse arguments and retuns true if error.
 ---@param arguments table
 ---@param options table
+---@param modes table
 ---@return boolean
-local function main__parse_arguments(arguments, options)
+local function main__parse_arguments(arguments, options, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        options.help = true
+        options.mode = modes["help"]
         return false
     end
     -- parse arguments
@@ -58,8 +59,8 @@ local function main__parse_arguments(arguments, options)
             -- reset skip if used
             if skip then skip = false end
 
-            if argument == "--help" then
-                options.help = true
+            if argument == "help" then
+                options.mode = modes["help"]
                 break -- print help and ignore the rest
             elseif argument == "--simulate" then
                 options.simulate = true
@@ -117,11 +118,15 @@ end
 ---@param arguments string[]
 ---@build global:
 function main(arguments)
+    local modes = {
+        help = help__handle,
+    }
+
     -- default options
     local options = {
+        mode = nil,        -- mode to use
         action = "",       -- action for targets
         config = "config", -- config name to use
-        help = false,      -- print help
         simulate = false,  -- simulate all commands
         targets = {},      -- target recipe names
     }
@@ -145,11 +150,11 @@ function main(arguments)
     end
 
     -- parse arguments
-    if main__parse_arguments(arguments, options) then return end
+    if main__parse_arguments(arguments, options, modes) then return end
 
-    -- print help
-    if (options.help) then
-        help__print()
+    -- handle mode
+    if options.mode ~= nil then
+        options.mode(options)
         return
     end
 

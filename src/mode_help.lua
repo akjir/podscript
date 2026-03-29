@@ -31,22 +31,28 @@ require "src.header"
 
 ---Print help.
 function help__print()
-    log.print("PODSCRIPT " .. VERSION)
-    log.print("")
-    log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
-    log.print("")
-    log.print("ACTION:")
+    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  help               display this help and exit\n")
+    log.print("OPTIONS:")
+    log.print("  --config NAME      use config with given name or path")
+    log.print("  --simulate         forces simulate mode\n")
+    log.print("Valid in default and simulate mode only:\n")
+    log.print("ACTIONS:")
     log.print("  create             create a new pod")
     log.print("  recreate           removes and then creates a new pod")
     log.print("  remove             remove a running pod")
-    log.print("  update             update all defined images of the pod")
-    log.print("")
+    log.print("  update             update all defined images of the pod\n")
     log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups defined in a config")
-    log.print("")
-    log.print("OPTIONS:")
-    log.print("  --config NAME      use config with given name or path")
-    log.print("  --help             display this help and exit")
-    log.print("  --simulate         forces simulate mode")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
+---Handle help mode.
+---@param options table
+function help__handle(options)
+    help__print()
 end

@@ -47,7 +47,7 @@ return {
         T00105 = {
             description = "No arguments at all. Print help.",
             expectations = {
-                { 3, "Usage: pods [OPTIONS] ACTION [TARGETS]" },
+                { 2, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
             },
         },
         T00106 = {
@@ -57,7 +57,7 @@ return {
             targets = {},
             help = true,
             expectations = {
-                { 3, "Usage: pods [OPTIONS] ACTION [TARGETS]" },
+                { 2, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
             },
         },
     }

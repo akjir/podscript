@@ -89,7 +89,7 @@ local function execute_normal_test(default_config_name, test_code, test_table, p
         table.insert(arguments, "tests/configs/" .. config_name)
     end
     if test_table.help then
-        table.insert(arguments, "--help")
+        table.insert(arguments, "help")
     end
     if test_table.simulate then
         table.insert(arguments, "--simulate")
