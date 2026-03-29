@@ -18,7 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require("header")
+require "src.header"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --

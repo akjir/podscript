@@ -22,22 +22,30 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT TEST
 -- ------------------------------------------------------------------------- --
 
-require "pods"
-require "tests/test_helpers"
+require "tests.test_helpers"
 
 local output_stack = {}
 local single_test_name = ""
 local tests_count = 0
 local tests_count_failed = 0
+local test_release = true
 
 --- set mode and complete print
 if #arg ~= 0 then
     for i = 1, #arg do
         local argument = arg[i]
-        if single_test_name == "" then
+        if argument == "--dev" then
+            test_release = false
+        elseif single_test_name == "" then
             single_test_name = argument
         end
     end
+end
+
+if test_release then
+    require "pods"
+else
+    require "src.main"
 end
 
 ---Print function
@@ -191,7 +199,11 @@ add_suite("suite_008_containers")
 -- ------------------------------------------------------------------------- --
 
 local found = false -- define here to prevent "Test failed." if no test was found
-print()
+if not test_release then
+    print("Running tests in development mode.")
+else
+    print("Running tests in release mode.")
+end
 if single_test_name == "" then
     found = true
     for _, test_suite in pairs(test_suites) do

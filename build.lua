@@ -114,5 +114,29 @@ local files = {
     "main",
 }
 
+-- Sensible check: ensure all files in src/ are in the build list
+local src_files = io.popen("ls src/*.lua"):read("*a")
+local missing = {}
+for file in src_files:gmatch("src/([%w_]+)%.lua") do
+    local found = false
+    for _, build_file in ipairs(files) do
+        if build_file == file then
+            found = true
+            break
+        end
+    end
+    if not found then
+        table.insert(missing, file)
+    end
+end
+
+if #missing > 0 then
+    print("\nWarning: The following files in src/ are not included in the build process:")
+    for _, file in ipairs(missing) do
+        print(" - " .. file)
+    end
+    print("Please add them to the 'files' table in build.lua in the correct order.\n")
+end
+
 build("pods.lua", files)
 print("Build complete.")

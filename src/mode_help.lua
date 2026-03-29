@@ -18,8 +18,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require("header")
-require("helper_print")
+require "src.header"
+require "src.helper_print"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --

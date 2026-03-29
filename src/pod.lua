@@ -18,11 +18,11 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require("helper_print")
-require("helper_string")
-require("helper_table")
-require("helper")
-require("container")
+require "src.helper_print"
+require "src.helper_string"
+require "src.helper_table"
+require "src.helper"
+require "src.container"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
