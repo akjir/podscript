@@ -58,12 +58,13 @@ system = {
     ---Check if the current Podman version is 5.8.0 or higher.
     ---@return boolean
     check_podman_version = function()
-        local handle = io.popen("podman version 2>&1")
+        local handle = io.popen("podman --version 2>&1")
         if handle == nil then return false end
         local result = handle:read("*a")
         handle:close()
 
-        local version = result:match("Version:%s*(%d+%.%d+%.%d+)")
+        -- podman --version returns something like "podman version 5.8.1"
+        local version = result:match("version%s*(%d+%.%d+%.%d+)")
         if not version then return false end
 
         local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
