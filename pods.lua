@@ -237,34 +237,6 @@ local function build_full_path(path, file_name, file_extension)
     end
 end
 
----Execute a command.
----Only executes a command, if simulate is set to false.
----@param command string
----@param prefix string
----@param simulate boolean
-local function exec(command, prefix, simulate)
-    if not string.ends_with(command, ";") then
-        command = command .. ";"
-    end
-    if simulate then
-        if not string.is_nil_or_empty(prefix) then
-            log.print(prefix)
-        end
-        log.print(command)
-    else
-        -- need better error handling, popen prints directly
-        local handle = io.popen(command)
-        if handle == nil then return end
-        local output = handle:read("*l")
-        if output ~= nil then
-            log.print(prefix .. output)
-        else
-            log.print(prefix .. "...")
-        end
-        handle:close()
-    end
-end
-
 ---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
@@ -273,18 +245,69 @@ local function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
----Load a lua file.
----@param full_path string
----@return table|nil
----@return string|nil
-local function load_lua_file(full_path)
-    local ok, result = pcall(dofile, full_path)
-    if not ok then
-        log.error(result)
-        return nil, result
+-- ------------------------------------------------------------------------- --
+--
+--
+--         SECTION System
+--
+--
+-- ------------------------------------------------------------------------- --
+
+system = {
+    ---Check if the current Lua version is 5.4 or higher.
+    ---@return boolean
+    check_lua_version = function()
+        local major, minor = _VERSION:match("Lua (%d+)%.(%d+)")
+        major = tonumber(major)
+        minor = tonumber(minor)
+
+        if major > 5 or (major == 5 and minor >= 4) then
+            return true
+        end
+        return false
+    end,
+
+    ---Execute a command.
+    ---Only executes a command, if simulate is set to false.
+    ---@param command string
+    ---@param prefix string
+    ---@param simulate boolean
+    exec = function(command, prefix, simulate)
+        if not string.ends_with(command, ";") then
+            command = command .. ";"
+        end
+        if simulate then
+            if not string.is_nil_or_empty(prefix) then
+                log.print(prefix)
+            end
+            log.print(command)
+        else
+            -- need better error handling, popen prints directly
+            local handle = io.popen(command)
+            if handle == nil then return end
+            local output = handle:read("*l")
+            if output ~= nil then
+                log.print(prefix .. output)
+            else
+                log.print(prefix .. "...")
+            end
+            handle:close()
+        end
+    end,
+
+    ---Load a lua file.
+    ---@param full_path string
+    ---@return table|nil
+    ---@return string|nil
+    load_lua_file = function(full_path)
+        local ok, result = pcall(dofile, full_path)
+        if not ok then
+            log.error(result)
+            return nil, result
+        end
+        return result, nil
     end
-    return result, nil
-end
+}
 
 -- ------------------------------------------------------------------------- --
 --
@@ -295,7 +318,7 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Print help.
-local function print_help()
+local function help__print()
     log.print("PODSCRIPT " .. VERSION)
     log.print("")
     log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")
@@ -399,7 +422,7 @@ local function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
+    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
 end
 
 ---Ensure container name.
@@ -445,8 +468,8 @@ end
 ---@param container table
 ---@param simulate boolean
 local function container__remove(container, simulate)
-    exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
-    exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
+    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
+    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
 end
 
 ---Update a container image.
@@ -456,7 +479,7 @@ end
 local function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
+    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -507,7 +530,8 @@ local function pod__create(recipe, simulate)
     end
 
     -- create pod
-    exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ", simulate)
+    system.exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate)
 
     -- create containers
     local containers = recipe.containers
@@ -531,7 +555,7 @@ local function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+    system.exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
         simulate)
 end
 
@@ -572,7 +596,7 @@ end
 ---@return table|nil
 local function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, _ = load_lua_file(full_path)
+    local recipe, _ = system.load_lua_file(full_path)
     if recipe == nil then
         log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
@@ -675,7 +699,7 @@ end
 ---@param config_full_path string
 ---@return table|nil
 local function config__load_and_set_defaults(config_full_path)
-    local config, _ = load_lua_file(config_full_path)
+    local config, _ = system.load_lua_file(config_full_path)
     if config == nil then
         log.error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil
@@ -861,12 +885,18 @@ function main(arguments)
         targets = {},      -- target recipe names
     }
 
+    -- check lua version
+    if not system.check_lua_version() then
+        log.error("Lua 5.4 or higher is required.")
+        return
+    end
+
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
 
     -- print help
     if (options.help) then
-        print_help()
+        help__print()
         return
     end
 

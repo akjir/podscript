@@ -14,7 +14,7 @@ PodScript is a lightweight Lua script for managing Podman pods and containers. I
 
 ## 2. Technical Specifications
 
-*   **Language:** Lua 5.4
+*   **Language:** Lua 5.4 or higher (a built-in version check is performed on startup).
 *   **Dependencies:** None. Do not add any external dependencies.
 
 ## 3. Codebase Architecture
@@ -25,7 +25,9 @@ The development takes place in the `src/` directory. These files are bundled int
 
 *   `src/`: Contains the modular source code.
     *   `header.lua`: License header and global variables.
-    *   `helper_*.lua`: Specialized utility functions (Print, String, Table).
+    *   `helper_*.lua`: Specialized utility functions (String, Table).
+    *   `log.lua`: Central logging system.
+    *   `system.lua`: System-wide checks and command execution.
     *   `helper.lua`: General helper functions.
     *   `container.lua`: Container management logic.
     *   `pod.lua`: Pod management logic.
@@ -40,19 +42,21 @@ The development takes place in the `src/` directory. These files are bundled int
 
 ### 3.2. Section Descriptions and Naming Conventions
 
-Each module in `src/` corresponds to a section with specific function naming conventions.
+Each module in `src/` corresponds to a section with specific function naming conventions and access patterns.
 
-| Section     | Purpose                                       | Function Prefix | File in `src/` |
-|-------------|-----------------------------------------------|-----------------|----------------|
-| **Print**   | Handles all output to the command line.       | `print_`        | `helper_print.lua` |
-| **String**  | Provides utility functions for strings.       | `string__`      | `helper_string.lua` |
-| **Table**   | Provides utility functions for Lua tables.    | `table__`       | `helper_table.lua` |
-| **Helper**  | Contains general helper functions.            | (none)          | `helper.lua` |
-| **Container**| Manages Podman container lifecycle commands.  | `container__`   | `container.lua` |
-| **Pod**     | Manages Podman pod lifecycle commands.        | `pod__`         | `pod.lua` |
-| **Recipe**  | Handles loading and processing of recipe files.| `recipe__`      | `recipe.lua` |
-| **Config**  | Manages the main `config.lua` file.           | `config__`      | `config.lua` |
-| **Main**    | Contains the main application entry point.    | `main__`        | `main.lua` |
+| Section      | Purpose                                       | Naming / Access                    | File in `src/` |
+|--------------|-----------------------------------------------|------------------------------------|----------------|
+| **Log**      | Central logging system with levels.           | Global `log` object (e.g., `log.info`) | `log.lua`      |
+| **String**   | Utility functions for string manipulation.    | Extends `string` library (e.g., `string.trim`) | `helper_string.lua` |
+| **Table**    | Utility functions for Lua tables.             | Extends `table` library (e.g., `table.size`) | `helper_table.lua` |
+| **System**   | System-wide operations and version checks.    | Global `system` object (e.g., `system.exec`) | `system.lua`   |
+| **Helper**   | General-purpose utility functions.            | Global functions (no prefix)       | `helper.lua`   |
+| **Help**     | Help text and usage documentation.            | Prefix `help__`                    | `mode_help.lua`|
+| **Container** | Manages Podman container lifecycle.           | Prefix `container__`               | `container.lua` |
+| **Pod**      | Manages Podman pod lifecycle.                 | Prefix `pod__`                     | `pod.lua`      |
+| **Recipe**   | Core logic for recipe processing.             | Prefix `recipe__`                  | `recipe.lua`   |
+| **Config**   | Configuration management logic.               | Prefix `config__`                  | `config.lua`   |
+| **Main**     | Application entry and command parsing.        | Prefix `main__`                    | `main.lua`     |
 
 ## 4. Build System (`build.lua`)
 
@@ -76,7 +80,7 @@ The `build.lua` script concatenates files from `src/` into `pods.lua`. It uses s
 *   **Function Order**: Order functions alphabetically within their section/file where possible.
 *   **Style Consistency:** Adhere strictly to the coding style in `src/`.
 *   **Comments:** Use English for all comments and variable names.
-*   **Naming Conventions:** Follow the prefix conventions in Section 3.2.
+*   **Naming Conventions:** Follow the prefix or object conventions in Section 3.2.
 
 ## 6. Project Constraints (Anti-Patterns)
 

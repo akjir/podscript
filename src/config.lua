@@ -34,7 +34,7 @@ require "src.helper"
 ---@param config_full_path string
 ---@return table|nil
 function config__load_and_set_defaults(config_full_path)
-    local config, _ = load_lua_file(config_full_path)
+    local config, _ = system.load_lua_file(config_full_path)
     if config == nil then
         log.error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil

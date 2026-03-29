@@ -104,7 +104,7 @@ function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
+    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
 end
 
 ---Ensure container name.
@@ -150,8 +150,8 @@ end
 ---@param container table
 ---@param simulate boolean
 function container__remove(container, simulate)
-    exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
-    exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
+    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
+    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
 end
 
 ---Update a container image.
@@ -161,5 +161,5 @@ end
 function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
+    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end

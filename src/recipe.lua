@@ -37,7 +37,7 @@ require "src.pod"
 ---@return table|nil
 function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, _ = load_lua_file(full_path)
+    local recipe, _ = system.load_lua_file(full_path)
     if recipe == nil then
         log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil

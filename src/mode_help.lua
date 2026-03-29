@@ -30,7 +30,7 @@ require "src.header"
 -- ------------------------------------------------------------------------- --
 
 ---Print help.
-function print_help()
+function help__print()
     log.print("PODSCRIPT " .. VERSION)
     log.print("")
     log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")

@@ -26,6 +26,7 @@ require "src.helper"
 require "src.config"
 require "src.recipe"
 require "src.mode_help"
+require "src.system"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -125,12 +126,18 @@ function main(arguments)
         targets = {},      -- target recipe names
     }
 
+    -- check lua version
+    if not system.check_lua_version() then
+        log.error("Lua 5.4 or higher is required.")
+        return
+    end
+
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
 
     -- print help
     if (options.help) then
-        print_help()
+        help__print()
         return
     end
 

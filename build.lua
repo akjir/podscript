@@ -106,6 +106,7 @@ local files = {
     "helper_string",
     "helper_table",
     "helper",
+    "system",
     "mode_help",
     "container",
     "pod",
