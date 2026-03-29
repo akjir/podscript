@@ -1,4 +1,3 @@
----@diagnostic disable: lowercase-global
 --[[
 
 PodScript
@@ -17,6 +16,7 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
+---@diagnostic disable: lowercase-global
 
 -- ------------------------------------------------------------------------- --
 --
@@ -28,6 +28,12 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 local VERSION <const> = "1.3.0"
 
+-- debug flag
+debug = false
+
+-- global hook to handle output
+print_internal = nil
+
 -- ------------------------------------------------------------------------- --
 --
 --
@@ -35,34 +41,6 @@ local VERSION <const> = "1.3.0"
 --
 --
 -- ------------------------------------------------------------------------- --
-
--- global hook to handle output
-print_internal = nil
-
--- debug flag
-debug = false
-
----Print help.
-local function print_help()
-    print_internal("PODSCRIPT " .. VERSION)
-    print_internal("")
-    print_internal("Usage: pods [OPTIONS] ACTION [TARGETS]")
-    print_internal("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
-    print_internal("")
-    print_internal("ACTION:")
-    print_internal("  create             create a new pod")
-    print_internal("  recreate           removes and then creates a new pod")
-    print_internal("  remove             remove a running pod")
-    print_internal("  update             update all defined images of the pod")
-    print_internal("")
-    print_internal("TARGETS:")
-    print_internal("  *                  names of recipes or groups defined in a config")
-    print_internal("")
-    print_internal("OPTIONS:")
-    print_internal("  --config NAME      use config with given name or path")
-    print_internal("  --help             display this help and exit")
-    print_internal("  --simulate         forces simulate mode")
-end
 
 ---Print debug.
 ---@param message string
@@ -127,7 +105,7 @@ local function string__trim(str)
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
--- add table helper functions to global table object
+-- add string helper functions to global string object
 string.begins_with = string__begins_with
 string.ends_with = string__ends_with
 string.is_nil_or_empty = string__is_nil_or_empty
@@ -233,10 +211,10 @@ end
 -- add table helper functions to global table object
 table.append = table__append
 table.contains = table__contains
-table.remove_duplicates = table__remove_duplicates
 table.get_or_default = table__get_or_default
 table.is_nil_or_empty = table__is_nil_or_empty
 table.merge = table__merge
+table.remove_duplicates = table__remove_duplicates
 table.size = table__size
 
 -- ------------------------------------------------------------------------- --
@@ -318,6 +296,36 @@ local function load_lua_file(full_path)
         return nil, result
     end
     return result, nil
+end
+
+-- ------------------------------------------------------------------------- --
+--
+--
+--         SECTION Help
+--
+--
+-- ------------------------------------------------------------------------- --
+
+---Print help.
+local function print_help()
+    print_internal("PODSCRIPT " .. VERSION)
+    print_internal("")
+    print_internal("Usage: pods [OPTIONS] ACTION [TARGETS]")
+    print_internal("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
+    print_internal("")
+    print_internal("ACTION:")
+    print_internal("  create             create a new pod")
+    print_internal("  recreate           removes and then creates a new pod")
+    print_internal("  remove             remove a running pod")
+    print_internal("  update             update all defined images of the pod")
+    print_internal("")
+    print_internal("TARGETS:")
+    print_internal("  *                  names of recipes or groups defined in a config")
+    print_internal("")
+    print_internal("OPTIONS:")
+    print_internal("  --config NAME      use config with given name or path")
+    print_internal("  --help             display this help and exit")
+    print_internal("  --simulate         forces simulate mode")
 end
 
 -- ------------------------------------------------------------------------- --
@@ -458,7 +466,7 @@ end
 ---@param pod table
 ---@param simulate boolean
 local function container__update(container, pod, simulate)
-    local registry = table__get_or_default(container, "registry", pod.registry)
+    local registry = table.get_or_default(container, "registry", pod.registry)
     print_internal("Update container '" .. container.name .. "' ...")
     exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end
@@ -921,3 +929,4 @@ if arg[0] ~= "test.lua" then
     -- execute main
     main(arg)
 end
+
