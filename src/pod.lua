@@ -18,7 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_print"
 require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
@@ -113,7 +112,7 @@ end
 ---@param recipe table
 ---@param simulate boolean
 function pod__update(recipe, simulate)
-    print_internal("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
+    log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 
     -- update containers

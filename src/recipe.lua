@@ -18,7 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_print"
 require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
@@ -42,7 +41,7 @@ function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, _ = load_lua_file(full_path)
     if recipe == nil then
-        print_error("Couldn't load recipe '" .. full_path .. "'!")
+        log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
         return recipe
@@ -56,7 +55,7 @@ end
 function recipe__validate_and_handle(recipe, target, action, config)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
-        print_error("No recipe name in recipe '" .. target .. "' set!")
+        log.error("No recipe name in recipe '" .. target .. "' set!")
         return
     else
         recipe.name = string.trim(recipe.name)
@@ -64,7 +63,7 @@ function recipe__validate_and_handle(recipe, target, action, config)
 
     -- test for pod section
     if table.is_nil_or_empty(recipe.pod) then
-        print_error("Pod section in recipe '" .. target .. "' not defined! or empty")
+        log.error("Pod section in recipe '" .. target .. "' not defined! or empty")
         return
     end
 
@@ -78,7 +77,7 @@ function recipe__validate_and_handle(recipe, target, action, config)
 
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
-        print_error("No default registry in recipe '" .. target .. "' set or empty!")
+        log.error("No default registry in recipe '" .. target .. "' set or empty!")
         return
     end
 
@@ -86,19 +85,19 @@ function recipe__validate_and_handle(recipe, target, action, config)
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
         if string.is_nil_or_empty(config.pods.path) then
-            print_error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
+            log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
             local path = build_full_path(config.pods.path, recipe.pod.name, "")
-            print_info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
+            log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
     end
 
     -- test for container section
     if table.is_nil_or_empty(recipe.containers) then
-        print_error("Container section in recipe '" .. target .. "' not defined or empty!")
+        log.error("Container section in recipe '" .. target .. "' not defined or empty!")
         return
     end
 

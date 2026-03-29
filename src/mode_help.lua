@@ -19,7 +19,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@diagnostic disable: lowercase-global
 
 require "src.header"
-require "src.helper_print"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -32,22 +31,22 @@ require "src.helper_print"
 
 ---Print help.
 function print_help()
-    print_internal("PODSCRIPT " .. VERSION)
-    print_internal("")
-    print_internal("Usage: pods [OPTIONS] ACTION [TARGETS]")
-    print_internal("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
-    print_internal("")
-    print_internal("ACTION:")
-    print_internal("  create             create a new pod")
-    print_internal("  recreate           removes and then creates a new pod")
-    print_internal("  remove             remove a running pod")
-    print_internal("  update             update all defined images of the pod")
-    print_internal("")
-    print_internal("TARGETS:")
-    print_internal("  *                  names of recipes or groups defined in a config")
-    print_internal("")
-    print_internal("OPTIONS:")
-    print_internal("  --config NAME      use config with given name or path")
-    print_internal("  --help             display this help and exit")
-    print_internal("  --simulate         forces simulate mode")
+    log.print("PODSCRIPT " .. VERSION)
+    log.print("")
+    log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
+    log.print("")
+    log.print("ACTION:")
+    log.print("  create             create a new pod")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  update             update all defined images of the pod")
+    log.print("")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config")
+    log.print("")
+    log.print("OPTIONS:")
+    log.print("  --config NAME      use config with given name or path")
+    log.print("  --help             display this help and exit")
+    log.print("  --simulate         forces simulate mode")
 end

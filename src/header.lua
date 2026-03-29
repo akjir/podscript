@@ -32,6 +32,3 @@ VERSION = "1.3.0"
 
 -- debug flag
 debug = false
-
--- global hook to handle output
-print_internal = nil

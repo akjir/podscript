@@ -18,7 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_print"
 require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
@@ -39,16 +38,16 @@ require "src.helper"
 function config__load_and_set_defaults(config_full_path)
     local config, _ = load_lua_file(config_full_path)
     if config == nil then
-        print_error("Couldn't load configuration '" .. config_full_path .. "'!")
+        log.error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil
     end
 
     if config.recipes == nil then
-        print_error("No recipes defined in config '" .. config_full_path .. "'!")
+        log.error("No recipes defined in config '" .. config_full_path .. "'!")
         return nil
     else
         if table.is_nil_or_empty(config.recipes.groups) then
-            print_error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
             return nil
         end
 
@@ -84,7 +83,7 @@ end
 ---@return table|nil
 function config__untangle_recipes(groups, targets)
     if debug then
-        print_debug("Targets   - " .. table.concat(targets, " "))
+        log.debug("Targets   - " .. table.concat(targets, " "))
     end
 
     local untangled = {}
@@ -96,7 +95,7 @@ function config__untangle_recipes(groups, targets)
             local group_recipes = groups[target:sub(2)] -- remove @ from target
 
             if group_recipes == nil then
-                print_error("Unknown recipe group '" .. target .. "'.")
+                log.error("Unknown recipe group '" .. target .. "'.")
                 return nil
             end
 
@@ -112,7 +111,7 @@ function config__untangle_recipes(groups, targets)
             end
 
             if found == nil then
-                print_error("Target '" .. target .. "' not found in config.")
+                log.error("Target '" .. target .. "' not found in config.")
                 return nil
             else
                 table.insert(untangled, found)
@@ -122,7 +121,7 @@ function config__untangle_recipes(groups, targets)
 
     untangled = table.remove_duplicates(untangled)
     if debug then
-        print_debug("Untangled - " .. table.concat(untangled, " "))
+        log.debug("Untangled - " .. table.concat(untangled, " "))
     end
     return untangled
 end

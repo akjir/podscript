@@ -19,7 +19,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@diagnostic disable: lowercase-global
 
 require "src.header"
-require "src.helper_print"
+require "src.log"
 require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
@@ -67,7 +67,8 @@ local function main__parse_arguments(arguments, options)
                 options.config = table.get_or_default(arguments, i + 1, "")
             else
                 if string.begins_with(argument, "--") then
-                    print_error("Unknown option '" .. argument .. "'.")
+                    log.error("Unknown option '" .. argument .. "'.")
+
                     return true
                 elseif options.action == "" then
                     -- first argument is action
@@ -88,19 +89,19 @@ end
 local function main__validate_and_normalize_options(options)
     -- validate action
     if string.is_nil_or_empty(options.action) then
-        print_error("No action set.")
+        log.error("No action set.")
         return false
     else
         options.action = normalize_name(options.action)
     end
     if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
-        print_error("Unknown action '" .. options.action .. "'.")
+        log.error("Unknown action '" .. options.action .. "'.")
         return false
     end
 
     -- validate targets
     if table.is_nil_or_empty(options.targets) then
-        print_error("No targets set.")
+        log.error("No targets set.")
         return false
     end
 
@@ -149,12 +150,12 @@ function main(arguments)
 
     -- print info if simulate mode is active
     if config.simulate == true then
-        print_info("Simulate mode is active.")
+        log.info("Simulate mode is active.")
     end
 
     -- print info if non default confi is used
     if config_name ~= "config" then
-        print_info("Config '" .. config_full_path .. "' is used.")
+        log.info("Config '" .. config_full_path .. "' is used.")
     end
 
     -- clean up targets
@@ -176,8 +177,6 @@ end
 
 -- prevent excecution when imported from test_suite
 if arg[0] ~= "test.lua" then
-    -- initalize print_internal
-    print_internal = print
     -- execute main
     main(arg)
 end

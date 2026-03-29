@@ -18,7 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_print"
 require "src.helper_string"
 
 ---@build block:
@@ -65,18 +64,18 @@ function exec(command, prefix, simulate)
     end
     if simulate then
         if not string.is_nil_or_empty(prefix) then
-            print_internal(prefix)
+            log.print(prefix)
         end
-        print_internal(command)
+        log.print(command)
     else
         -- need better error handling, popen prints directly
         local handle = io.popen(command)
         if handle == nil then return end
         local output = handle:read("*l")
         if output ~= nil then
-            print_internal(prefix .. output)
+            log.print(prefix .. output)
         else
-            print_internal(prefix .. "...")
+            log.print(prefix .. "...")
         end
         handle:close()
     end
@@ -97,7 +96,7 @@ end
 function load_lua_file(full_path)
     local ok, result = pcall(dofile, full_path)
     if not ok then
-        print_error(result)
+        log.error(result)
         return nil, result
     end
     return result, nil

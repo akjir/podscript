@@ -54,8 +54,8 @@ local function print_to_stack(str)
     output_stack[#output_stack + 1] = str
 end
 
--- global function for printing in pods.lua
-print_internal = print_to_stack
+-- global function for capture output
+log.print = print_to_stack
 
 -- set debug flag in pods.lua
 debug = true

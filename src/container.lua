@@ -18,7 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_print"
 require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
@@ -67,7 +66,7 @@ function container__create(container, pod, simulate)
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
             if string.is_nil_or_empty(container_dir) then
-                print_error("Container dir cannot be empty! (" .. container.name .. ")")
+                log.error("Container dir cannot be empty! (" .. container.name .. ")")
             else
                 local command = ""
                 if string.is_nil_or_empty(host_dir) then
@@ -134,7 +133,7 @@ end
 ---@return boolean
 function container__is_valid(container, pod_name)
     if table.is_nil_or_empty(container) then
-        print_error("A container in pod '" .. pod_name .. "' is empty!")
+        log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
     end
 
@@ -142,7 +141,7 @@ function container__is_valid(container, pod_name)
 
     -- test for container image
     if string.is_nil_or_empty(container.image) then
-        print_error("Image not set for container '" .. container.name .. "'!")
+        log.error("Image not set for container '" .. container.name .. "'!")
         return false
     end
 
@@ -163,6 +162,6 @@ end
 ---@param simulate boolean
 function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
-    print_internal("Update container '" .. container.name .. "' ...")
+    log.print("Update container '" .. container.name .. "' ...")
     exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end

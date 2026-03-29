@@ -31,40 +31,42 @@ local VERSION <const> = "1.3.0"
 -- debug flag
 debug = false
 
--- global hook to handle output
-print_internal = nil
-
 -- ------------------------------------------------------------------------- --
 --
 --
---         SECTION Print
+--         SECTION Log
 --
 --
 -- ------------------------------------------------------------------------- --
 
----Print debug.
----@param message string
-local function print_debug(message)
-    print_internal("DEBUG: " .. message)
-end
+log = {
+    -- Proxy to handle output, defaults to standard print
+    print = print,
 
----Print info.
----@param message string
-local function print_info(message)
-    print_internal("INFO: " .. message)
-end
+    ---Print debug.
+    ---@param message string
+    debug = function(message)
+        log.print("DEBUG: " .. message)
+    end,
 
----Print warning.
----@param message string
-local function print_warning(message)
-    print_internal("WARNING: " .. message)
-end
+    ---Print info.
+    ---@param message string
+    info = function(message)
+        log.print("INFO: " .. message)
+    end,
 
----Print error.
----@param message string
-local function print_error(message)
-    print_internal("ERROR: " .. message)
-end
+    ---Print warning.
+    ---@param message string
+    warning = function(message)
+        log.print("WARNING: " .. message)
+    end,
+
+    ---Print error.
+    ---@param message string
+    error = function(message)
+        log.print("ERROR: " .. message)
+    end,
+}
 
 -- ------------------------------------------------------------------------- --
 --
@@ -260,18 +262,18 @@ local function exec(command, prefix, simulate)
     end
     if simulate then
         if not string.is_nil_or_empty(prefix) then
-            print_internal(prefix)
+            log.print(prefix)
         end
-        print_internal(command)
+        log.print(command)
     else
         -- need better error handling, popen prints directly
         local handle = io.popen(command)
         if handle == nil then return end
         local output = handle:read("*l")
         if output ~= nil then
-            print_internal(prefix .. output)
+            log.print(prefix .. output)
         else
-            print_internal(prefix .. "...")
+            log.print(prefix .. "...")
         end
         handle:close()
     end
@@ -292,7 +294,7 @@ end
 local function load_lua_file(full_path)
     local ok, result = pcall(dofile, full_path)
     if not ok then
-        print_error(result)
+        log.error(result)
         return nil, result
     end
     return result, nil
@@ -308,24 +310,24 @@ end
 
 ---Print help.
 local function print_help()
-    print_internal("PODSCRIPT " .. VERSION)
-    print_internal("")
-    print_internal("Usage: pods [OPTIONS] ACTION [TARGETS]")
-    print_internal("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
-    print_internal("")
-    print_internal("ACTION:")
-    print_internal("  create             create a new pod")
-    print_internal("  recreate           removes and then creates a new pod")
-    print_internal("  remove             remove a running pod")
-    print_internal("  update             update all defined images of the pod")
-    print_internal("")
-    print_internal("TARGETS:")
-    print_internal("  *                  names of recipes or groups defined in a config")
-    print_internal("")
-    print_internal("OPTIONS:")
-    print_internal("  --config NAME      use config with given name or path")
-    print_internal("  --help             display this help and exit")
-    print_internal("  --simulate         forces simulate mode")
+    log.print("PODSCRIPT " .. VERSION)
+    log.print("")
+    log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
+    log.print("")
+    log.print("ACTION:")
+    log.print("  create             create a new pod")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  update             update all defined images of the pod")
+    log.print("")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config")
+    log.print("")
+    log.print("OPTIONS:")
+    log.print("  --config NAME      use config with given name or path")
+    log.print("  --help             display this help and exit")
+    log.print("  --simulate         forces simulate mode")
 end
 
 -- ------------------------------------------------------------------------- --
@@ -371,7 +373,7 @@ local function container__create(container, pod, simulate)
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
             if string.is_nil_or_empty(container_dir) then
-                print_error("Container dir cannot be empty! (" .. container.name .. ")")
+                log.error("Container dir cannot be empty! (" .. container.name .. ")")
             else
                 local command = ""
                 if string.is_nil_or_empty(host_dir) then
@@ -438,7 +440,7 @@ end
 ---@return boolean
 local function container__is_valid(container, pod_name)
     if table.is_nil_or_empty(container) then
-        print_error("A container in pod '" .. pod_name .. "' is empty!")
+        log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
     end
 
@@ -446,7 +448,7 @@ local function container__is_valid(container, pod_name)
 
     -- test for container image
     if string.is_nil_or_empty(container.image) then
-        print_error("Image not set for container '" .. container.name .. "'!")
+        log.error("Image not set for container '" .. container.name .. "'!")
         return false
     end
 
@@ -467,7 +469,7 @@ end
 ---@param simulate boolean
 local function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
-    print_internal("Update container '" .. container.name .. "' ...")
+    log.print("Update container '" .. container.name .. "' ...")
     exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
 end
 
@@ -559,7 +561,7 @@ end
 ---@param recipe table
 ---@param simulate boolean
 local function pod__update(recipe, simulate)
-    print_internal("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
+    log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 
     -- update containers
@@ -586,7 +588,7 @@ local function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, _ = load_lua_file(full_path)
     if recipe == nil then
-        print_error("Couldn't load recipe '" .. full_path .. "'!")
+        log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
         return recipe
@@ -600,7 +602,7 @@ end
 local function recipe__validate_and_handle(recipe, target, action, config)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
-        print_error("No recipe name in recipe '" .. target .. "' set!")
+        log.error("No recipe name in recipe '" .. target .. "' set!")
         return
     else
         recipe.name = string.trim(recipe.name)
@@ -608,7 +610,7 @@ local function recipe__validate_and_handle(recipe, target, action, config)
 
     -- test for pod section
     if table.is_nil_or_empty(recipe.pod) then
-        print_error("Pod section in recipe '" .. target .. "' not defined! or empty")
+        log.error("Pod section in recipe '" .. target .. "' not defined! or empty")
         return
     end
 
@@ -622,7 +624,7 @@ local function recipe__validate_and_handle(recipe, target, action, config)
 
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
-        print_error("No default registry in recipe '" .. target .. "' set or empty!")
+        log.error("No default registry in recipe '" .. target .. "' set or empty!")
         return
     end
 
@@ -630,19 +632,19 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
         if string.is_nil_or_empty(config.pods.path) then
-            print_error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
+            log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
             local path = build_full_path(config.pods.path, recipe.pod.name, "")
-            print_info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
+            log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
     end
 
     -- test for container section
     if table.is_nil_or_empty(recipe.containers) then
-        print_error("Container section in recipe '" .. target .. "' not defined or empty!")
+        log.error("Container section in recipe '" .. target .. "' not defined or empty!")
         return
     end
 
@@ -689,16 +691,16 @@ end
 local function config__load_and_set_defaults(config_full_path)
     local config, _ = load_lua_file(config_full_path)
     if config == nil then
-        print_error("Couldn't load configuration '" .. config_full_path .. "'!")
+        log.error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil
     end
 
     if config.recipes == nil then
-        print_error("No recipes defined in config '" .. config_full_path .. "'!")
+        log.error("No recipes defined in config '" .. config_full_path .. "'!")
         return nil
     else
         if table.is_nil_or_empty(config.recipes.groups) then
-            print_error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
             return nil
         end
 
@@ -734,7 +736,7 @@ end
 ---@return table|nil
 local function config__untangle_recipes(groups, targets)
     if debug then
-        print_debug("Targets   - " .. table.concat(targets, " "))
+        log.debug("Targets   - " .. table.concat(targets, " "))
     end
 
     local untangled = {}
@@ -746,7 +748,7 @@ local function config__untangle_recipes(groups, targets)
             local group_recipes = groups[target:sub(2)] -- remove @ from target
 
             if group_recipes == nil then
-                print_error("Unknown recipe group '" .. target .. "'.")
+                log.error("Unknown recipe group '" .. target .. "'.")
                 return nil
             end
 
@@ -762,7 +764,7 @@ local function config__untangle_recipes(groups, targets)
             end
 
             if found == nil then
-                print_error("Target '" .. target .. "' not found in config.")
+                log.error("Target '" .. target .. "' not found in config.")
                 return nil
             else
                 table.insert(untangled, found)
@@ -772,7 +774,7 @@ local function config__untangle_recipes(groups, targets)
 
     untangled = table.remove_duplicates(untangled)
     if debug then
-        print_debug("Untangled - " .. table.concat(untangled, " "))
+        log.debug("Untangled - " .. table.concat(untangled, " "))
     end
     return untangled
 end
@@ -816,7 +818,8 @@ local function main__parse_arguments(arguments, options)
                 options.config = table.get_or_default(arguments, i + 1, "")
             else
                 if string.begins_with(argument, "--") then
-                    print_error("Unknown option '" .. argument .. "'.")
+                    log.error("Unknown option '" .. argument .. "'.")
+
                     return true
                 elseif options.action == "" then
                     -- first argument is action
@@ -837,19 +840,19 @@ end
 local function main__validate_and_normalize_options(options)
     -- validate action
     if string.is_nil_or_empty(options.action) then
-        print_error("No action set.")
+        log.error("No action set.")
         return false
     else
         options.action = normalize_name(options.action)
     end
     if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
-        print_error("Unknown action '" .. options.action .. "'.")
+        log.error("Unknown action '" .. options.action .. "'.")
         return false
     end
 
     -- validate targets
     if table.is_nil_or_empty(options.targets) then
-        print_error("No targets set.")
+        log.error("No targets set.")
         return false
     end
 
@@ -897,12 +900,12 @@ function main(arguments)
 
     -- print info if simulate mode is active
     if config.simulate == true then
-        print_info("Simulate mode is active.")
+        log.info("Simulate mode is active.")
     end
 
     -- print info if non default confi is used
     if config_name ~= "config" then
-        print_info("Config '" .. config_full_path .. "' is used.")
+        log.info("Config '" .. config_full_path .. "' is used.")
     end
 
     -- clean up targets
@@ -924,8 +927,6 @@ end
 
 -- prevent excecution when imported from test_suite
 if arg[0] ~= "test.lua" then
-    -- initalize print_internal
-    print_internal = print
     -- execute main
     main(arg)
 end

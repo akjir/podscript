@@ -102,7 +102,7 @@ end
 
 local files = {
     "header",
-    "helper_print",
+    "log",
     "helper_string",
     "helper_table",
     "helper",
