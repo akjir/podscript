@@ -357,24 +357,30 @@ system = {
 
 ---Print help.
 local function help__print()
-    log.print("PODSCRIPT " .. VERSION)
-    log.print("")
-    log.print("Usage: pods [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua [OPTIONS] ACTION [TARGETS]")
-    log.print("")
-    log.print("ACTION:")
+    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  help               display this help and exit\n")
+    log.print("OPTIONS:")
+    log.print("  --config NAME      use config with given name or path")
+    log.print("  --simulate         forces simulate mode\n")
+    log.print("Valid in default and simulate mode only:\n")
+    log.print("ACTIONS:")
     log.print("  create             create a new pod")
     log.print("  recreate           removes and then creates a new pod")
     log.print("  remove             remove a running pod")
-    log.print("  update             update all defined images of the pod")
-    log.print("")
+    log.print("  update             update all defined images of the pod\n")
     log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups defined in a config")
-    log.print("")
-    log.print("OPTIONS:")
-    log.print("  --config NAME      use config with given name or path")
-    log.print("  --help             display this help and exit")
-    log.print("  --simulate         forces simulate mode")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
+---Handle help mode.
+---@param options table
+local function help__handle(options)
+    help__print()
 end
 
 -- ------------------------------------------------------------------------- --
@@ -838,12 +844,13 @@ end
 ---Parse arguments and retuns true if error.
 ---@param arguments table
 ---@param options table
+---@param modes table
 ---@return boolean
-local function main__parse_arguments(arguments, options)
+local function main__parse_arguments(arguments, options, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        options.help = true
+        options.mode = modes["help"]
         return false
     end
     -- parse arguments
@@ -856,8 +863,8 @@ local function main__parse_arguments(arguments, options)
             -- reset skip if used
             if skip then skip = false end
 
-            if argument == "--help" then
-                options.help = true
+            if argument == "help" then
+                options.mode = modes["help"]
                 break -- print help and ignore the rest
             elseif argument == "--simulate" then
                 options.simulate = true
@@ -914,11 +921,15 @@ end
 ---Main function.
 ---@param arguments string[]
 function main(arguments)
+    local modes = {
+        help = help__handle,
+    }
+
     -- default options
     local options = {
+        mode = nil,        -- mode to use
         action = "",       -- action for targets
         config = "config", -- config name to use
-        help = false,      -- print help
         simulate = false,  -- simulate all commands
         targets = {},      -- target recipe names
     }
@@ -942,11 +953,11 @@ function main(arguments)
     end
 
     -- parse arguments
-    if main__parse_arguments(arguments, options) then return end
+    if main__parse_arguments(arguments, options, modes) then return end
 
-    -- print help
-    if (options.help) then
-        help__print()
+    -- handle mode
+    if options.mode ~= nil then
+        options.mode(options)
         return
     end
 
