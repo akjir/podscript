@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
+---@diagnostic disable: duplicate-set-field
 ---@diagnostic disable: lowercase-global
 
 -- ------------------------------------------------------------------------- --
@@ -80,7 +81,7 @@ log = {
 ---@param str string
 ---@param prefix string
 ---@return boolean
-local function string__begins_with(str, prefix)
+string.begins_with = function(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -88,30 +89,24 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-local function string__ends_with(str, suffix)
+string.ends_with = function(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean
-local function string__is_nil_or_empty(str)
+string.is_nil_or_empty = function(str)
     return str == nil or str == ""
 end
 
 ---Removes leading and trailing whitespaces.
 ---@param str string
 ---@return string
-local function string__trim(str)
+string.trim = function(str)
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
-
--- add string helper functions to global string object
-string.begins_with = string__begins_with
-string.ends_with = string__ends_with
-string.is_nil_or_empty = string__is_nil_or_empty
-string.trim = string__trim
 
 -- ------------------------------------------------------------------------- --
 --
@@ -125,7 +120,7 @@ string.trim = string__trim
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
 ---@param source table|nil
-local function table__append(target, source)
+table.append = function(target, source)
     if target == nil then return end
     if source == nil then return end
     table.move(source, 1, #source, #target + 1, target)
@@ -136,7 +131,7 @@ end
 ---@param table table|nil
 ---@param value any
 ---@return boolean
-local function table__contains(table, value)
+table.contains = function(table, value)
     if table == nil then return false end
     for i = 1, #table do
         if (table[i] == value) then return true end
@@ -147,7 +142,7 @@ end
 ---Remove duplicates from a table. Returns a new table and don't modify the original.
 ---@param table table
 ---@return table
-local function table__remove_duplicates(table)
+table.remove_duplicates = function(table)
     local seen = {}   -- Keeps track of values we've already encountered
     local result = {} -- The new table with unique values
     local index = 1   -- Manual index tracker is faster than table.insert
@@ -169,7 +164,7 @@ end
 ---@param table table|nil
 ---@param key any
 ---@param default any
-local function table__get_or_default(table, key, default)
+table.get_or_default = function(table, key, default)
     if table == nil then return default end
     local value = table[key]
     if value == nil then
@@ -182,7 +177,7 @@ end
 ---Test if a table is nil or empty.
 ---@param table table|nil
 ---@return boolean
-local function table__is_nil_or_empty(table)
+table.is_nil_or_empty = function(table)
     return table == nil or next(table) == nil
 end
 
@@ -190,7 +185,7 @@ end
 ---If a key from the source table already exists in the target table, its value will be overwritten.
 ---@param target table|nil
 ---@param source table|nil
-local function table__merge(target, source)
+table.merge = function(target, source)
     if target == nil then return source end
     if source == nil then return target end
     for key, value in pairs(source) do
@@ -201,7 +196,7 @@ end
 ---Get table size, including non-numeric keys.
 ---@param table table
 ---@return integer
-local function table__size(table)
+table.size = function(table)
     if table == nil then return 0 end
     local count = 0
     for _, _ in pairs(table) do
@@ -209,15 +204,6 @@ local function table__size(table)
     end
     return count
 end
-
--- add table helper functions to global table object
-table.append = table__append
-table.contains = table__contains
-table.get_or_default = table__get_or_default
-table.is_nil_or_empty = table__is_nil_or_empty
-table.merge = table__merge
-table.remove_duplicates = table__remove_duplicates
-table.size = table__size
 
 -- ------------------------------------------------------------------------- --
 --

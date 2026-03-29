@@ -30,7 +30,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@param str string
 ---@param prefix string
 ---@return boolean
-local function string__begins_with(str, prefix)
+string.begins_with = function(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -38,27 +38,21 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-local function string__ends_with(str, suffix)
+string.ends_with = function(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean
-local function string__is_nil_or_empty(str)
+string.is_nil_or_empty = function(str)
     return str == nil or str == ""
 end
 
 ---Removes leading and trailing whitespaces.
 ---@param str string
 ---@return string
-local function string__trim(str)
+string.trim = function(str)
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
-
--- add string helper functions to global string object
-string.begins_with = string__begins_with
-string.ends_with = string__ends_with
-string.is_nil_or_empty = string__is_nil_or_empty
-string.trim = string__trim

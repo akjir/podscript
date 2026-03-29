@@ -18,8 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_string"
-require "src.helper_table"
 require "src.helper"
 require "src.container"
 require "src.pod"

@@ -18,8 +18,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.helper_string"
-
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
