@@ -23,14 +23,13 @@ require "src.header"
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Help
---
+--    SECTION Mode Help
 --
 -- ------------------------------------------------------------------------- --
 
----Print help.
-function help__print()
+---Handle help mode. Prints help.
+---@param options table
+function help__handle(options)
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
@@ -49,10 +48,4 @@ function help__print()
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups defined in a config\n")
     log.print("For more: lua pods.lua [MODE] help")
-end
-
----Handle help mode.
----@param options table
-function help__handle(options)
-    help__print()
 end

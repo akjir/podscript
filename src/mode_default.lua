@@ -17,39 +17,15 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 ---@diagnostic disable: lowercase-global
-
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
---    SECTION Log
+--    SECTION Mode Default
 --
 -- ------------------------------------------------------------------------- --
 
-log = {
-    -- Proxy to handle output, defaults to standard print
-    print = print,
+---Handle default mode.
+---@param options table
+function default__handle(options)
 
-    ---Print debug.
-    ---@param message string
-    debug = function(message)
-        log.print("DEBUG: " .. message)
-    end,
-
-    ---Print info.
-    ---@param message string
-    info = function(message)
-        log.print("INFO: " .. message)
-    end,
-
-    ---Print warning.
-    ---@param message string
-    warning = function(message)
-        log.print("WARNING: " .. message)
-    end,
-
-    ---Print error.
-    ---@param message string
-    error = function(message)
-        log.print("ERROR: " .. message)
-    end,
-}
+end

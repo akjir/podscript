@@ -34,9 +34,7 @@ debug = false
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Log
---
+--    SECTION Log
 --
 -- ------------------------------------------------------------------------- --
 
@@ -71,9 +69,7 @@ log = {
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION String
---
+--    SECTION String
 --
 -- ------------------------------------------------------------------------- --
 
@@ -110,9 +106,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Table
---
+--    SECTION Table
 --
 -- ------------------------------------------------------------------------- --
 
@@ -207,9 +201,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Helper
---
+--    SECTION Helper
 --
 -- ------------------------------------------------------------------------- --
 
@@ -247,9 +239,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION System
---
+--    SECTION System
 --
 -- ------------------------------------------------------------------------- --
 
@@ -349,45 +339,7 @@ system = {
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Help
---
---
--- ------------------------------------------------------------------------- --
-
----Print help.
-local function help__print()
-    log.print("PODSCRIPT " .. VERSION .. "\n")
-    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
-    log.print("MODES:")
-    log.print("  *                  default mode")
-    log.print("  help               display this help and exit\n")
-    log.print("OPTIONS:")
-    log.print("  --config NAME      use config with given name or path")
-    log.print("  --simulate         forces simulate mode\n")
-    log.print("Valid in default and simulate mode only:\n")
-    log.print("ACTIONS:")
-    log.print("  create             create a new pod")
-    log.print("  recreate           removes and then creates a new pod")
-    log.print("  remove             remove a running pod")
-    log.print("  update             update all defined images of the pod\n")
-    log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups defined in a config\n")
-    log.print("For more: lua pods.lua [MODE] help")
-end
-
----Handle help mode.
----@param options table
-local function help__handle(options)
-    help__print()
-end
-
--- ------------------------------------------------------------------------- --
---
---
---         SECTION Container
---
+--    SECTION Container
 --
 -- ------------------------------------------------------------------------- --
 
@@ -528,9 +480,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Pod
---
+--    SECTION Pod
 --
 -- ------------------------------------------------------------------------- --
 
@@ -628,9 +578,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Recipe
---
+--    SECTION Recipe
 --
 -- ------------------------------------------------------------------------- --
 
@@ -732,9 +680,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Config
---
+--    SECTION Config
 --
 -- ------------------------------------------------------------------------- --
 
@@ -835,9 +781,48 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
+--    SECTION Mode Default
 --
---         SECTION Main
+-- ------------------------------------------------------------------------- --
+
+---Handle default mode.
+---@param options table
+local function default__handle(options)
+
+end
+
+-- ------------------------------------------------------------------------- --
 --
+--    SECTION Mode Help
+--
+-- ------------------------------------------------------------------------- --
+
+---Handle help mode. Prints help.
+---@param options table
+local function help__handle(options)
+    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  help               display this help and exit\n")
+    log.print("OPTIONS:")
+    log.print("  --config NAME      use config with given name or path")
+    log.print("  --simulate         forces simulate mode\n")
+    log.print("Valid in default and simulate mode only:\n")
+    log.print("ACTIONS:")
+    log.print("  create             create a new pod")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  update             update all defined images of the pod\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
+-- ------------------------------------------------------------------------- --
+--
+--    SECTION Main
 --
 -- ------------------------------------------------------------------------- --
 
@@ -927,9 +912,9 @@ function main(arguments)
 
     -- default options
     local options = {
-        mode = nil,        -- mode to use
         action = "",       -- action for targets
         config = "config", -- config name to use
+        mode = nil,        -- mode to use
         simulate = false,  -- simulate all commands
         targets = {},      -- target recipe names
     }

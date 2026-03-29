@@ -107,11 +107,12 @@ local files = {
     "helper_table",
     "helper",
     "system",
-    "mode_help",
     "container",
     "pod",
     "recipe",
     "config",
+    "mode_default",
+    "mode_help",
     "main",
 }
 

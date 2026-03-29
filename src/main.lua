@@ -31,9 +31,7 @@ require "src.system"
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
---
---         SECTION Main
---
+--    SECTION Main
 --
 -- ------------------------------------------------------------------------- --
 
@@ -124,9 +122,9 @@ function main(arguments)
 
     -- default options
     local options = {
-        mode = nil,        -- mode to use
         action = "",       -- action for targets
         config = "config", -- config name to use
+        mode = nil,        -- mode to use
         simulate = false,  -- simulate all commands
         targets = {},      -- target recipe names
     }
