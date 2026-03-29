@@ -134,20 +134,43 @@ This allows you to run PodScript commands simply by typing `pods` from any locat
    pods create recipe
    ```
 
-## Testing
+## Development
 
-To run the entire test suite, execute the following command:
+The PodScript project follows a modular development approach. The source code is organized into separate modules within the `src/` directory for better maintainability and clarity.
+
+To bundle these modular source files into the single-file release version (`pods.lua`), use the provided build script:
 
 ```bash
-lua test.lua
+lua build.lua
 ```
 
-To run a single test by its internal ID, or run a whole suite by its file name, provide the identifier or file name as an argument:
+**IMPORTANT:** Always make code changes within the `src/` directory. The `pods.lua` file is automatically generated and should not be edited directly.
+
+## Testing
+
+### Testing Modes
+
+The test suite can be run in two modes:
+
+*   **Release Mode (Default):** Tests the generated `pods.lua` file.
+    ```bash
+    lua test.lua
+    ```
+*   **Development Mode:** Tests the modular source files in `src/` directly.
+    ```bash
+    lua test.lua --dev
+    ```
+
+### Running Specific Tests
+
+To run a single test or a specific suite:
 
 ```bash
 lua test.lua T00101
 lua test.lua suite_001_argument_options.lua
 ```
+
+These also support the `--dev` flag if you want to test the source files.
 
 ## License
 
