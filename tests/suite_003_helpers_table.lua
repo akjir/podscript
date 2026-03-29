@@ -163,5 +163,26 @@ return {
             end,
             expected = true
         },
+        T00316 = {
+            description = "table.has_key - key exists",
+            run = function()
+                return table.has_key({ key = "value" }, "key")
+            end,
+            expected = true
+        },
+        T00317 = {
+            description = "table.has_key - key does not exist",
+            run = function()
+                return table.has_key({ key = "value" }, "other_key")
+            end,
+            expected = false
+        },
+        T00318 = {
+            description = "table.has_key - table is nil",
+            run = function()
+                return table.has_key(nil, "key")
+            end,
+            expected = false
+        },
     },
 }

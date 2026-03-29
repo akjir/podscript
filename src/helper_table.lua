@@ -83,6 +83,14 @@ table.get_or_default = function(table, key, default)
     end
 end
 
+---Check if a key exists in a table.
+---@param table table|nil
+---@param key any
+---@return boolean
+table.has_key = function(table, key)
+    return table ~= nil and table[key] ~= nil
+end
+
 ---Test if a table is nil or empty.
 ---@param table table|nil
 ---@return boolean

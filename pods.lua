@@ -168,6 +168,14 @@ table.get_or_default = function(table, key, default)
     end
 end
 
+---Check if a key exists in a table.
+---@param table table|nil
+---@param key any
+---@return boolean
+table.has_key = function(table, key)
+    return table ~= nil and table[key] ~= nil
+end
+
 ---Test if a table is nil or empty.
 ---@param table table|nil
 ---@return boolean
@@ -848,20 +856,26 @@ local function main__parse_arguments(arguments, options, modes)
             -- reset skip if used
             if skip then skip = false end
 
-            if argument == "help" then
-                options.mode = modes["help"]
-                break -- print help and ignore the rest
-            elseif argument == "--simulate" then
-                options.simulate = true
-            elseif argument == "--config" then
-                skip = true
-                options.config = table.get_or_default(arguments, i + 1, "")
-            else
-                if string.begins_with(argument, "--") then
+            if string.begins_with(argument, "--") then
+                if argument == "--config" then
+                    skip = true
+                    options.config = table.get_or_default(arguments, i + 1, "")
+                elseif argument == "--simulate" then
+                    options.simulate = true
+                else
                     log.error("Unknown option '" .. argument .. "'.")
-
                     return true
-                elseif options.action == "" then
+                end
+                -- check if argument is a mode
+            elseif table.has_key(modes, argument) then
+                if options.mode ~= nil then
+                    log.error("Mode '" .. argument .. "' is already set.")
+                    return true
+                end
+                options.mode = modes[argument]
+                if argument == "help" then break end
+            else
+                if options.action == "" then
                     -- first argument is action
                     options.action = argument
                 else
@@ -870,6 +884,10 @@ local function main__parse_arguments(arguments, options, modes)
                 end
             end
         end
+    end
+    -- set default mode if not set
+    if options.mode == nil then
+        -- options.mode = modes["default"]
     end
     return false
 end
@@ -907,6 +925,7 @@ end
 ---@param arguments string[]
 function main(arguments)
     local modes = {
+        default = default__handle,
         help = help__handle,
     }
 
@@ -943,7 +962,7 @@ function main(arguments)
     -- handle mode
     if options.mode ~= nil then
         options.mode(options)
-        return
+        return -- mode handles everything, remove this later, now needed for help
     end
 
     -- validate options
