@@ -21,7 +21,7 @@ PodScript is a lightweight Lua script for managing Podman pods and containers. I
 The core application logic is located in the `pods.lua` file. This file is organized into distinct sections, each responsible for a specific aspect of the application.
 
 *   `pods.lua`: Contains all core execution logic.
-*   `test_suite.lua`: The main entry point for the test runner.
+*   `test.lua`: The main entry point for the test runner.
 *   `config.lua` & `recipe.lua`: These files in the root directory serve as canonical configuration templates and structural blueprints for users.
 
 ### 3.1. Section Structure in `pods.lua`
@@ -79,7 +79,7 @@ For the definitive declarative schema used to configure pods and containers, alw
 
 This section lists practices that are strictly forbidden.
 
-*   **Do not create new source files for core logic**: All core logic must be within `pods.lua`. Test execution must originate from `test_suite.lua`, with new test cases added to the `tests/` directory. `config.lua` and `recipe.lua` should only be altered if the user-facing schema fundamentally changes.
+*   **Do not create new source files for core logic**: All core logic must be within `pods.lua`. Test execution must originate from `test.lua`, with new test cases added to the `tests/` directory. `config.lua` and `recipe.lua` should only be altered if the user-facing schema fundamentally changes.
 *   **Standardized Error Handling**: When encountering failures (e.g., missing config, failed execution), print appropriate error messages (often mapped to an `ERROR:` prefix) and exit gracefully. Do not throw raw Lua errors unless dealing with terminal, unrecoverable states outside of standard validation.
 *   **Do not add external dependencies**: The project must remain dependency-free.
 *   **Do not use single-letter or numbered variable names**: Use descriptive names (e.g., `index` instead of `i`, `user_table` instead of `t2`). An exception is made for compact variable names when they are programmatically or mathematically idiomatic, such as using `x` and `y` for coordinates.
@@ -88,7 +88,7 @@ This section lists practices that are strictly forbidden.
 
 ## 7. Testing Framework & Verification Workflow
 
-*   **Mandatory Verification**: ALWAYS run `lua test_suite.lua` to verify your changes before declaring any task complete or requesting user review.
+*   **Mandatory Verification**: ALWAYS run `lua test.lua` to verify your changes before declaring any task complete or requesting user review.
 *   **Custom Testing Paradigm**: The testing framework captures all output from `pods.lua` by redefining `print_internal` and pushing it to an `output_stack`. 
 *   **Test Suites**: Test suites are located in the `tests/` directory. When adding a new test, mimic the structure of existing suite files. 
 

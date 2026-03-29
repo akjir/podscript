@@ -26,7 +26,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.2.0"
+local VERSION <const> = "1.3.0"
 
 -- ------------------------------------------------------------------------- --
 --
@@ -59,7 +59,7 @@ local function print_help()
     print_internal("  *                  names of recipes or groups defined in a config")
     print_internal("")
     print_internal("OPTIONS:")
-    print_internal("  --config [NAME]    use config with given name or path")
+    print_internal("  --config NAME      use config with given name or path")
     print_internal("  --help             display this help and exit")
     print_internal("  --simulate         forces simulate mode")
 end
@@ -915,7 +915,7 @@ function main(arguments)
 end
 
 -- prevent excecution when imported from test_suite
-if arg[0] ~= "test_suite.lua" then
+if arg[0] ~= "test.lua" then
     -- initalize print_internal
     print_internal = print
     -- execute main

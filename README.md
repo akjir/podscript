@@ -139,14 +139,14 @@ This allows you to run PodScript commands simply by typing `pods` from any locat
 To run the entire test suite, execute the following command:
 
 ```bash
-lua test_suite.lua
+lua test.lua
 ```
 
 To run a single test by its internal ID, or run a whole suite by its file name, provide the identifier or file name as an argument:
 
 ```bash
-lua test_suite.lua T00101
-lua test_suite.lua suite_001_argument_options.lua
+lua test.lua T00101
+lua test.lua suite_001_argument_options.lua
 ```
 
 ## License
