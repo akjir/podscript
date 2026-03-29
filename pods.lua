@@ -281,6 +281,29 @@ system = {
         return result == "Linux"
     end,
 
+    ---Check if the current Podman version is 5.8.0 or higher.
+    ---@return boolean
+    check_podman_version = function()
+        local handle = io.popen("podman version 2>&1")
+        if handle == nil then return false end
+        local result = handle:read("*a")
+        handle:close()
+
+        local version = result:match("Version:%s*(%d+%.%d+%.%d+)")
+        if not version then return false end
+
+        local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
+        major = tonumber(major)
+        minor = tonumber(minor)
+        -- patch is not strictly needed for 5.8.0+, but good to have
+        patch = tonumber(patch)
+
+        if major > 5 or (major == 5 and minor >= 8) then
+            return true
+        end
+        return false
+    end,
+
     ---Execute a command.
     ---Only executes a command, if simulate is set to false.
     ---@param command string
@@ -908,6 +931,12 @@ function main(arguments)
     -- check os
     if not system.check_os() then
         log.error("Only Linux is supported.")
+        return
+    end
+
+    -- check podman version
+    if not system.check_podman_version() then
+        log.error("Podman 5.8.0 or higher is required.")
         return
     end
 

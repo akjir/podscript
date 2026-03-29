@@ -15,5 +15,12 @@ return {
             end,
             expected = true,
         },
+        T00903 = {
+            description = "Check Podman version (must be >= 5.8.0).",
+            run = function()
+                return system.check_podman_version()
+            end,
+            expected = true,
+        },
     }
 }

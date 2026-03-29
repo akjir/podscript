@@ -138,6 +138,12 @@ function main(arguments)
         return
     end
 
+    -- check podman version
+    if not system.check_podman_version() then
+        log.error("Podman 5.8.0 or higher is required.")
+        return
+    end
+
     -- parse arguments
     if main__parse_arguments(arguments, options) then return end
 

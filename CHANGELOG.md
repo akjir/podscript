@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added Lua version 5.4+ check on startup to ensure compatibility.
 - Added a system check for Linux OS, as only Linux is supported.
+- Added a system check for Podman version 5.8.0+ on startup.
 
 ## [1.2.0] - 2026-03-28
 

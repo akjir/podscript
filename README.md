@@ -23,6 +23,7 @@ This is a personal hobby project created for the primary purposes of learning Lu
 
 *   **Operating System:** Linux (Only Linux is supported).
 *   **Lua Version:** Lua 5.4 or higher.
+*   **Podman Version:** 5.8.0 or higher.
 
 ## Usage
 
