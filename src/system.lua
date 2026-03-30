@@ -29,45 +29,38 @@ system = {
     ---Check if the current Lua version is 5.4 or higher.
     ---@return boolean
     check_lua_version = function()
-        local major, minor = _VERSION:match("Lua (%d+)%.(%d+)")
-        major = tonumber(major)
-        minor = tonumber(minor)
-
-        if major > 5 or (major == 5 and minor >= 4) then
-            return true
-        end
-        return false
+        local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
+        if not major_string or not minor_string then return false end
+        local major = tonumber(major_string)
+        local minor = tonumber(minor_string)
+        return major > 5 or (major == 5 and minor >= 4)
     end,
 
     ---Check if the current operating system is Linux.
     ---@return boolean
     check_os = function()
         local handle = io.popen("uname -s")
-        if handle == nil then return false end
+        if not handle then return false end
         local result = handle:read("*a")
         handle:close()
 
         -- we need to trim the result, because uname -s returns a newline
-        result = string.trim(result)
-
-        return result == "Linux"
+        return "Linux" == string.trim(result)
     end,
 
     ---Check if the current Podman version is 5.8.0 or higher.
     ---@return boolean
     check_podman_version = function()
         local handle = io.popen("podman --version 2>&1")
-        if handle == nil then return false end
+        if not handle then return false end
         local result = handle:read("*a")
         handle:close()
 
         -- podman --version returns something like "podman version 5.8.1"
         local major_string, minor_string = result:match("version%s*(%d+)%.(%d+)%.%d+")
         if not major_string or not minor_string then return false end
-
         local major = tonumber(major_string)
         local minor = tonumber(minor_string)
-
         return major > 5 or (major == 5 and minor >= 8)
     end,
 
@@ -88,14 +81,14 @@ system = {
         else
             -- combine STDOUT and STDERR using 2>&1
             local handle = io.popen(command .. " 2>&1")
-            if handle == nil then
+            if not handle then
                 log.error("Failed to execute command '" .. command .. "'!")
                 return
             end
 
             local output = handle:read("*a")
             local success, exit_type, exit_code = handle:close()
-            if output ~= nil and output ~= "" then
+            if not string.is_nil_or_empty(output) then
                 -- include the error message if the command failed
                 log.print(prefix .. output:gsub("%s+$", ""))
             else
@@ -116,7 +109,7 @@ system = {
     --- @return string|nil error_type The type of error ("load" or "execution").
     load_lua_file = function(full_path)
         local chunk, err = loadfile(full_path)
-        if chunk == nil then
+        if not chunk then
             return nil, err, "load"
         end
         local success, result = pcall(chunk)

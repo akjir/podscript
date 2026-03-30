@@ -1,7 +1,9 @@
+---@diagnostic disable: duplicate-set-field
+
 ---Get table size, including non-numeric keys.
 ---@param table table
 ---@return integer
-local function table__size(table)
+table.size = function(table)
     if table == nil then return 0 end
     local count = 0
     for _, _ in pairs(table) do
@@ -14,7 +16,7 @@ end
 ---@param table1 table
 ---@param table2 table
 ---@return boolean
-local function table__deep_compare(table1, table2)
+table.deep_compare = function(table1, table2)
     -- check for reference equality first for performance
     if table1 == table2 then return true end
 
@@ -24,7 +26,7 @@ local function table__deep_compare(table1, table2)
     end
 
     -- compare table sizes
-    if table__size(table1) ~= table__size(table2) then
+    if table.size(table1) ~= table.size(table2) then
         return false
     end
 
@@ -32,7 +34,7 @@ local function table__deep_compare(table1, table2)
     for key, value1 in pairs(table1) do
         local value2 = table2[key]
         if type(value1) == "table" and type(value2) == "table" then
-            if not table__deep_compare(value1, value2) then
+            if not table.deep_compare(value1, value2) then
                 return false
             end
         elseif value1 ~= value2 then
@@ -46,7 +48,7 @@ end
 ---Recursively converts a table into a readable string format.
 ---@param tbl table
 ---@return string
-local function table__to_string(tbl)
+table.to_string = function(tbl)
     if tbl == nil then return "nil" end
 
     local parts = {}
@@ -60,7 +62,7 @@ local function table__to_string(tbl)
 
         local value_string
         if type(value) == "table" then
-            value_string = table__to_string(value)
+            value_string = table.to_string(value)
         elseif type(value) == "string" then
             value_string = '"' .. value .. '"'
         else
@@ -71,11 +73,3 @@ local function table__to_string(tbl)
 
     return "{" .. table.concat(parts, ", ") .. "}"
 end
-
----Compares two tables for content equality (deep compare).
----@return boolean
-table.compare = table__deep_compare
-
----Converts a table into a readable string representation.
----Useful for debugging and logging table contents.
-table.to_string = table__to_string
