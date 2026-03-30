@@ -76,5 +76,12 @@ return {
             end,
             expected = true,
         },
+        T00908 = {
+            description = "Check if program is run with elevated execution rights (sudo).",
+            run = function()
+                return system.runs_elevated()
+            end,
+            expected = false,
+        },
     }
 }

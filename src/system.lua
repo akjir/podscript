@@ -102,11 +102,11 @@ system = {
         end
     end,
 
-    --- Loads a Lua file and returns the result.
-    --- @param full_path string
-    --- @return table|nil result The object returned by the file (usually a table).
-    --- @return string|nil error Error message if something went wrong.
-    --- @return string|nil error_type The type of error ("load" or "execution").
+    ---Loads a Lua file and returns the result.
+    ---@param full_path string
+    ---@return table|nil result The object returned by the file (usually a table).
+    ---@return string|nil error Error message if something went wrong.
+    ---@return string|nil error_type The type of error ("load" or "execution").
     load_lua_file = function(full_path)
         local chunk, err = loadfile(full_path)
         if not chunk then
@@ -117,5 +117,15 @@ system = {
             return nil, result, "execution"
         end
         return result, nil, nil
+    end,
+
+    ---Check if the program is run with elevated execution rights (sudo).
+    ---@return boolean
+    runs_elevated = function()
+        local handle = io.popen("id -u")
+        if not handle then return false end
+        local result = handle:read("*a")
+        handle:close()
+        return "0" == string.trim(result)
     end,
 }

@@ -131,6 +131,17 @@ function main(arguments)
         return
     end
 
+    -- check for elevated privileges and prompt for confirmation
+    if system.runs_elevated() then
+        log.warning("PodScript is running with elevated privileges (sudo).")
+        io.write("Are you sure you want to continue? Type 'yes' to proceed: ")
+        local input = io.read()
+        if input ~= "yes" then
+            log.error("Aborting execution.")
+            return
+        end
+    end
+
     -- parse arguments
     if main__parse_arguments(arguments, options, modes) then return end
 
