@@ -61,7 +61,7 @@ return {
         T00706 = {
             description = "Test for options.",
             action = "create",
-            targets = { "recipe_00A_pod_options" },
+            targets = { "recipe_010_pod_options" },
             expectations = {
                 { 7, "podman pod create --name options --some thing --another thing;" },
             },

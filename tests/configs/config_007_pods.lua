@@ -11,7 +11,7 @@ return {
             },
             tests = {
                 "recipe_008_publish",
-                "recipe_00A_pod_options",
+                "recipe_010_pod_options",
             },
         },
     },

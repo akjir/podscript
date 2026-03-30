@@ -79,7 +79,7 @@ return {
                 { 5, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
             },
         },
-        T0060A = {
+        T00610 = {
             description = "One empty Container.",
             config = "config_006_recipes_with_pod_path",
             action = "create",
@@ -88,7 +88,7 @@ return {
                 { 5, "ERROR: A container in pod 'nopathpod' is empty!" },
             },
         },
-        T0060B = {
+        T00611 = {
             description = "Use pod path '.'.",
             config = "config_009_same_directory",
             action = "create",
@@ -98,13 +98,13 @@ return {
                 { 6, "ERROR: Couldn't load recipe './target.lua'!" },
             }
         },
-        T0060C = {
+        T00612 = {
             description = "Missing ',' in lua file.",
             action = "create",
-            targets = { "recipe_010_container_lua_error" },
+            targets = { "recipe_016_container_lua_error" },
             expectations = {
-                { 4, "ERROR: ./tests/recipes/recipe_010_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
-                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_010_container_lua_error.lua'!" },
+                { 4, "ERROR: ./tests/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
+                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_016_container_lua_error.lua'!" },
             }
         },
     },

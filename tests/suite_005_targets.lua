@@ -79,7 +79,7 @@ return {
                 { 3, "DEBUG: Untangled - target push pop" },
             },
         },
-        T0050A = {
+        T00510 = {
             description = "two targets also in a group.",
             action = "create",
             targets = { "the", "@glados", "lie" },
@@ -88,7 +88,7 @@ return {
                 { 3, "DEBUG: Untangled - the cake lie" },
             },
         },
-        T0050B = {
+        T00511 = {
             description = "two targets also in a group, respects first appearance.",
             action = "create",
             targets = { "lie", "cake", "@glados" },

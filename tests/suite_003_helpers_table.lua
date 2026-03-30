@@ -73,28 +73,28 @@ return {
             end,
             expected = "default"
         },
-        T0030A = {
+        T00310 = {
             description = "table.is_nil_or_empty - table is nil",
             run = function()
                 return table.is_nil_or_empty(nil)
             end,
             expected = true
         },
-        T0030B = {
+        T00311 = {
             description = "table.is_nil_or_empty - table is empty",
             run = function()
                 return table.is_nil_or_empty({})
             end,
             expected = true
         },
-        T0030C = {
+        T00312 = {
             description = "table.is_nil_or_empty - table is not empty",
             run = function()
                 return table.is_nil_or_empty({ "a" })
             end,
             expected = false
         },
-        T0030D = {
+        T00313 = {
             description = "table.merge - merge two tables",
             run = function()
                 local target = { a = 1, b = 2 }
@@ -104,7 +104,7 @@ return {
             end,
             expected = table.to_string({ a = 1, b = 2, c = 3, d = 4 })
         },
-        T0030E = {
+        T00314 = {
             description = "table.merge - overwrite existing key",
             run = function()
                 local target = { a = 1, b = 2 }
@@ -114,70 +114,70 @@ return {
             end,
             expected = table.to_string({ a = 1, b = 99, c = 3 })
         },
-        T0030F = {
+        T00315 = {
             description = "table.size - size of a sequential table",
             run = function()
                 return table.size({ "a", "b", "c" })
             end,
             expected = 3
         },
-        T00310 = {
+        T00316 = {
             description = "table.size - size of a table with string keys",
             run = function()
                 return table.size({ a = 1, b = 2 })
             end,
             expected = 2
         },
-        T00311 = {
+        T00317 = {
             description = "table.size - size of an empty table",
             run = function()
                 return table.size({})
             end,
             expected = 0
         },
-        T00312 = {
+        T00318 = {
             description = "table.remove_duplicates - double a",
             run = function()
                 return table.to_string(table.remove_duplicates({ "a", "a" }))
             end,
             expected = table.to_string({ "a" })
         },
-        T00313 = {
+        T00319 = {
             description = "table.remove_duplicates - double a and one b",
             run = function()
                 return table.to_string(table.remove_duplicates({ "a", "b", "a" }))
             end,
             expected = table.to_string({ "a", "b" })
         },
-        T00314 = {
+        T00320 = {
             description = "table.remove_duplicates - triple a, one b and two c",
             run = function()
                 return table.to_string(table.remove_duplicates({ "a", "b", "c", "c", "a" }))
             end,
             expected = table.to_string({ "a", "b", "c" })
         },
-        T00315 = {
+        T00321 = {
             description = "table.contains - value present in and an integer",
             run = function()
                 return table.contains({ false, 1, "2", 3, 4 }, 3)
             end,
             expected = true
         },
-        T00316 = {
+        T00322 = {
             description = "table.has_key - key exists",
             run = function()
                 return table.has_key({ key = "value" }, "key")
             end,
             expected = true
         },
-        T00317 = {
+        T00323 = {
             description = "table.has_key - key does not exist",
             run = function()
                 return table.has_key({ key = "value" }, "other_key")
             end,
             expected = false
         },
-        T00318 = {
+        T00324 = {
             description = "table.has_key - table is nil",
             run = function()
                 return table.has_key(nil, "key")
