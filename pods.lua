@@ -333,18 +333,22 @@ system = {
         end
     end,
 
-    ---Load a lua file.
-    ---@param full_path string
-    ---@return table|nil
-    ---@return string|nil
+    --- Loads a Lua file and returns the result.
+    --- @param full_path string
+    --- @return table|nil result The object returned by the file (usually a table).
+    --- @return string|nil error Error message if something went wrong.
+    --- @return string|nil error_type The type of error ("load" or "execution").
     load_lua_file = function(full_path)
-        local ok, result = pcall(dofile, full_path)
-        if not ok then
-            log.error(result)
-            return nil, result
+        local chunk, err = loadfile(full_path)
+        if chunk == nil then
+            return nil, err, "load"
         end
-        return result, nil
-    end
+        local success, result = pcall(chunk)
+        if not success then
+            return nil, result, "execution"
+        end
+        return result, nil, nil
+    end,
 }
 
 -- ------------------------------------------------------------------------- --
@@ -598,8 +602,11 @@ end
 ---@return table|nil
 local function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, _ = system.load_lua_file(full_path)
+    local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
+        if error ~= nil then
+            log.error(error)
+        end
         log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
@@ -699,8 +706,11 @@ end
 ---@param config_full_path string
 ---@return table|nil
 local function config__load_and_set_defaults(config_full_path)
-    local config, _ = system.load_lua_file(config_full_path)
+    local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
+        if error ~= nil then
+            log.error(error)
+        end
         log.error("Couldn't load configuration '" .. config_full_path .. "'!")
         return nil
     end

@@ -109,15 +109,16 @@ system = {
     --- @param full_path string
     --- @return table|nil result The object returned by the file (usually a table).
     --- @return string|nil error Error message if something went wrong.
+    --- @return string|nil error_type The type of error ("load" or "execution").
     load_lua_file = function(full_path)
         local chunk, err = loadfile(full_path)
         if chunk == nil then
-            return nil, err
+            return nil, err, "load"
         end
         local success, result = pcall(chunk)
         if not success then
-            return nil, result
+            return nil, result, "execution"
         end
-        return result, nil
+        return result, nil, nil
     end,
 }
