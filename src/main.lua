@@ -146,13 +146,12 @@ function main(arguments)
     if main__parse_arguments(arguments, options, modes) then return end
 
     -- normalize config name
-    local config = options.config
-    if config ~= "config" and not string.is_nil_or_empty(config) then
-        options.config = normalize_name(config)
+    local config_name = options.config
+    if config_name ~= "config" and config_name ~= "" then
+        config_name = normalize_name(config_name)
     end
 
     -- parse config
-    local config_name = options.config
     local config_full_path = build_full_path(config_name, "", ".lua")
     local config = config__load_and_set_defaults(config_full_path)
     if config == nil then return end

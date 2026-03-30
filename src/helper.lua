@@ -53,6 +53,5 @@ end
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
 function normalize_name(str)
-    -- if string.is_nil_or_empty(str) then return "" end -- shouldn't necessary
     return string.lower(str:trim():gsub("%s+", "_"))
 end
