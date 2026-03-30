@@ -290,19 +290,13 @@ system = {
         handle:close()
 
         -- podman --version returns something like "podman version 5.8.1"
-        local version = result:match("version%s*(%d+%.%d+%.%d+)")
-        if not version then return false end
+        local major_string, minor_string = result:match("version%s*(%d+)%.(%d+)%.%d+")
+        if not major_string or not minor_string then return false end
 
-        local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
-        major = tonumber(major)
-        minor = tonumber(minor)
-        -- patch is not strictly needed for 5.8.0+, but good to have
-        patch = tonumber(patch)
+        local major = tonumber(major_string)
+        local minor = tonumber(minor_string)
 
-        if major > 5 or (major == 5 and minor >= 8) then
-            return true
-        end
-        return false
+        return major > 5 or (major == 5 and minor >= 8)
     end,
 
     ---Execute a command.
