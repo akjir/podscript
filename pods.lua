@@ -320,16 +320,26 @@ system = {
             end
             log.print(command)
         else
-            -- need better error handling, popen prints directly
-            local handle = io.popen(command)
-            if handle == nil then return end
-            local output = handle:read("*l")
-            if output ~= nil then
-                log.print(prefix .. output)
+            -- combine STDOUT and STDERR using 2>&1
+            local handle = io.popen(command .. " 2>&1")
+            if handle == nil then
+                log.error("Failed to execute command '" .. command .. "'!")
+                return
+            end
+
+            local output = handle:read("*a")
+            local success, exit_type, exit_code = handle:close()
+            if output ~= nil and output ~= "" then
+                -- include the error message if the command failed
+                log.print(prefix .. output:gsub("%s+$", ""))
             else
                 log.print(prefix .. "...")
             end
-            handle:close()
+
+            -- check if the command actually succeeded
+            if not success then
+                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+            end
         end
     end,
 
