@@ -42,25 +42,27 @@ log = {
     -- Proxy to handle output, defaults to standard print
     print = print,
 
-    ---Print debug.
+    ---Print debug message if debug is enabled.
     ---@param message string
     debug = function(message)
-        log.print("DEBUG: " .. message)
+        if debug then
+            log.print("DEBUG: " .. message)
+        end
     end,
 
-    ---Print info.
+    ---Print info message.
     ---@param message string
     info = function(message)
         log.print("INFO: " .. message)
     end,
 
-    ---Print warning.
+    ---Print warning message.
     ---@param message string
     warning = function(message)
         log.print("WARNING: " .. message)
     end,
 
-    ---Print error.
+    ---Print error message.
     ---@param message string
     error = function(message)
         log.print("ERROR: " .. message)
@@ -743,11 +745,9 @@ end
 ---@param targets table
 ---@return table|nil
 local function config__untangle_recipes(groups, targets)
-    if debug then
-        log.debug("Targets   - " .. table.concat(targets, " "))
-    end
-
+    log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}
+
     for i = 1, #targets do
         local target = targets[i]
 
@@ -781,9 +781,7 @@ local function config__untangle_recipes(groups, targets)
     end
 
     untangled = table.remove_duplicates(untangled)
-    if debug then
-        log.debug("Untangled - " .. table.concat(untangled, " "))
-    end
+    log.debug("Untangled - " .. table.concat(untangled, " "))
     return untangled
 end
 
@@ -860,10 +858,11 @@ local function help__handle(options, config)
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
     log.print("MODES:")
     log.print("  *                  default mode")
-    log.print("  help               display this help and exit\n")
+    log.print("  help               display this help and exit")
+    log.print("  simulate           simulate all commands (default mode)\n")
     log.print("OPTIONS:")
     log.print("  --config NAME      use config with given name or path")
-    log.print("  --simulate         forces simulate mode\n")
+    log.print("  --debug            enable debug output\n")
     log.print("Valid in default and simulate mode only:\n")
     log.print("ACTIONS:")
     log.print("  create             create a new pod")
@@ -907,6 +906,8 @@ local function main__parse_arguments(arguments, options, modes)
                 if argument == "--config" then
                     skip = true
                     options.config = table.get_or_default(arguments, i + 1, "")
+                elseif argument == "--debug" then
+                    debug = true
                 else
                     log.error("Unknown option '" .. argument .. "'.")
                     return true
@@ -918,7 +919,6 @@ local function main__parse_arguments(arguments, options, modes)
                     return true
                 end
                 options.mode = modes[argument]
-                if argument == "help" then break end
             else
                 if options.action == "" then
                     -- first argument is action
@@ -989,9 +989,9 @@ function main(arguments)
     local config = config__load_and_set_defaults(config_full_path)
     if config == nil then return end
 
-    -- print info if non default confi is used
+    -- print info if non default confi is used and debug is enabled
     if config_name ~= "config" then
-        log.info("Config '" .. config_full_path .. "' is used.")
+        log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
     -- enforce simulate from arguments

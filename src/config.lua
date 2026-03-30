@@ -78,11 +78,9 @@ end
 ---@param targets table
 ---@return table|nil
 function config__untangle_recipes(groups, targets)
-    if debug then
-        log.debug("Targets   - " .. table.concat(targets, " "))
-    end
-
+    log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}
+
     for i = 1, #targets do
         local target = targets[i]
 
@@ -116,8 +114,6 @@ function config__untangle_recipes(groups, targets)
     end
 
     untangled = table.remove_duplicates(untangled)
-    if debug then
-        log.debug("Untangled - " .. table.concat(untangled, " "))
-    end
+    log.debug("Untangled - " .. table.concat(untangled, " "))
     return untangled
 end

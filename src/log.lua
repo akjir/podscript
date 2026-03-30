@@ -18,6 +18,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
+require "src.header"
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -29,25 +31,27 @@ log = {
     -- Proxy to handle output, defaults to standard print
     print = print,
 
-    ---Print debug.
+    ---Print debug message if debug is enabled.
     ---@param message string
     debug = function(message)
-        log.print("DEBUG: " .. message)
+        if debug then
+            log.print("DEBUG: " .. message)
+        end
     end,
 
-    ---Print info.
+    ---Print info message.
     ---@param message string
     info = function(message)
         log.print("INFO: " .. message)
     end,
 
-    ---Print warning.
+    ---Print warning message.
     ---@param message string
     warning = function(message)
         log.print("WARNING: " .. message)
     end,
 
-    ---Print error.
+    ---Print error message.
     ---@param message string
     error = function(message)
         log.print("ERROR: " .. message)

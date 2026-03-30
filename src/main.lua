@@ -62,6 +62,8 @@ local function main__parse_arguments(arguments, options, modes)
                 if argument == "--config" then
                     skip = true
                     options.config = table.get_or_default(arguments, i + 1, "")
+                elseif argument == "--debug" then
+                    debug = true
                 else
                     log.error("Unknown option '" .. argument .. "'.")
                     return true
@@ -73,7 +75,6 @@ local function main__parse_arguments(arguments, options, modes)
                     return true
                 end
                 options.mode = modes[argument]
-                if argument == "help" then break end
             else
                 if options.action == "" then
                     -- first argument is action
@@ -145,9 +146,9 @@ function main(arguments)
     local config = config__load_and_set_defaults(config_full_path)
     if config == nil then return end
 
-    -- print info if non default confi is used
+    -- print info if non default confi is used and debug is enabled
     if config_name ~= "config" then
-        log.info("Config '" .. config_full_path .. "' is used.")
+        log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
     -- enforce simulate from arguments

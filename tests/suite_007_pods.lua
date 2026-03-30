@@ -7,7 +7,7 @@ return {
             action = "create",
             targets = { "@nona" },
             expectations = {
-                { 1, "INFO: Config './tests/configs/config_007_pods.lua' is used." },
+                { 1, "DEBUG: Config './tests/configs/config_007_pods.lua' is used." },
                 { 2, "INFO: Simulate mode is active." },
                 { 3, "DEBUG: Targets   - @nona" },
                 { 4, "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
