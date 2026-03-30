@@ -105,16 +105,19 @@ system = {
         end
     end,
 
-    ---Load a lua file.
-    ---@param full_path string
-    ---@return table|nil
-    ---@return string|nil
+    --- Loads a Lua file and returns the result.
+    --- @param full_path string
+    --- @return table|nil result The object returned by the file (usually a table).
+    --- @return string|nil error Error message if something went wrong.
     load_lua_file = function(full_path)
-        local ok, result = pcall(dofile, full_path)
-        if not ok then
-            log.error(result)
+        local chunk, err = loadfile(full_path)
+        if chunk == nil then
+            return nil, err
+        end
+        local success, result = pcall(chunk)
+        if not success then
             return nil, result
         end
         return result, nil
-    end
+    end,
 }
