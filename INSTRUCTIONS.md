@@ -121,7 +121,7 @@ This is the mandatory workflow for all changes:
 4.  **Test (Release Mode)**: Run `lua test.lua` to verify the generated release file.
     *   All tests must pass in both modes before completing a task.
 5.  **Document & Maintain**:
-    *   Update `CHANGELOG.md` if the changes are user-facing.
+    *   Update `CHANGELOG.md` for all user-facing changes, including new checks or additional functionality.
     *   **CRITICAL:** Update `INSTRUCTIONS.md` and `USAGE.md` to reflect any architectural or usage changes.
 
 ## 8. Testing Framework
