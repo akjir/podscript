@@ -88,16 +88,18 @@ local function execute_normal_test(default_config_name, test_code, test_table, p
         table.insert(arguments, "--config")
         table.insert(arguments, "tests/configs/" .. config_name)
     end
+
     if test_table.help then
         table.insert(arguments, "help")
     end
+
     if test_table.simulate then
-        table.insert(arguments, "--simulate")
+        table.insert(arguments, "simulate")
     end
     table.insert(arguments, test_table.action)
     table.append(arguments, test_table.targets)
 
-    -- execute pods.lua with arguments
+    -- execute pods or src.main with arguments
     main(arguments)
 
     local expectations = test_table.expectations

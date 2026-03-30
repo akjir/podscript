@@ -4,10 +4,10 @@ return {
     tests = {
         T00401 = {
             description = "No action set.",
-            config = "config_001_empty",
+            config = "config_005_recipes",
             targets = { "target" },
             expectations = {
-                { 1, "ERROR: Unknown action 'target'." },
+                { 2, "ERROR: Unknown action 'target'." },
             },
         },
     },

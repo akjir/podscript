@@ -112,6 +112,7 @@ local files = {
     "recipe",
     "config",
     "mode_default",
+    "mode_simulate",
     "mode_help",
     "main",
 }

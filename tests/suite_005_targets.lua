@@ -6,7 +6,7 @@ return {
             description = "No targets given as arguments.",
             action = "create",
             expectations = {
-                { 1, "ERROR: No targets set." },
+                { 2, "ERROR: No targets set." },
             },
         },
         T00502 = {
