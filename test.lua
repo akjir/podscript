@@ -169,9 +169,11 @@ end
 local function execute_test_suite(test_suite)
     local tests = test_suite.tests
     for test_code, test_table in pairs(tests) do
-        local default_config_name = table.get_or_default(test_suite, "config", "")
-        tests_count = tests_count + 1
-        execute_test(default_config_name, test_code, test_table, false)
+        if not (test_release and test_table.dev_only) then
+            local default_config_name = table.get_or_default(test_suite, "config", "")
+            tests_count = tests_count + 1
+            execute_test(default_config_name, test_code, test_table, false)
+        end
     end
 end
 
@@ -195,18 +197,22 @@ add_suite("suite_006_recipes")
 add_suite("suite_007_pods")
 add_suite("suite_008_containers")
 add_suite("suite_009_system")
+add_suite("suite_010_helper")
 
 -- ------------------------------------------------------------------------- --
 --      Main
 -- ------------------------------------------------------------------------- --
 
 local found = false -- define here to prevent "Test failed." if no test was found
-if not test_release then
-    print("Running tests in development mode.")
-else
+if test_release then
     print("Running tests in release mode.")
+else
+    print("Running tests in development mode.")
 end
 if single_test_name == "" then
+    if test_release then
+        print("Some tests can only be run in development mode.")
+    end
     found = true
     for _, test_suite in pairs(test_suites) do
         execute_test_suite(test_suite)
@@ -216,11 +222,16 @@ else
     for a, test_suite in pairs(test_suites) do
         -- Check if it matches a suite number
         if test_suite.suite == single_test_name then
+            if test_release then
+                print("Some tests can only be run in development mode.")
+            end
             found = true
             for test_code, test_table in pairs(test_suite.tests) do
-                local default_config_name = table.get_or_default(test_suite, "config", "")
-                execute_test(default_config_name, test_code, test_table, true)
-                run_count = run_count + 1
+                if not (test_release and test_table.dev_only) then
+                    local default_config_name = table.get_or_default(test_suite, "config", "")
+                    execute_test(default_config_name, test_code, test_table, true)
+                    run_count = run_count + 1
+                end
             end
         else
             -- Check individual tests by code
@@ -228,8 +239,12 @@ else
             for test_code, test_table in pairs(test_suite.tests) do
                 if test_code == single_test_name then
                     found = true
-                    execute_test(default_config_name, test_code, test_table, true)
-                    run_count = run_count + 1
+                    if test_release and test_table.dev_only then
+                        print("Test '" .. test_code .. "' can only be used in development mode.")
+                    else
+                        execute_test(default_config_name, test_code, test_table, true)
+                        run_count = run_count + 1
+                    end
                 end
             end
         end
