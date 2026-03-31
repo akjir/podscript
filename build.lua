@@ -111,6 +111,7 @@ local files = {
     "pod",
     "recipe",
     "config",
+    "mode_config",
     "mode_default",
     "mode_simulate",
     "mode_help",

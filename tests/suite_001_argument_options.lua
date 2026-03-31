@@ -9,7 +9,7 @@ return {
             targets = { "target" },
             simulate = false,
             expectations = {
-                { 1, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
+                { 3, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
             },
         },
         T00102 = {
@@ -19,8 +19,8 @@ return {
             targets = { "target" },
             simulate = true,
             expectations = {
-                { 1, "DEBUG: Config './tests/configs/config_002_simulate_false.lua' is used." },
-                { 2, "INFO: Simulate mode is active." },
+                { 2, "DEBUG: Config './tests/configs/config_002_simulate_false.lua' is used." },
+                { 3, "INFO: Simulate mode is active." },
             },
         },
         T00103 = {
@@ -30,8 +30,8 @@ return {
             targets = { "target" },
             simulate = false,
             expectations = {
-                { 1, "DEBUG: Config './tests/configs/config_003_simulate_true.lua' is used." },
-                { 2, "INFO: Simulate mode is active." },
+                { 2, "DEBUG: Config './tests/configs/config_003_simulate_true.lua' is used." },
+                { 3, "INFO: Simulate mode is active." },
             },
         },
         T00104 = {
@@ -40,14 +40,14 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 1, "ERROR: cannot open ./tests/configs/config_missing.lua: No such file or directory" },
-                { 2, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
+                { 3, "ERROR: cannot open ./tests/configs/config_missing.lua: No such file or directory" },
+                { 4, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
             },
         },
         T00105 = {
             description = "No arguments at all. Print help.",
             expectations = {
-                { 2, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
+                { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
             },
         },
         T00106 = {
@@ -57,7 +57,7 @@ return {
             targets = {},
             help = true,
             expectations = {
-                { 2, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
+                { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
             },
         },
     }

@@ -18,19 +18,15 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.mode_default"
-
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
---    SECTION Mode Simulate
+--    SECTION Mode Config
 --
 -- ------------------------------------------------------------------------- --
 
----Handle simulate mode.
+---Handle config mode.
 ---@param registry table
-function mode_simulate__handle(registry)
-    registry.flags.simulate = true
-    log.info("Simulate mode is active.")
-    mode_default__handle(registry)
+function mode_config__handle(registry)
+
 end

@@ -48,10 +48,11 @@ function recipe__load(recipe_path, recipe_name)
 end
 
 ---Switch correct pod function and test pod values.
+---@param registry table
 ---@param recipe table
 ---@param action string
----@param config table
-function recipe__validate_and_handle(recipe, target, action, config)
+---@param target string
+function recipe__validate_and_handle(registry, recipe, action, target)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. target .. "' set!")
@@ -83,12 +84,12 @@ function recipe__validate_and_handle(recipe, target, action, config)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(config.pods.path) then
+        if string.is_nil_or_empty(registry.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(config.pods.path, recipe.pod.name, "")
+            local path = build_full_path(registry.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -111,19 +112,19 @@ function recipe__validate_and_handle(recipe, target, action, config)
     -- switch for correct function
     if (action == "update") then
         -- most of the tests above arn't necessary for update
-        pod__update(recipe, config.simulate)
+        pod__update(recipe, registry.flags.simulate)
         return
     end
     if action == "recreate" then
-        pod__recreate(recipe, config.simulate)
+        pod__recreate(recipe, registry.flags.simulate)
         return
     end
     if action == "remove" then
-        pod__remove(recipe, config.simulate)
+        pod__remove(recipe, registry.flags.simulate)
         return
     end
     if action == "create" then
-        pod__create(recipe, config.simulate)
+        pod__create(recipe, registry.flags.simulate)
         return
     end
 end

@@ -8,8 +8,8 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 4, "ERROR: cannot open ./target.lua: No such file or directory" },
-                { 5, "ERROR: Couldn't load recipe './target.lua'!" },
+                { 5, "ERROR: cannot open ./target.lua: No such file or directory" },
+                { 6, "ERROR: Couldn't load recipe './target.lua'!" },
             },
         },
         T00602 = {
@@ -17,8 +17,8 @@ return {
             action = "create",
             targets = { "recipe_000_unkown" },
             expectations = {
-                { 4, "ERROR: cannot open ./tests/recipes/recipe_000_unkown.lua: No such file or directory" },
-                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
+                { 5, "ERROR: cannot open ./tests/recipes/recipe_000_unkown.lua: No such file or directory" },
+                { 6, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
             },
         },
         T00603 = {
@@ -26,7 +26,7 @@ return {
             action = "create",
             targets = { "recipe_001_empty" },
             expectations = {
-                { 4, "ERROR: No recipe name in recipe 'recipe_001_empty' set!" },
+                { 5, "ERROR: No recipe name in recipe 'recipe_001_empty' set!" },
             },
         },
         T00604 = {
@@ -34,7 +34,7 @@ return {
             action = "create",
             targets = { "recipe_002_no_pod" },
             expectations = {
-                { 4, "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty" },
+                { 5, "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty" },
             },
         },
         T00605 = {
@@ -42,7 +42,7 @@ return {
             action = "create",
             targets = { "recipe_003_empty_pod" },
             expectations = {
-                { 4, "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty" },
+                { 5, "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty" },
             },
         },
         T00606 = {
@@ -50,7 +50,7 @@ return {
             action = "create",
             targets = { "recipe_004_no_registry" },
             expectations = {
-                { 4, "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!" },
+                { 5, "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!" },
             },
         },
         T00607 = {
@@ -58,7 +58,7 @@ return {
             action = "create",
             targets = { "recipe_005_no_path" },
             expectations = {
-                { 4, "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!" },
+                { 5, "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!" },
             },
         },
         T00608 = {
@@ -67,7 +67,7 @@ return {
             action = "create",
             targets = { "recipe_005_no_path" },
             expectations = {
-                { 4, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
+                { 5, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
             },
         },
         T00609 = {
@@ -76,7 +76,7 @@ return {
             action = "create",
             targets = { "recipe_006_no_containers" },
             expectations = {
-                { 5, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
+                { 6, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
             },
         },
         T00610 = {
@@ -85,7 +85,7 @@ return {
             action = "create",
             targets = { "recipe_005_no_path" },
             expectations = {
-                { 5, "ERROR: A container in pod 'nopathpod' is empty!" },
+                { 6, "ERROR: A container in pod 'nopathpod' is empty!" },
             },
         },
         T00611 = {
@@ -94,8 +94,8 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 5, "ERROR: cannot open ./target.lua: No such file or directory" },
-                { 6, "ERROR: Couldn't load recipe './target.lua'!" },
+                { 6, "ERROR: cannot open ./target.lua: No such file or directory" },
+                { 7, "ERROR: Couldn't load recipe './target.lua'!" },
             }
         },
         T00612 = {
@@ -103,8 +103,8 @@ return {
             action = "create",
             targets = { "recipe_016_container_lua_error" },
             expectations = {
-                { 4, "ERROR: ./tests/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
-                { 5, "ERROR: Couldn't load recipe './tests/recipes/recipe_016_container_lua_error.lua'!" },
+                { 5, "ERROR: ./tests/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
+                { 6, "ERROR: Couldn't load recipe './tests/recipes/recipe_016_container_lua_error.lua'!" },
             }
         },
     },

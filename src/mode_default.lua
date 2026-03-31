@@ -30,38 +30,49 @@ require "src.helper"
 -- ------------------------------------------------------------------------- --
 
 ---Handle default mode.
----@param options table
----@param config table
-function default__handle(options, config)
+---@param registry table
+function mode_default__handle(registry)
+    local action = ""
+    local targets = {}
+
+    for i = 1, #registry.parameters do
+        local parameter = registry.parameters[i]
+        if i == 1 then
+            action = parameter
+        else
+            table.insert(targets, parameter)
+        end
+    end
+
     -- validate action
-    if string.is_nil_or_empty(options.action) then
+    if action == "" then
         log.error("No action set.")
         return
     end
-    if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
-        log.error("Unknown action '" .. options.action .. "'.")
+    if not table.contains({ "create", "recreate", "remove", "update" }, action) then
+        log.error("Unknown action '" .. action .. "'.")
         return
     end
 
     -- validate targets
-    if table.is_nil_or_empty(options.targets) then
+    if table.is_nil_or_empty(targets) then
         log.error("No targets set.")
         return
     end
 
     -- clean up targets
-    local untangled_targets = config__untangle_recipes(config.recipes.groups, options.targets)
+    local untangled_targets = config__untangle_recipes(registry.recipes.groups, targets)
     if untangled_targets == nil then return end
 
     -- handle recipes
-    local recipe_path = config.recipes.path
+    local recipe_path = registry.recipes.path
     for i = 1, #untangled_targets do
         local target = untangled_targets[i]
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
         if recipe ~= nil then
-            recipe__validate_and_handle(recipe, target, options.action, config)
+            recipe__validate_and_handle(registry, recipe, action, target)
         end
     end
 end

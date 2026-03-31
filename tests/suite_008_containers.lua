@@ -7,7 +7,7 @@ return {
             action = "create",
             targets = { "recipe_009_no_registry" },
             expectations = {
-                { 5, "ERROR: No default registry in recipe 'recipe_009_no_registry' set or empty!" },
+                { 6, "ERROR: No default registry in recipe 'recipe_009_no_registry' set or empty!" },
             },
         },
         T00802 = {
@@ -15,7 +15,7 @@ return {
             action = "create",
             targets = { "recipe_011_simple_container" },
             expectations = {
-                { 9, "podman run --name simple --pod simple_container simple.io/simple:latest;" },
+                { 10, "podman run --name simple --pod simple_container simple.io/simple:latest;" },
             },
         },
         T00803 = {
@@ -23,7 +23,7 @@ return {
             action = "create",
             targets = { "recipe_012_container_options" },
             expectations = {
-                { 9, "podman run --name snoitpo --pod copti --unknown thing --another unknown conop.io/simple:latest;" },
+                { 10, "podman run --name snoitpo --pod copti --unknown thing --another unknown conop.io/simple:latest;" },
             },
         },
         T00804 = {
@@ -31,7 +31,7 @@ return {
             action = "create",
             targets = { "recipe_013_container_commands" },
             expectations = {
-                { 9, "podman run --name commandos-1 --pod commandos bel.io/squad:1998 O'Hara Hancock 2 Woolridge3 Brooklyn:4 Blackwood=5 Duchamp-6;" },
+                { 10, "podman run --name commandos-1 --pod commandos bel.io/squad:1998 O'Hara Hancock 2 Woolridge3 Brooklyn:4 Blackwood=5 Duchamp-6;" },
             },
         },
         T00805 = {
@@ -39,8 +39,8 @@ return {
             action = "create",
             targets = { "recipe_014_registry_per_container" },
             expectations = {
-                { 9,  "podman run --name registry_wars-1 --pod registry_wars bestRegEver.io/bestConEver:latest;" },
-                { 11, "podman run --name registry_wars-2 --pod registry_wars regMasterRace.io/conMasterRace:latest;" },
+                { 10, "podman run --name registry_wars-1 --pod registry_wars bestRegEver.io/bestConEver:latest;" },
+                { 12, "podman run --name registry_wars-2 --pod registry_wars regMasterRace.io/conMasterRace:latest;" },
             },
         },
         T00806 = {
@@ -48,18 +48,18 @@ return {
             action = "recreate",
             targets = { "recipe_015_container_order" },
             expectations = {
-                { 7,  "podman stop order-4;" },
-                { 9,  "podman rm order-4;" },
-                { 11, "podman stop order-3;" },
-                { 13, "podman rm order-3;" },
-                { 15, "podman stop order-2;" },
-                { 17, "podman rm order-2;" },
-                { 19, "podman stop order-1;" },
-                { 21, "podman rm order-1;" },
-                { 27, "podman run --name order-1 --pod order obey.io/order:1;" },
-                { 29, "podman run --name order-2 --pod order obey.io/order:2;" },
-                { 31, "podman run --name order-3 --pod order obey.io/order:3;" },
-                { 33, "podman run --name order-4 --pod order obey.io/order:4;" },
+                { 8,  "podman stop order-4;" },
+                { 10, "podman rm order-4;" },
+                { 12, "podman stop order-3;" },
+                { 14, "podman rm order-3;" },
+                { 16, "podman stop order-2;" },
+                { 18, "podman rm order-2;" },
+                { 20, "podman stop order-1;" },
+                { 22, "podman rm order-1;" },
+                { 28, "podman run --name order-1 --pod order obey.io/order:1;" },
+                { 30, "podman run --name order-2 --pod order obey.io/order:2;" },
+                { 32, "podman run --name order-3 --pod order obey.io/order:3;" },
+                { 34, "podman run --name order-4 --pod order obey.io/order:4;" },
             },
         },
         T00807 = {
@@ -67,14 +67,14 @@ return {
             action = "update",
             targets = { "recipe_015_container_order" },
             expectations = {
-                { 7,  "Update container 'order-1' ..." },
-                { 8,  "podman pull obey.io/order:1;" },
-                { 9,  "Update container 'order-2' ..." },
-                { 10, "podman pull obey.io/order:2;" },
-                { 11, "Update container 'order-3' ..." },
-                { 12, "podman pull obey.io/order:3;" },
-                { 13, "Update container 'order-4' ..." },
-                { 14, "podman pull obey.io/order:4;" },
+                { 8,  "Update container 'order-1' ..." },
+                { 9,  "podman pull obey.io/order:1;" },
+                { 10, "Update container 'order-2' ..." },
+                { 11, "podman pull obey.io/order:2;" },
+                { 12, "Update container 'order-3' ..." },
+                { 13, "podman pull obey.io/order:3;" },
+                { 14, "Update container 'order-4' ..." },
+                { 15, "podman pull obey.io/order:4;" },
             },
         },
         T00809 = {
@@ -82,8 +82,8 @@ return {
             action = "update",
             targets = { "recipe_017_container_naming" },
             expectations = {
-                { 7, "Update container 'absolute' ..." },
-                { 9, "Update container 'con_name-relative' ..." },
+                { 8,  "Update container 'absolute' ..." },
+                { 10, "Update container 'con_name-relative' ..." },
             },
         },
         T00810 = {
@@ -91,8 +91,8 @@ return {
             action = "create",
             targets = { "recipe_017_container_naming" },
             expectations = {
-                { 9,  "podman run --name absolute --pod con_name registry.io/name:latest;" },
-                { 11, "podman run --name con_name-relative --pod con_name registry.io/name:latest;" },
+                { 10, "podman run --name absolute --pod con_name registry.io/name:latest;" },
+                { 12, "podman run --name con_name-relative --pod con_name registry.io/name:latest;" },
             },
         },
         T00811 = {
@@ -100,10 +100,10 @@ return {
             action = "remove",
             targets = { "recipe_017_container_naming" },
             expectations = {
-                { 7,  "podman stop con_name-relative;" },
-                { 9,  "podman rm con_name-relative;" },
-                { 11, "podman stop absolute;" },
-                { 13, "podman rm absolute;" },
+                { 8,  "podman stop con_name-relative;" },
+                { 10, "podman rm con_name-relative;" },
+                { 12, "podman stop absolute;" },
+                { 14, "podman rm absolute;" },
             },
         },
         T00812 = {
@@ -111,7 +111,7 @@ return {
             action = "create",
             targets = { "recipe_018_container_volumes" },
             expectations = {
-                { 8, "podman run --name volumes-1 --pod volumes --volume /container/dir/anonymous --volume /my_pod_path/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute --volume /my_pod_path/relative/path:/container/dir/relative:z --volume /my_pod_path/relative/path2:/container/dir/relative2 --volume /my_pod_path/relative/path3:/container/dir/relative3 registry.io/name:latest;" },
+                { 9, "podman run --name volumes-1 --pod volumes --volume /container/dir/anonymous --volume /my_pod_path/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute --volume /my_pod_path/relative/path:/container/dir/relative:z --volume /my_pod_path/relative/path2:/container/dir/relative2 --volume /my_pod_path/relative/path3:/container/dir/relative3 registry.io/name:latest;" },
             },
         },
         T00813 = {
@@ -119,7 +119,7 @@ return {
             action = "create",
             targets = { "recipe_019_container_volumes_with_no_path" },
             expectations = {
-                { 9, "podman run --name volumes-1 --pod volumes --volume /pods/volumes/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute registry.io/name:latest;" },
+                { 10, "podman run --name volumes-1 --pod volumes --volume /pods/volumes/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute registry.io/name:latest;" },
             },
         },
     },

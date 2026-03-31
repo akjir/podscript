@@ -28,9 +28,8 @@ require "src.header"
 -- ------------------------------------------------------------------------- --
 
 ---Handle help mode. Prints help.
----@param options table
----@param config table
-function help__handle(options, config)
+---@param registry table
+function mode_help__handle(registry)
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")

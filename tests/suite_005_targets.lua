@@ -6,7 +6,7 @@ return {
             description = "No targets given as arguments.",
             action = "create",
             expectations = {
-                { 2, "ERROR: No targets set." },
+                { 3, "ERROR: No targets set." },
             },
         },
         T00502 = {
@@ -14,7 +14,7 @@ return {
             action = "create",
             targets = { "invalid" },
             expectations = {
-                { 3, "ERROR: Target 'invalid' not found in config." },
+                { 4, "ERROR: Target 'invalid' not found in config." },
             },
         },
         T00503 = {
@@ -22,7 +22,7 @@ return {
             action = "create",
             targets = { "@invalid" },
             expectations = {
-                { 3, "ERROR: Unknown recipe group '@invalid'." },
+                { 4, "ERROR: Unknown recipe group '@invalid'." },
             },
         },
         T00504 = {
@@ -30,8 +30,8 @@ return {
             action = "create",
             targets = { "target" },
             expectations = {
-                { 2, "DEBUG: Targets   - target" },
-                { 3, "DEBUG: Untangled - target" },
+                { 3, "DEBUG: Targets   - target" },
+                { 4, "DEBUG: Untangled - target" },
             },
         },
         T00505 = {
@@ -39,8 +39,8 @@ return {
             action = "create",
             targets = { "@stack" },
             expectations = {
-                { 2, "DEBUG: Targets   - @stack" },
-                { 3, "DEBUG: Untangled - push pop" },
+                { 3, "DEBUG: Targets   - @stack" },
+                { 4, "DEBUG: Untangled - push pop" },
             },
         },
         T00506 = {
@@ -48,8 +48,8 @@ return {
             action = "create",
             targets = { "push", "invalid", "pop" },
             expectations = {
-                { 2, "DEBUG: Targets   - push invalid pop" },
-                { 3, "ERROR: Target 'invalid' not found in config." },
+                { 3, "DEBUG: Targets   - push invalid pop" },
+                { 4, "ERROR: Target 'invalid' not found in config." },
             },
         },
         T00507 = {
@@ -57,8 +57,8 @@ return {
             action = "create",
             targets = { "target", "@stack" },
             expectations = {
-                { 2, "DEBUG: Targets   - target @stack" },
-                { 3, "DEBUG: Untangled - target push pop" },
+                { 3, "DEBUG: Targets   - target @stack" },
+                { 4, "DEBUG: Untangled - target push pop" },
             },
         },
         T00508 = {
@@ -66,8 +66,8 @@ return {
             action = "create",
             targets = { "target", "target" },
             expectations = {
-                { 2, "DEBUG: Targets   - target target" },
-                { 3, "DEBUG: Untangled - target" },
+                { 3, "DEBUG: Targets   - target target" },
+                { 4, "DEBUG: Untangled - target" },
             },
         },
         T00509 = {
@@ -75,8 +75,8 @@ return {
             action = "create",
             targets = { "target", "@stack", "target" },
             expectations = {
-                { 2, "DEBUG: Targets   - target @stack target" },
-                { 3, "DEBUG: Untangled - target push pop" },
+                { 3, "DEBUG: Targets   - target @stack target" },
+                { 4, "DEBUG: Untangled - target push pop" },
             },
         },
         T00510 = {
@@ -84,8 +84,8 @@ return {
             action = "create",
             targets = { "the", "@glados", "lie" },
             expectations = {
-                { 2, "DEBUG: Targets   - the @glados lie" },
-                { 3, "DEBUG: Untangled - the cake lie" },
+                { 3, "DEBUG: Targets   - the @glados lie" },
+                { 4, "DEBUG: Untangled - the cake lie" },
             },
         },
         T00511 = {
@@ -93,8 +93,8 @@ return {
             action = "create",
             targets = { "lie", "cake", "@glados" },
             expectations = {
-                { 2, "DEBUG: Targets   - lie cake @glados" },
-                { 3, "DEBUG: Untangled - lie cake the" },
+                { 3, "DEBUG: Targets   - lie cake @glados" },
+                { 4, "DEBUG: Untangled - lie cake the" },
             },
         },
     },

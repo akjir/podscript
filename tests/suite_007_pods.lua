@@ -7,15 +7,16 @@ return {
             action = "create",
             targets = { "@nona" },
             expectations = {
-                { 1, "DEBUG: Config './tests/configs/config_007_pods.lua' is used." },
-                { 2, "INFO: Simulate mode is active." },
-                { 3, "DEBUG: Targets   - @nona" },
-                { 4, "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
-                { 5, "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used." },
-                { 6, "Create pod 'Simple Pod' ('si_po'): " },
-                { 7, "podman pod create --name si_po;" },
-                { 8, "Create container 'supr_app': " },
-                { 9, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
+                { 1,  "DEBUG: Debug mode is enabled." },
+                { 2,  "DEBUG: Config './tests/configs/config_007_pods.lua' is used." },
+                { 3,  "INFO: Simulate mode is active." },
+                { 4,  "DEBUG: Targets   - @nona" },
+                { 5,  "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
+                { 6,  "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used." },
+                { 7,  "Create pod 'Simple Pod' ('si_po'): " },
+                { 8,  "podman pod create --name si_po;" },
+                { 9,  "Create container 'supr_app': " },
+                { 10, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
             },
         },
         T00702 = {
@@ -23,12 +24,12 @@ return {
             action = "remove",
             targets = { "@nona" },
             expectations = {
-                { 6,  "Stop container 'supr_app': " },
-                { 7,  "podman stop supr_app;" },
-                { 8,  "Remove container 'supr_app': " },
-                { 9,  "podman rm supr_app;" },
-                { 10, "Remove pod 'Simple Pod' ('si_po'): " },
-                { 11, "podman pod rm si_po;" },
+                { 7,  "Stop container 'supr_app': " },
+                { 8,  "podman stop supr_app;" },
+                { 9,  "Remove container 'supr_app': " },
+                { 10, "podman rm supr_app;" },
+                { 11, "Remove pod 'Simple Pod' ('si_po'): " },
+                { 12, "podman pod rm si_po;" },
             },
         },
         T00703 = {
@@ -36,9 +37,9 @@ return {
             action = "update",
             targets = { "@nona" },
             expectations = {
-                { 6, "Update pod 'Simple Pod' ('si_po') ..." },
-                { 7, "Update container 'supr_app' ..." },
-                { 8, "podman pull registry.io/alpine:latest;" },
+                { 7, "Update pod 'Simple Pod' ('si_po') ..." },
+                { 8, "Update container 'supr_app' ..." },
+                { 9, "podman pull registry.io/alpine:latest;" },
             },
         },
         T00704 = {
@@ -46,8 +47,8 @@ return {
             action = "recreate",
             targets = { "@nona" },
             expectations = {
-                { 10, "Remove pod 'Simple Pod' ('si_po'): " },
-                { 12, "Create pod 'Simple Pod' ('si_po'): " },
+                { 11, "Remove pod 'Simple Pod' ('si_po'): " },
+                { 13, "Create pod 'Simple Pod' ('si_po'): " },
             },
         },
         T00705 = {
@@ -55,7 +56,7 @@ return {
             action = "create",
             targets = { "recipe_008_publish" },
             expectations = {
-                { 7, "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
+                { 8, "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
             },
         },
         T00706 = {
@@ -63,7 +64,7 @@ return {
             action = "create",
             targets = { "recipe_010_pod_options" },
             expectations = {
-                { 7, "podman pod create --name options --some thing --another thing;" },
+                { 8, "podman pod create --name options --some thing --another thing;" },
             },
         },
     },

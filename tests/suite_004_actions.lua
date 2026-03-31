@@ -7,7 +7,7 @@ return {
             config = "config_005_recipes",
             targets = { "target" },
             expectations = {
-                { 2, "ERROR: Unknown action 'target'." },
+                { 3, "ERROR: Unknown action 'target'." },
             },
         },
     },

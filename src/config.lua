@@ -28,50 +28,54 @@ require "src.helper"
 -- ------------------------------------------------------------------------- --
 
 ---Loads PodScript config. Sets default values if missing.
----Returns nil if fails to load a file or no recipes are defined.
+---Returns false if fails to load a file or no recipes are defined.
 ---@param config_full_path string
----@return table|nil
-function config__load_and_set_defaults(config_full_path)
+---@param registry table
+---@param startup_config table
+---@param modes table
+---@return boolean
+function config__load_and_set(config_full_path, registry, startup_config, modes)
     local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
         if error ~= nil then
             log.error(error)
         end
         log.error("Couldn't load configuration '" .. config_full_path .. "'!")
-        return nil
+        return false
     end
 
-    if config.recipes == nil then
-        log.error("No recipes defined in config '" .. config_full_path .. "'!")
-        return nil
-    else
-        if table.is_nil_or_empty(config.recipes.groups) then
-            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
-            return nil
-        end
+    -- pod values
+    registry.pods = config.pods
+    if not registry.pods then
+        registry.pods = {}
+    end
+    if not registry.pods.path then
+        registry.pods.path = "" -- no path set, pods need to define a path
+    end
 
+    -- recipes values
+    registry.recipes = config.recipes
+    if table.is_nil_or_empty(registry.recipes) then
+        log.error("No recipes defined in config '" .. config_full_path .. "'!")
+        return false
+    else
+        if table.is_nil_or_empty(registry.recipes.groups) then
+            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+            return false
+        end
         -- set default path for recipes or correct them
-        if string.is_nil_or_empty(config.recipes.path) then
-            config.recipes.path = "./"
+        if string.is_nil_or_empty(registry.recipes.path) then
+            registry.recipes.path = "./"
         end
     end
 
     -- simulate default is true
-    if config.simulate == nil then
-        config.simulate = true
+    -- if simulate is not defined or true and mode is default, set mode to simulate
+    if (config.simulate == nil or config.simulate == true) and startup_config.mode_selected == modes["default"] then
+        startup_config.mode_selected = modes["simulate"]
     end
 
-    -- default pod values
-    if config.pods == nil then
-        config.pods = {}
-    end
-
-    -- default pod path
-    if config.pods.path == nil then
-        config.pods.path = "" -- no path set, pods need to define a path
-    end
-
-    return config
+    return true
 end
 
 ---Untangles recipe groups. Respects target order.

@@ -75,18 +75,18 @@ end
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
-local function execute_normal_test(default_config_name, test_code, test_table, print_stack)
+local function execute_default_test(default_config_name, test_code, test_table, print_stack)
     local config_name = table.get_or_default(test_table, "config", "")
     local arguments = {}
 
     if config_name == "" then
         if default_config_name ~= "" then
-            table.insert(arguments, "--config")
-            table.insert(arguments, "tests/configs/" .. default_config_name)
+            local config_argument = "--config=" .. "tests/configs/" .. default_config_name
+            table.insert(arguments, config_argument)
         end
     else
-        table.insert(arguments, "--config")
-        table.insert(arguments, "tests/configs/" .. config_name)
+        local config_argument = "--config=" .. "tests/configs/" .. config_name
+        table.insert(arguments, config_argument)
     end
 
     if test_table.help then
@@ -116,8 +116,8 @@ local function execute_normal_test(default_config_name, test_code, test_table, p
             end
             print(" Call: lua pods.lua " .. table.concat(arguments, " "))
             print()
-            print("  Result:   '" .. tostring(result) .. "'")
-            print("  Expected: '" .. expected_result .. "'")
+            print("  Result:   (" .. line .. ") '" .. tostring(result) .. "'")
+            print("  Expected: (" .. line .. ") '" .. expected_result .. "'")
             if print_stack then print_full_stack(output_stack) else print() end
             -- clear output_stack
             output_stack = {}
@@ -160,7 +160,7 @@ local function execute_test(default_config_name, test_code, test_table, print_st
             tests_count_failed = tests_count_failed + 1
         end
     else
-        if not execute_normal_test(default_config_name, test_code, test_table, print_stack) then
+        if not execute_default_test(default_config_name, test_code, test_table, print_stack) then
             tests_count_failed = tests_count_failed + 1
         end
     end

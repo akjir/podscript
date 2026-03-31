@@ -37,80 +37,64 @@ require "src.system"
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param arguments table
----@param options table
+---@param arguments string[]
+---@param registry table
+---@param startup_config table
 ---@param modes table
----@return boolean
-local function main__parse_arguments(arguments, options, modes)
+local function main__parse_arguments(arguments, registry, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        options.mode = modes["help"]
+        startup_config.mode_selected = modes["help"]
         return false
     end
     -- parse arguments
-    local skip = false
+    local mode_selected = false
     for i = 1, #arguments do
         local argument = arguments[i]
-        if skip == true then -- skips to allow "--argument value"
-            skip = false
-        else
-            -- reset skip if used
-            if skip then skip = false end
-
-            if string.begins_with(argument, "--") then
-                if argument == "--config" then
-                    skip = true
-                    options.config = table.get_or_default(arguments, i + 1, "")
-                elseif argument == "--debug" then
-                    debug = true
-                else
-                    log.error("Unknown option '" .. argument .. "'.")
-                    return true
-                end
-                -- check if argument is a mode
-            elseif table.has_key(modes, argument) then
-                if options.mode ~= nil then
-                    log.error("Mode '" .. argument .. "' is already set.")
-                    return true
-                end
-                options.mode = modes[argument]
+        if string.begins_with(argument, "--") then
+            if string.begins_with(argument, "--config=") then
+                local _, value = split_argument(argument)
+                startup_config.config_path = value
+            elseif argument == "--debug" then
+                debug = true
             else
-                if options.action == "" then
-                    -- first argument is action
-                    options.action = argument
-                else
-                    -- followed arguments are targets
-                    table.insert(options.targets, argument)
-                end
+                local parameter, value = split_argument(argument)
+                registry.flags[parameter] = value
             end
+            -- check if argument is a mode
+        elseif table.has_key(modes, argument) then
+            if not mode_selected then
+                startup_config.mode_selected = modes[argument]
+                mode_selected = true
+            end
+        else
+            table.insert(registry.parameters, argument)
         end
     end
-    -- set default mode if not set
-    if options.mode == nil then
-        options.mode = modes["default"]
-    end
-    return false
 end
 
 ---Main function.
 ---@param arguments string[]
 ---@build global:
 function main(arguments)
-    -- modes
     local modes = {
-        default = default__handle,
-        help = help__handle,
-        simulate = simulate__handle,
+        default = mode_default__handle,
+        config = mode_config__handle,
+        help = mode_help__handle,
+        simulate = mode_simulate__handle,
     }
 
-    -- default options
-    local options = {
-        action = "",       -- action for targets
-        config = "config", -- config name to use
-        mode = nil,        -- mode to use
-        simulate = false,  -- simulate all commands
-        targets = {},      -- target recipe names
+    local startup_config = {
+        config_path = "config",
+        mode_selected = modes.default,
+    }
+
+    local registry = {
+        flags = {
+            simulate = false,
+        },
+        parameters = {},
     }
 
     -- check lua version
@@ -143,36 +127,31 @@ function main(arguments)
     end
 
     -- parse arguments
-    if main__parse_arguments(arguments, options, modes) then return end
+    main__parse_arguments(arguments, registry, startup_config, modes)
+
+    log.debug("Debug mode is enabled.")
 
     -- normalize config name
-    local config_name = options.config
-    if config_name ~= "config" and config_name ~= "" then
-        config_name = normalize_name(config_name)
+    local config_path = startup_config.config_path
+    if config_path ~= "config" and config_path ~= "" then
+        config_path = normalize_name(config_path)
     end
 
-    -- parse config
-    local config_full_path = build_full_path(config_name, "", ".lua")
-    local config = config__load_and_set_defaults(config_full_path)
-    if config == nil then return end
+    -- build full config path
+    local config_full_path = build_full_path(config_path, "", ".lua")
 
     -- print info if non default confi is used and debug is enabled
-    if config_name ~= "config" then
+    if config_path ~= "config" then
         log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
-    -- enforce simulate from arguments
-    if options.simulate then
-        config.simulate = true
-    end
-
-    -- if simulate is true, override default mode
-    if options.mode == modes["default"] and config.simulate then
-        options.mode = modes["simulate"]
+    -- parse config
+    if not config__load_and_set(config_full_path, registry, startup_config, modes) then
+        return
     end
 
     -- handle mode
-    options.mode(options, config)
+    startup_config.mode_selected(registry)
 end
 
 -- prevent excecution when imported from test_suite

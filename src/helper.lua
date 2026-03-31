@@ -55,3 +55,15 @@ end
 function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
+
+---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
+---@param argument string The input string to be split.
+---@return string, string|boolean # The key and value.
+function split_argument(argument)
+    local clean_argument = string.gsub(argument, "^%-+", "")
+    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
+    if parameter then
+        return parameter, value
+    end
+    return clean_argument, true
+end
