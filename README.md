@@ -99,21 +99,28 @@ The test suite can be run in two modes:
     ```bash
     lua test.lua
     ```
-*   **Development Mode:** Tests the modular source files in `src/` directly.
+*   **Development Mode:** Tests the modular source files in `src/` directly. This also enables internal helper tests.
     ```bash
     lua test.lua --dev
     ```
 
-### Running Specific Tests
-
 To run a single test or a specific suite:
 
 ```bash
-lua test.lua T00101
-lua test.lua suite_001_argument_options.lua
+lua test.lua 001
+lua test.lua 00101
 ```
 
-These also support the `--dev` flag if you want to test the source files.
+These also support the `--dev` flag:
+
+```bash
+lua test.lua 001 --dev
+lua test.lua 00101 --dev
+```
+
+### Internal Helper Tests
+
+Some tests are marked as `dev_only = true`. These tests verify internal calculations that are not accessible in the release version (`pods.lua`). When running in release mode (default), these tests are skipped, and a message is shown: `Some tests can only be run in development mode.` Running a specific dev-only test will result in: `Test 'NNNNN' can only be used in development mode.`
 
 ## License
 
