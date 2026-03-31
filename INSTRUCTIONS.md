@@ -117,6 +117,7 @@ This is the mandatory workflow for all changes:
 1.  **Modify Source**: Edit files in the `src/` directory.
 2.  **Test (Dev Mode)**: Run `lua test.lua --dev` to verify changes using the source files.
     *   **Always test with `--dev` first.**
+    *   **Note:** Certain internal functions (like those in `src/helper.lua`) are only accessible in development mode and were specifically tested for that mode.
     *   Example: `lua test.lua --dev 00101`
 3.  **Build**: Run `lua build.lua` to generate the updated `pods.lua`.
 4.  **Test (Release Mode)**: Run `lua test.lua` to verify the generated release file.
@@ -130,6 +131,9 @@ This is the mandatory workflow for all changes:
 
 The testing framework (`test.lua`) captures output and compares it against expectations. 
 
+> [!IMPORTANT]
+> **Maintenance Rule:** If `test.lua` or the test structure is changed, this section MUST be updated to reflect the new behavior or requirements.
+
 ### 8.1. Test Suites and Identifiers
 
 *   **Location**: Test suites are located in the `tests/` directory.
@@ -141,3 +145,12 @@ The testing framework (`test.lua`) captures output and compares it against expec
 *   **Searchability**: Test IDs must be explicit in the code (using the `[s .. "NN"]` pattern) to ensure they are easily findable via text search.
 
 Refer to existing tests in `tests/suite_*.lua` for the structure of `expectations`, `run` functions, and `simulate` flags.
+### 8.2. Development-Only Tests
+
+Some tests are marked with `dev_only = true`. These tests are designed to run only in development mode (`--dev`) because they test internal functions that are localized in the final `pods.lua` release.
+
+*   **Behavior**: When running in release mode, these tests are automatically skipped. 
+*   **Feedback**: 
+    *   Running a full suite or all tests in release mode will display a message: `Some tests can only be run in development mode.` 
+    *   Requesting a specific `dev_only` test in release mode will display: `Test 'NNNNN' can only be used in development mode.`
+*   **Test Count**: The total test count in release mode correctly excludes skipped dev-only tests.
