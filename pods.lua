@@ -246,6 +246,18 @@ local function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
+---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
+---@param argument string The input string to be split.
+---@return string, string|boolean # The key and value.
+local function split_argument(argument)
+    local clean_argument = string.gsub(argument, "^%-+", "")
+    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
+    if parameter then
+        return parameter, value
+    end
+    return clean_argument, true
+end
+
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION System
@@ -621,10 +633,11 @@ local function recipe__load(recipe_path, recipe_name)
 end
 
 ---Switch correct pod function and test pod values.
+---@param registry table
 ---@param recipe table
 ---@param action string
----@param config table
-local function recipe__validate_and_handle(recipe, target, action, config)
+---@param target string
+local function recipe__validate_and_handle(registry, recipe, action, target)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. target .. "' set!")
@@ -656,12 +669,12 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(config.pods.path) then
+        if string.is_nil_or_empty(registry.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(config.pods.path, recipe.pod.name, "")
+            local path = build_full_path(registry.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -684,19 +697,19 @@ local function recipe__validate_and_handle(recipe, target, action, config)
     -- switch for correct function
     if (action == "update") then
         -- most of the tests above arn't necessary for update
-        pod__update(recipe, config.simulate)
+        pod__update(recipe, registry.flags.simulate)
         return
     end
     if action == "recreate" then
-        pod__recreate(recipe, config.simulate)
+        pod__recreate(recipe, registry.flags.simulate)
         return
     end
     if action == "remove" then
-        pod__remove(recipe, config.simulate)
+        pod__remove(recipe, registry.flags.simulate)
         return
     end
     if action == "create" then
-        pod__create(recipe, config.simulate)
+        pod__create(recipe, registry.flags.simulate)
         return
     end
 end
@@ -708,50 +721,54 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Loads PodScript config. Sets default values if missing.
----Returns nil if fails to load a file or no recipes are defined.
+---Returns false if fails to load a file or no recipes are defined.
 ---@param config_full_path string
----@return table|nil
-local function config__load_and_set_defaults(config_full_path)
+---@param registry table
+---@param startup_config table
+---@param modes table
+---@return boolean
+local function config__load_and_set(config_full_path, registry, startup_config, modes)
     local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
         if error ~= nil then
             log.error(error)
         end
         log.error("Couldn't load configuration '" .. config_full_path .. "'!")
-        return nil
+        return false
     end
 
-    if config.recipes == nil then
-        log.error("No recipes defined in config '" .. config_full_path .. "'!")
-        return nil
-    else
-        if table.is_nil_or_empty(config.recipes.groups) then
-            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
-            return nil
-        end
+    -- pod values
+    registry.pods = config.pods
+    if not registry.pods then
+        registry.pods = {}
+    end
+    if not registry.pods.path then
+        registry.pods.path = "" -- no path set, pods need to define a path
+    end
 
+    -- recipes values
+    registry.recipes = config.recipes
+    if table.is_nil_or_empty(registry.recipes) then
+        log.error("No recipes defined in config '" .. config_full_path .. "'!")
+        return false
+    else
+        if table.is_nil_or_empty(registry.recipes.groups) then
+            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+            return false
+        end
         -- set default path for recipes or correct them
-        if string.is_nil_or_empty(config.recipes.path) then
-            config.recipes.path = "./"
+        if string.is_nil_or_empty(registry.recipes.path) then
+            registry.recipes.path = "./"
         end
     end
 
     -- simulate default is true
-    if config.simulate == nil then
-        config.simulate = true
+    -- if simulate is not defined or true and mode is default, set mode to simulate
+    if (config.simulate == nil or config.simulate == true) and startup_config.mode_selected == modes["default"] then
+        startup_config.mode_selected = modes["simulate"]
     end
 
-    -- default pod values
-    if config.pods == nil then
-        config.pods = {}
-    end
-
-    -- default pod path
-    if config.pods.path == nil then
-        config.pods.path = "" -- no path set, pods need to define a path
-    end
-
-    return config
+    return true
 end
 
 ---Untangles recipe groups. Respects target order.
@@ -803,43 +820,66 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
+--    SECTION Mode Config
+--
+-- ------------------------------------------------------------------------- --
+
+---Handle config mode.
+---@param registry table
+local function mode_config__handle(registry)
+
+end
+
+-- ------------------------------------------------------------------------- --
+--
 --    SECTION Mode Default
 --
 -- ------------------------------------------------------------------------- --
 
 ---Handle default mode.
----@param options table
----@param config table
-local function default__handle(options, config)
+---@param registry table
+local function mode_default__handle(registry)
+    local action = ""
+    local targets = {}
+
+    for i = 1, #registry.parameters do
+        local parameter = registry.parameters[i]
+        if i == 1 then
+            action = parameter
+        else
+            table.insert(targets, parameter)
+        end
+    end
+
     -- validate action
-    if string.is_nil_or_empty(options.action) then
+    if action == "" then
         log.error("No action set.")
         return
     end
-    if not table.contains({ "create", "recreate", "remove", "update" }, options.action) then
-        log.error("Unknown action '" .. options.action .. "'.")
+    if not table.contains({ "create", "recreate", "remove", "update" }, action) then
+        log.error("Unknown action '" .. action .. "'.")
         return
     end
 
     -- validate targets
-    if table.is_nil_or_empty(options.targets) then
+    if table.is_nil_or_empty(targets) then
         log.error("No targets set.")
         return
     end
 
     -- clean up targets
-    local untangled_targets = config__untangle_recipes(config.recipes.groups, options.targets)
+    local untangled_targets = config__untangle_recipes(registry.recipes.groups, targets)
     if untangled_targets == nil then return end
 
     -- handle recipes
-    local recipe_path = config.recipes.path
+    local recipe_path = registry.recipes.path
     for i = 1, #untangled_targets do
         local target = untangled_targets[i]
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
         if recipe ~= nil then
-            recipe__validate_and_handle(recipe, target, options.action, config)
+            recipe__validate_and_handle(registry, recipe, action, target)
         end
     end
 end
@@ -851,12 +891,11 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Handle simulate mode.
----@param options table
----@param config table
-local function simulate__handle(options, config)
-    options.simulate = true
+---@param registry table
+local function mode_simulate__handle(registry)
+    registry.flags.simulate = true
     log.info("Simulate mode is active.")
-    default__handle(options, config)
+    mode_default__handle(registry)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -866,9 +905,8 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Handle help mode. Prints help.
----@param options table
----@param config table
-local function help__handle(options, config)
+---@param registry table
+local function mode_help__handle(registry)
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
@@ -897,79 +935,63 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param arguments table
----@param options table
+---@param arguments string[]
+---@param registry table
+---@param startup_config table
 ---@param modes table
----@return boolean
-local function main__parse_arguments(arguments, options, modes)
+local function main__parse_arguments(arguments, registry, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        options.mode = modes["help"]
+        startup_config.mode_selected = modes["help"]
         return false
     end
     -- parse arguments
-    local skip = false
+    local mode_selected = false
     for i = 1, #arguments do
         local argument = arguments[i]
-        if skip == true then -- skips to allow "--argument value"
-            skip = false
-        else
-            -- reset skip if used
-            if skip then skip = false end
-
-            if string.begins_with(argument, "--") then
-                if argument == "--config" then
-                    skip = true
-                    options.config = table.get_or_default(arguments, i + 1, "")
-                elseif argument == "--debug" then
-                    debug = true
-                else
-                    log.error("Unknown option '" .. argument .. "'.")
-                    return true
-                end
-                -- check if argument is a mode
-            elseif table.has_key(modes, argument) then
-                if options.mode ~= nil then
-                    log.error("Mode '" .. argument .. "' is already set.")
-                    return true
-                end
-                options.mode = modes[argument]
+        if string.begins_with(argument, "--") then
+            if string.begins_with(argument, "--config=") then
+                local _, value = split_argument(argument)
+                startup_config.config_path = value
+            elseif argument == "--debug" then
+                debug = true
             else
-                if options.action == "" then
-                    -- first argument is action
-                    options.action = argument
-                else
-                    -- followed arguments are targets
-                    table.insert(options.targets, argument)
-                end
+                local parameter, value = split_argument(argument)
+                registry.flags[parameter] = value
             end
+            -- check if argument is a mode
+        elseif table.has_key(modes, argument) then
+            if not mode_selected then
+                startup_config.mode_selected = modes[argument]
+                mode_selected = true
+            end
+        else
+            table.insert(registry.parameters, argument)
         end
     end
-    -- set default mode if not set
-    if options.mode == nil then
-        options.mode = modes["default"]
-    end
-    return false
 end
 
 ---Main function.
 ---@param arguments string[]
 function main(arguments)
-    -- modes
     local modes = {
-        default = default__handle,
-        help = help__handle,
-        simulate = simulate__handle,
+        default = mode_default__handle,
+        config = mode_config__handle,
+        help = mode_help__handle,
+        simulate = mode_simulate__handle,
     }
 
-    -- default options
-    local options = {
-        action = "",       -- action for targets
-        config = "config", -- config name to use
-        mode = nil,        -- mode to use
-        simulate = false,  -- simulate all commands
-        targets = {},      -- target recipe names
+    local startup_config = {
+        config_path = "config",
+        mode_selected = modes.default,
+    }
+
+    local registry = {
+        flags = {
+            simulate = false,
+        },
+        parameters = {},
     }
 
     -- check lua version
@@ -1002,36 +1024,31 @@ function main(arguments)
     end
 
     -- parse arguments
-    if main__parse_arguments(arguments, options, modes) then return end
+    main__parse_arguments(arguments, registry, startup_config, modes)
+
+    log.debug("Debug mode is enabled.")
 
     -- normalize config name
-    local config_name = options.config
-    if config_name ~= "config" and config_name ~= "" then
-        config_name = normalize_name(config_name)
+    local config_path = startup_config.config_path
+    if config_path ~= "config" and config_path ~= "" then
+        config_path = normalize_name(config_path)
     end
 
-    -- parse config
-    local config_full_path = build_full_path(config_name, "", ".lua")
-    local config = config__load_and_set_defaults(config_full_path)
-    if config == nil then return end
+    -- build full config path
+    local config_full_path = build_full_path(config_path, "", ".lua")
 
     -- print info if non default confi is used and debug is enabled
-    if config_name ~= "config" then
+    if config_path ~= "config" then
         log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
-    -- enforce simulate from arguments
-    if options.simulate then
-        config.simulate = true
-    end
-
-    -- if simulate is true, override default mode
-    if options.mode == modes["default"] and config.simulate then
-        options.mode = modes["simulate"]
+    -- parse config
+    if not config__load_and_set(config_full_path, registry, startup_config, modes) then
+        return
     end
 
     -- handle mode
-    options.mode(options, config)
+    startup_config.mode_selected(registry)
 end
 
 -- prevent excecution when imported from test_suite

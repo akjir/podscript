@@ -1,8 +1,10 @@
+local s = "006"
 return {
     -- Tests for recipes.
     config = "config_005_recipes",
+    suite = s,
     tests = {
-        T00601 = {
+        [s .. "01"] = {
             description = "Recipe not found. No path.",
             config = "config_004_targets",
             action = "create",
@@ -12,7 +14,7 @@ return {
                 { 6, "ERROR: Couldn't load recipe './target.lua'!" },
             },
         },
-        T00602 = {
+        [s .. "02"] = {
             description = "Recipe not found. Path set.",
             action = "create",
             targets = { "recipe_000_unkown" },
@@ -21,7 +23,7 @@ return {
                 { 6, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
             },
         },
-        T00603 = {
+        [s .. "03"] = {
             description = "Recipe is empty. No name set.",
             action = "create",
             targets = { "recipe_001_empty" },
@@ -29,7 +31,7 @@ return {
                 { 5, "ERROR: No recipe name in recipe 'recipe_001_empty' set!" },
             },
         },
-        T00604 = {
+        [s .. "04"] = {
             description = "Pod section is missing.",
             action = "create",
             targets = { "recipe_002_no_pod" },
@@ -37,7 +39,7 @@ return {
                 { 5, "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty" },
             },
         },
-        T00605 = {
+        [s .. "05"] = {
             description = "Pod section is empty.",
             action = "create",
             targets = { "recipe_003_empty_pod" },
@@ -45,7 +47,7 @@ return {
                 { 5, "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty" },
             },
         },
-        T00606 = {
+        [s .. "06"] = {
             description = "No default registry set in pod section.",
             action = "create",
             targets = { "recipe_004_no_registry" },
@@ -53,7 +55,7 @@ return {
                 { 5, "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!" },
             },
         },
-        T00607 = {
+        [s .. "07"] = {
             description = "No default path and pod path set in pod section.",
             action = "create",
             targets = { "recipe_005_no_path" },
@@ -61,7 +63,7 @@ return {
                 { 5, "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!" },
             },
         },
-        T00608 = {
+        [s .. "08"] = {
             description = "Only default path for pod path set.",
             config = "config_006_recipes_with_pod_path",
             action = "create",
@@ -70,7 +72,7 @@ return {
                 { 5, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
             },
         },
-        T00609 = {
+        [s .. "09"] = {
             description = "No containers section defined.",
             config = "config_006_recipes_with_pod_path",
             action = "create",
@@ -79,7 +81,7 @@ return {
                 { 6, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
             },
         },
-        T00610 = {
+        [s .. "10"] = {
             description = "One empty Container.",
             config = "config_006_recipes_with_pod_path",
             action = "create",
@@ -88,7 +90,7 @@ return {
                 { 6, "ERROR: A container in pod 'nopathpod' is empty!" },
             },
         },
-        T00611 = {
+        [s .. "11"] = {
             description = "Use pod path '.'.",
             config = "config_009_same_directory",
             action = "create",
@@ -98,7 +100,7 @@ return {
                 { 7, "ERROR: Couldn't load recipe './target.lua'!" },
             }
         },
-        T00612 = {
+        [s .. "12"] = {
             description = "Missing ',' in lua file.",
             action = "create",
             targets = { "recipe_016_container_lua_error" },

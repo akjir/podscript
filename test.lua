@@ -183,7 +183,6 @@ local test_suites = {}
 
 local function add_suite(name)
     local suite = require("tests/" .. name)
-    suite.name = name
     table.insert(test_suites, suite)
 end
 
@@ -215,8 +214,8 @@ if single_test_name == "" then
 else
     local run_count = 0
     for a, test_suite in pairs(test_suites) do
-        -- Check if it matches a suite name
-        if test_suite.name == single_test_name or test_suite.name .. ".lua" == single_test_name then
+        -- Check if it matches a suite number
+        if test_suite.suite == single_test_name then
             found = true
             for test_code, test_table in pairs(test_suite.tests) do
                 local default_config_name = table.get_or_default(test_suite, "config", "")

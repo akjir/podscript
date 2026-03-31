@@ -1,28 +1,30 @@
+local s = "009"
 return {
     -- Tests for system checks like Lua version and Operating System.
+    suite = s,
     tests = {
-        T00901 = {
+        [s .. "01"] = {
             description = "Check Lua version (must be >= 5.4).",
             run = function()
                 return system.check_lua_version()
             end,
             expected = true,
         },
-        T00902 = {
+        [s .. "02"] = {
             description = "Check OS compatibility (must be Linux).",
             run = function()
                 return system.check_os()
             end,
             expected = true,
         },
-        T00903 = {
+        [s .. "03"] = {
             description = "Check Podman version (must be >= 5.8.0).",
             run = function()
                 return system.check_podman_version()
             end,
             expected = true,
         },
-        T00904 = {
+        [s .. "04"] = {
             description = "load_lua_file: successful load",
             run = function()
                 local path = "/tmp/test_success.lua"
@@ -37,7 +39,7 @@ return {
             end,
             expected = true,
         },
-        T00905 = {
+        [s .. "05"] = {
             description = "load_lua_file: file not found",
             run = function()
                 local result, error, error_type = system.load_lua_file("/tmp/non_existent_file.lua")
@@ -45,7 +47,7 @@ return {
             end,
             expected = true,
         },
-        T00906 = {
+        [s .. "06"] = {
             description = "load_lua_file: syntax error",
             run = function()
                 local path = "/tmp/test_syntax_error.lua"
@@ -60,7 +62,7 @@ return {
             end,
             expected = true,
         },
-        T00907 = {
+        [s .. "07"] = {
             description = "load_lua_file: execution error",
             run = function()
                 local path = "/tmp/test_exec_error.lua"
@@ -76,7 +78,7 @@ return {
             end,
             expected = true,
         },
-        T00908 = {
+        [s .. "08"] = {
             description = "Check if program is run with elevated execution rights (sudo).",
             run = function()
                 return system.runs_elevated()

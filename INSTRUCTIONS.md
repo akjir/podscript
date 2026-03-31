@@ -116,14 +116,28 @@ This is the mandatory workflow for all changes:
 
 1.  **Modify Source**: Edit files in the `src/` directory.
 2.  **Test (Dev Mode)**: Run `lua test.lua --dev` to verify changes using the source files.
-    *   Example: `lua test.lua --dev MySpecificTest`
-3.  **Build**: Run `lua build.lua` to generate the new `pods.lua`.
+    *   **Always test with `--dev` first.**
+    *   Example: `lua test.lua --dev 00101`
+3.  **Build**: Run `lua build.lua` to generate the updated `pods.lua`.
 4.  **Test (Release Mode)**: Run `lua test.lua` to verify the generated release file.
-    *   All tests must pass in both modes before completing a task.
+    *   **Final verification must be done against the release version.**
+    *   Example: `lua test.lua 00101`
 5.  **Document & Maintain**:
     *   Update `CHANGELOG.md` for all user-facing changes, including new checks or additional functionality.
     *   **CRITICAL:** Update `INSTRUCTIONS.md` and `USAGE.md` to reflect any architectural or usage changes.
 
 ## 8. Testing Framework
 
-The testing framework captures output and compares it against expectations. Test suites are in the `tests/` directory. Refer to existing tests for the structure of `expectations` and `simulate` flags.
+The testing framework (`test.lua`) captures output and compares it against expectations. 
+
+### 8.1. Test Suites and Identifiers
+
+*   **Location**: Test suites are located in the `tests/` directory.
+*   **Suite ID**: Each suite defines its own 3-digit number (e.g., `local s = "004"`).
+*   **Test ID**: Individual tests within a suite use a sequential 2-digit suffix (e.g., `[s .. "01"]`).
+*   **Calling Tests**:
+    *   Run a full suite: `lua test.lua 004`
+    *   Run a single test: `lua test.lua 00401`
+*   **Searchability**: Test IDs must be explicit in the code (using the `[s .. "NN"]` pattern) to ensure they are easily findable via text search.
+
+Refer to existing tests in `tests/suite_*.lua` for the structure of `expectations`, `run` functions, and `simulate` flags.

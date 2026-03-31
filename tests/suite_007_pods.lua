@@ -1,8 +1,10 @@
+local s = "007"
 return {
     -- Tests for pods.
     config = "config_007_pods",
+    suite = s,
     tests = {
-        T00701 = {
+        [s .. "01"] = {
             description = "Create simple pod. Names are mixed case and have spaces and there is no pod path.",
             action = "create",
             targets = { "@nona" },
@@ -19,7 +21,7 @@ return {
                 { 10, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
             },
         },
-        T00702 = {
+        [s .. "02"] = {
             description = "Remove simple pod. Names are mixed case and have spaces and there is no pod path.",
             action = "remove",
             targets = { "@nona" },
@@ -32,7 +34,7 @@ return {
                 { 12, "podman pod rm si_po;" },
             },
         },
-        T00703 = {
+        [s .. "03"] = {
             description = "Update simple pod. Names are mixed case and have spaces and there is no pod path.",
             action = "update",
             targets = { "@nona" },
@@ -42,7 +44,7 @@ return {
                 { 9, "podman pull registry.io/alpine:latest;" },
             },
         },
-        T00704 = {
+        [s .. "04"] = {
             description = "Recreate simple pod. Names are mixed case and have spaces and there is no pod path.",
             action = "recreate",
             targets = { "@nona" },
@@ -51,7 +53,7 @@ return {
                 { 13, "Create pod 'Simple Pod' ('si_po'): " },
             },
         },
-        T00705 = {
+        [s .. "05"] = {
             description = "Test for publish.",
             action = "create",
             targets = { "recipe_008_publish" },
@@ -59,7 +61,7 @@ return {
                 { 8, "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
             },
         },
-        T00706 = {
+        [s .. "06"] = {
             description = "Test for options.",
             action = "create",
             targets = { "recipe_010_pod_options" },

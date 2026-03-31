@@ -1,8 +1,10 @@
+local s = "004"
 return {
     -- Tests for actions.
     -- config = none,
+    suite = s,
     tests = {
-        T00401 = {
+        [s .. "01"] = {
             description = "No action set.",
             config = "config_005_recipes",
             targets = { "target" },
