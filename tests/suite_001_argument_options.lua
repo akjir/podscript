@@ -7,8 +7,7 @@ return {
         [s .. "01"] = {
             description = "Complete empty config.",
             config = "config_001_empty",
-            action = "create",
-            targets = { "target" },
+            parameters = { "create", "target" },
             simulate = false,
             expectations = {
                 { 3, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
@@ -17,8 +16,7 @@ return {
         [s .. "02"] = {
             description = "Force simulate mode through argument and ignore config.",
             config = "config_002_simulate_false",
-            action = "create",
-            targets = { "target" },
+            parameters = { "create", "target" },
             simulate = true,
             expectations = {
                 { 2, "DEBUG: Config './tests/configs/config_002_simulate_false.lua' is used." },
@@ -28,8 +26,7 @@ return {
         [s .. "03"] = {
             description = "Activate simulate mode through config. Ignore missing argument.",
             config = "config_003_simulate_true",
-            action = "create",
-            targets = { "target" },
+            parameters = { "create", "target" },
             simulate = false,
             expectations = {
                 { 2, "DEBUG: Config './tests/configs/config_003_simulate_true.lua' is used." },
@@ -39,8 +36,7 @@ return {
         [s .. "04"] = {
             description = "Config not found.",
             config = "config_missing",
-            action = "create",
-            targets = { "target" },
+            parameters = { "create", "target" },
             expectations = {
                 { 3, "ERROR: cannot open ./tests/configs/config_missing.lua: No such file or directory" },
                 { 4, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
@@ -55,8 +51,7 @@ return {
         [s .. "06"] = {
             description = "Set help flag. Print help.",
             config = "",
-            action = "",
-            targets = {},
+            parameters = {},
             help = true,
             expectations = {
                 { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },

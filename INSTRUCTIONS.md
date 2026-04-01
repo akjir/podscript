@@ -139,6 +139,9 @@ The testing framework (`test.lua`) captures output and compares it against expec
 *   **Location**: Test suites are located in the `tests/` directory.
 *   **Suite ID**: Each suite defines its own 3-digit number (e.g., `local s = "004"`).
 *   **Test ID**: Individual tests within a suite use a sequential 2-digit suffix (e.g., `[s .. "01"]`).
+*   **Test Types**:
+    *   **Mode Test**: Tests the command-line interface by passing a `parameters` table (e.g., `{ "create", "target" }`) and verifying captured output against `expectations`.
+    *   **Code Test**: Tests internal functions directly via a `run` function and compares the result to an `expected` value.
 *   **Calling Tests**:
     *   Run a full suite: `lua test.lua 004`
     *   Run a single test: `lua test.lua 00401`

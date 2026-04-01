@@ -6,8 +6,7 @@ return {
     tests = {
         [s .. "01"] = {
             description = "Create simple pod. Names are mixed case and have spaces and there is no pod path.",
-            action = "create",
-            targets = { "@nona" },
+            parameters = { "create", "@nona" },
             expectations = {
                 { 1,  "DEBUG: Debug mode is enabled." },
                 { 2,  "DEBUG: Config './tests/configs/config_007_pods.lua' is used." },
@@ -23,8 +22,7 @@ return {
         },
         [s .. "02"] = {
             description = "Remove simple pod. Names are mixed case and have spaces and there is no pod path.",
-            action = "remove",
-            targets = { "@nona" },
+            parameters = { "remove", "@nona" },
             expectations = {
                 { 7,  "Stop container 'supr_app': " },
                 { 8,  "podman stop supr_app;" },
@@ -36,8 +34,7 @@ return {
         },
         [s .. "03"] = {
             description = "Update simple pod. Names are mixed case and have spaces and there is no pod path.",
-            action = "update",
-            targets = { "@nona" },
+            parameters = { "update", "@nona" },
             expectations = {
                 { 7, "Update pod 'Simple Pod' ('si_po') ..." },
                 { 8, "Update container 'supr_app' ..." },
@@ -46,8 +43,7 @@ return {
         },
         [s .. "04"] = {
             description = "Recreate simple pod. Names are mixed case and have spaces and there is no pod path.",
-            action = "recreate",
-            targets = { "@nona" },
+            parameters = { "recreate", "@nona" },
             expectations = {
                 { 11, "Remove pod 'Simple Pod' ('si_po'): " },
                 { 13, "Create pod 'Simple Pod' ('si_po'): " },
@@ -55,16 +51,14 @@ return {
         },
         [s .. "05"] = {
             description = "Test for publish.",
-            action = "create",
-            targets = { "recipe_008_publish" },
+            parameters = { "create", "recipe_008_publish" },
             expectations = {
                 { 8, "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
             },
         },
         [s .. "06"] = {
             description = "Test for options.",
-            action = "create",
-            targets = { "recipe_010_pod_options" },
+            parameters = { "create", "recipe_010_pod_options" },
             expectations = {
                 { 8, "podman pod create --name options --some thing --another thing;" },
             },

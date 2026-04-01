@@ -7,7 +7,7 @@ return {
         [s .. "01"] = {
             description = "No action set.",
             config = "config_005_recipes",
-            targets = { "target" },
+            parameters = { "target" },
             expectations = {
                 { 3, "ERROR: Unknown action 'target'." },
             },

@@ -75,7 +75,7 @@ end
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
-local function execute_default_test(default_config_name, test_code, test_table, print_stack)
+local function execute_mode_test(default_config_name, test_code, test_table, print_stack)
     local config_name = table.get_or_default(test_table, "config", "")
     local arguments = {}
 
@@ -96,8 +96,7 @@ local function execute_default_test(default_config_name, test_code, test_table, 
     if test_table.simulate then
         table.insert(arguments, "simulate")
     end
-    table.insert(arguments, test_table.action)
-    table.append(arguments, test_table.targets)
+    table.append(arguments, test_table.parameters)
 
     -- execute pods or src.main with arguments
     main(arguments)
@@ -160,7 +159,7 @@ local function execute_test(default_config_name, test_code, test_table, print_st
             tests_count_failed = tests_count_failed + 1
         end
     else
-        if not execute_default_test(default_config_name, test_code, test_table, print_stack) then
+        if not execute_mode_test(default_config_name, test_code, test_table, print_stack) then
             tests_count_failed = tests_count_failed + 1
         end
     end
