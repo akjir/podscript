@@ -18,6 +18,10 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
+require "src.header"
+require "src.log"
+require "src.helper"
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -25,8 +29,26 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --
 -- ------------------------------------------------------------------------- --
 
+---Print config help.
+function mode_config__help()
+    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("Usage: pods config [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua config [OPTIONS] ACTION [TARGETS]\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("ACTIONS:")
+    log.print("  help               display this help and exit")
+end
+
 ---Handle config mode.
 ---@param registry table
 function mode_config__handle(registry)
     local action, targets = parse_action_and_targets_parameters(registry)
+    local actions = {
+        help = mode_config__help
+    }
+    local execute = actions[action] or function()
+        log.error("Unknown action: " .. tostring(action))
+    end
+    execute()
 end

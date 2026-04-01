@@ -198,6 +198,7 @@ add_suite("suite_007_pods")
 add_suite("suite_008_containers")
 add_suite("suite_009_system")
 add_suite("suite_010_helper")
+add_suite("suite_011_mode_config")
 
 -- ------------------------------------------------------------------------- --
 --      Main

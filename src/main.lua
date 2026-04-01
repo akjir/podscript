@@ -24,6 +24,7 @@ require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
 require "src.config"
+require "src.mode_config"
 require "src.mode_default"
 require "src.mode_simulate"
 require "src.mode_help"
@@ -46,10 +47,10 @@ local function main__parse_arguments(arguments, registry, startup_config, modes)
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
         startup_config.mode_selected = modes.help
-        return false
+        return
     end
     -- parse arguments
-    local mode_selected = false
+    local has_seen_positional = false
     for i = 1, #arguments do
         local argument = arguments[i]
         if string.begins_with(argument, "--") then
@@ -63,13 +64,14 @@ local function main__parse_arguments(arguments, registry, startup_config, modes)
                 registry.flags[parameter] = value
             end
             -- check if argument is a mode
-        elseif table.has_key(modes, argument) then
-            if not mode_selected then
-                startup_config.mode_selected = modes[argument]
-                mode_selected = true
-            end
         else
-            table.insert(registry.parameters, argument)
+            local is_mode = (not has_seen_positional) and modes[argument]
+            has_seen_positional = true
+            if is_mode then
+                startup_config.mode_selected = modes[argument]
+            else
+                table.insert(registry.parameters, argument)
+            end
         end
     end
 end
