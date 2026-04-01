@@ -38,11 +38,11 @@ require "src.system"
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param arguments string[]
 ---@param registry table
+---@param arguments string[]
 ---@param startup_config table
 ---@param modes table
-local function main__parse_arguments(arguments, registry, startup_config, modes)
+local function main__parse_arguments(registry, arguments, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
@@ -93,9 +93,8 @@ function main(arguments)
     }
 
     local registry = {
-        flags = {
-            simulate = false,
-        },
+        config = {},
+        flags = {},
         parameters = {},
     }
 
@@ -129,7 +128,7 @@ function main(arguments)
     end
 
     -- parse arguments
-    main__parse_arguments(arguments, registry, startup_config, modes)
+    main__parse_arguments(registry, arguments, startup_config, modes)
 
     log.debug("Debug mode is enabled.")
 
@@ -148,8 +147,13 @@ function main(arguments)
     end
 
     -- parse config
-    if not config__load_and_set(config_full_path, registry, startup_config, modes) then
+    if not config__load_and_set(registry, config_full_path) then
         return
+    end
+
+    -- config simulate activates simulate mode if default mode is selected
+    if registry.config.simulate and startup_config.mode_selected == modes["default"] then
+        startup_config.mode_selected = modes["simulate"]
     end
 
     -- handle mode

@@ -678,12 +678,12 @@ local function recipe__validate_and_handle(registry, recipe, action, target)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(registry.pods.path) then
+        if string.is_nil_or_empty(registry.config.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(registry.pods.path, recipe.pod.name, "")
+            local path = build_full_path(registry.config.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -731,12 +731,10 @@ end
 
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
----@param config_full_path string
 ---@param registry table
----@param startup_config table
----@param modes table
+---@param config_full_path string
 ---@return boolean
-local function config__load_and_set(config_full_path, registry, startup_config, modes)
+local function config__load_and_set(registry, config_full_path)
     local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
         if error ~= nil then
@@ -746,13 +744,18 @@ local function config__load_and_set(config_full_path, registry, startup_config, 
         return false
     end
 
-    -- pod values
-    registry.pods = config.pods
-    if not registry.pods then
-        registry.pods = {}
+    -- config values
+    registry.config = config
+    if registry.config.simulate == nil then
+        registry.config.simulate = true
     end
-    if not registry.pods.path then
-        registry.pods.path = "" -- no path set, pods need to define a path
+
+    -- pod values
+    if not registry.config.pods then
+        registry.config.pods = {}
+    end
+    if not registry.config.pods.path then
+        registry.config.pods.path = "" -- no path set, pods need to define a path
     end
 
     -- recipes values
@@ -770,13 +773,6 @@ local function config__load_and_set(config_full_path, registry, startup_config, 
             registry.recipes.path = "./"
         end
     end
-
-    -- simulate default is true
-    -- if simulate is not defined or true and mode is default, set mode to simulate
-    if (config.simulate == nil or config.simulate == true) and startup_config.mode_selected == modes["default"] then
-        startup_config.mode_selected = modes["simulate"]
-    end
-
     return true
 end
 
@@ -844,17 +840,37 @@ local function mode_config__help()
     log.print("  help               display this help and exit")
 end
 
+local function mode_config__print(registry)
+    log.print("simulate: " .. tostring(registry.config.simulate))
+    log.print("pods:")
+    log.print("  path: " .. registry.config.pods.path)
+    log.print("recipes:")
+    log.print("  path: " .. registry.config.recipes.path)
+    log.print("  groups:")
+
+    local group_names = {}
+    for name, _ in pairs(registry.config.recipes.groups) do
+        table.insert(group_names, name)
+    end
+    table.sort(group_names)
+
+    for _, name in ipairs(group_names) do
+        log.print("    - " .. name)
+    end
+end
+
 ---Handle config mode.
 ---@param registry table
 local function mode_config__handle(registry)
     local action, targets = parse_action_and_targets_parameters(registry)
     local actions = {
-        help = mode_config__help
+        help = mode_config__help,
+        print = mode_config__print
     }
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute()
+    execute(registry)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -952,11 +968,11 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param arguments string[]
 ---@param registry table
+---@param arguments string[]
 ---@param startup_config table
 ---@param modes table
-local function main__parse_arguments(arguments, registry, startup_config, modes)
+local function main__parse_arguments(registry, arguments, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
@@ -1006,9 +1022,8 @@ function main(arguments)
     }
 
     local registry = {
-        flags = {
-            simulate = false,
-        },
+        config = {},
+        flags = {},
         parameters = {},
     }
 
@@ -1042,7 +1057,7 @@ function main(arguments)
     end
 
     -- parse arguments
-    main__parse_arguments(arguments, registry, startup_config, modes)
+    main__parse_arguments(registry, arguments, startup_config, modes)
 
     log.debug("Debug mode is enabled.")
 
@@ -1061,8 +1076,13 @@ function main(arguments)
     end
 
     -- parse config
-    if not config__load_and_set(config_full_path, registry, startup_config, modes) then
+    if not config__load_and_set(registry, config_full_path) then
         return
+    end
+
+    -- config simulate activates simulate mode if default mode is selected
+    if registry.config.simulate and startup_config.mode_selected == modes["default"] then
+        startup_config.mode_selected = modes["simulate"]
     end
 
     -- handle mode

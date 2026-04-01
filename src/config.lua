@@ -29,12 +29,10 @@ require "src.helper"
 
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
----@param config_full_path string
 ---@param registry table
----@param startup_config table
----@param modes table
+---@param config_full_path string
 ---@return boolean
-function config__load_and_set(config_full_path, registry, startup_config, modes)
+function config__load_and_set(registry, config_full_path)
     local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
         if error ~= nil then
@@ -44,13 +42,18 @@ function config__load_and_set(config_full_path, registry, startup_config, modes)
         return false
     end
 
-    -- pod values
-    registry.pods = config.pods
-    if not registry.pods then
-        registry.pods = {}
+    -- config values
+    registry.config = config
+    if registry.config.simulate == nil then
+        registry.config.simulate = true
     end
-    if not registry.pods.path then
-        registry.pods.path = "" -- no path set, pods need to define a path
+
+    -- pod values
+    if not registry.config.pods then
+        registry.config.pods = {}
+    end
+    if not registry.config.pods.path then
+        registry.config.pods.path = "" -- no path set, pods need to define a path
     end
 
     -- recipes values
@@ -68,13 +71,6 @@ function config__load_and_set(config_full_path, registry, startup_config, modes)
             registry.recipes.path = "./"
         end
     end
-
-    -- simulate default is true
-    -- if simulate is not defined or true and mode is default, set mode to simulate
-    if (config.simulate == nil or config.simulate == true) and startup_config.mode_selected == modes["default"] then
-        startup_config.mode_selected = modes["simulate"]
-    end
-
     return true
 end
 

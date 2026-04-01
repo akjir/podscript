@@ -84,12 +84,12 @@ function recipe__validate_and_handle(registry, recipe, action, target)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(registry.pods.path) then
+        if string.is_nil_or_empty(registry.config.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
             return
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(registry.pods.path, recipe.pod.name, "")
+            local path = build_full_path(registry.config.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end

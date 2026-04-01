@@ -40,15 +40,35 @@ function mode_config__help()
     log.print("  help               display this help and exit")
 end
 
+function mode_config__print(registry)
+    log.print("simulate: " .. tostring(registry.config.simulate))
+    log.print("pods:")
+    log.print("  path: " .. registry.config.pods.path)
+    log.print("recipes:")
+    log.print("  path: " .. registry.config.recipes.path)
+    log.print("  groups:")
+
+    local group_names = {}
+    for name, _ in pairs(registry.config.recipes.groups) do
+        table.insert(group_names, name)
+    end
+    table.sort(group_names)
+
+    for _, name in ipairs(group_names) do
+        log.print("    - " .. name)
+    end
+end
+
 ---Handle config mode.
 ---@param registry table
 function mode_config__handle(registry)
     local action, targets = parse_action_and_targets_parameters(registry)
     local actions = {
-        help = mode_config__help
+        help = mode_config__help,
+        print = mode_config__print
     }
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute()
+    execute(registry)
 end
