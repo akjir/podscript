@@ -32,17 +32,7 @@ require "src.helper"
 ---Handle default mode.
 ---@param registry table
 function mode_default__handle(registry)
-    local action = ""
-    local targets = {}
-
-    for i = 1, #registry.parameters do
-        local parameter = registry.parameters[i]
-        if i == 1 then
-            action = parameter
-        else
-            table.insert(targets, parameter)
-        end
-    end
+    local action, targets = parse_action_and_targets_parameters(registry)
 
     -- validate action
     if action == "" then

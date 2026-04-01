@@ -28,5 +28,5 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---Handle config mode.
 ---@param registry table
 function mode_config__handle(registry)
-
+    local action, targets = parse_action_and_targets_parameters(registry)
 end

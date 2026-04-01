@@ -56,6 +56,15 @@ function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
+---Parse the action and targets parameters from a registry.
+---@param registry table The registry to parse.
+---@return string, table # The action and targets.
+function parse_action_and_targets_parameters(registry)
+    local parameters = registry.parameters
+    local targets = table.move(parameters, 2, #parameters, 1, {})
+    return parameters[1] or "", targets
+end
+
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
 ---@return string, string|boolean # The key and value.

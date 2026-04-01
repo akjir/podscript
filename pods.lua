@@ -246,6 +246,15 @@ local function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
+---Parse the action and targets parameters from a registry.
+---@param registry table The registry to parse.
+---@return string, table # The action and targets.
+local function parse_action_and_targets_parameters(registry)
+    local parameters = registry.parameters
+    local targets = table.move(parameters, 2, #parameters, 1, {})
+    return parameters[1] or "", targets
+end
+
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
 ---@return string, string|boolean # The key and value.
@@ -827,7 +836,7 @@ end
 ---Handle config mode.
 ---@param registry table
 local function mode_config__handle(registry)
-
+    local action, targets = parse_action_and_targets_parameters(registry)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -839,17 +848,7 @@ end
 ---Handle default mode.
 ---@param registry table
 local function mode_default__handle(registry)
-    local action = ""
-    local targets = {}
-
-    for i = 1, #registry.parameters do
-        local parameter = registry.parameters[i]
-        if i == 1 then
-            action = parameter
-        else
-            table.insert(targets, parameter)
-        end
-    end
+    local action, targets = parse_action_and_targets_parameters(registry)
 
     -- validate action
     if action == "" then
@@ -943,7 +942,7 @@ local function main__parse_arguments(arguments, registry, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        startup_config.mode_selected = modes["help"]
+        startup_config.mode_selected = modes.help
         return false
     end
     -- parse arguments

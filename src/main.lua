@@ -45,7 +45,7 @@ local function main__parse_arguments(arguments, registry, startup_config, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        startup_config.mode_selected = modes["help"]
+        startup_config.mode_selected = modes.help
         return false
     end
     -- parse arguments
