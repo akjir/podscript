@@ -69,18 +69,18 @@ table.remove_duplicates = function(table)
     return result
 end
 
----Get value from table or default if key not found
+---Get value from table or default if key not found.
+---You can use "table and table[key] or default" instead, if there is no false value in table.
 ---@param table table|nil
 ---@param key any
 ---@param default any
 table.get_or_default = function(table, key, default)
     if table == nil then return default end
     local value = table[key]
-    if value == nil then
-        return default
-    else
+    if value ~= nil then
         return value
     end
+    return default
 end
 
 ---Check if a key exists in a table.
