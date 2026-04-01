@@ -12,12 +12,14 @@ return {
     -- Defines where to find recipe files for pod creation.
     recipes = {
         -- The default search path for recipe files.
-        path = ".",
+        --path = ".",
         -- Defines groups of recipes that can be run together.
         -- All active recipes must be in a group.
         groups = {
             -- An example of a recipe group.
-            all = {},
+            all = {
+                "pod",
+            },
         },
     },
 }

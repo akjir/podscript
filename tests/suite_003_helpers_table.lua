@@ -186,5 +186,39 @@ return {
             end,
             expected = false
         },
+        [s .. "25"] = {
+            description = "table.to_yaml - simple map",
+            run = function()
+                return table.to_string(table.to_yaml_lines({ a = 1, b = "test", c = true }))
+            end,
+            expected = table.to_string({ "a: 1", "b: test", "c: true" })
+        },
+        [s .. "26"] = {
+            description = "table.to_yaml - simple list",
+            run = function()
+                return table.to_string(table.to_yaml_lines({ "a", "b", "c" }))
+            end,
+            expected = table.to_string({ "- a", "- b", "- c" })
+        },
+        [s .. "27"] = {
+            description = "table.to_yaml - nested structure",
+            run = function()
+                return table.to_string(table.to_yaml_lines({
+                    simulate = true,
+                    pods = { path = "/pods" },
+                    recipes = { groups = { all = { "r1", "r2" } } }
+                }))
+            end,
+            expected = table.to_string({
+                "pods:",
+                "  path: /pods",
+                "recipes:",
+                "  groups:",
+                "    all:",
+                "      - r1",
+                "      - r2",
+                "simulate: true"
+            })
+        },
     },
 }

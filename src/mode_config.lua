@@ -40,22 +40,13 @@ function mode_config__help()
     log.print("  help               display this help and exit")
 end
 
-function mode_config__print(registry)
-    log.print("simulate: " .. tostring(registry.config.simulate))
-    log.print("pods:")
-    log.print("  path: " .. registry.config.pods.path)
-    log.print("recipes:")
-    log.print("  path: " .. registry.config.recipes.path)
-    log.print("  groups:")
-
-    local group_names = {}
-    for name, _ in pairs(registry.config.recipes.groups) do
-        table.insert(group_names, name)
-    end
-    table.sort(group_names)
-
-    for _, name in ipairs(group_names) do
-        log.print("    - " .. name)
+---Print config.
+---@param registry table
+local function mode_config__print(registry)
+    local yaml_lines = table.to_yaml_lines(registry.config)
+    for i = 1, #yaml_lines do
+        local prefix = string.format("%3d: ", i)
+        log.print(prefix .. yaml_lines[i])
     end
 end
 

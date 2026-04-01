@@ -209,6 +209,62 @@ table.size = function(table)
     return count
 end
 
+---Converts a table to an array of YAML-style strings (one string per line).
+---@diagnostic disable-next-line: missing-return
+---@param tbl table|nil The table to convert.
+---@param indent integer|nil Current indentation level.
+---@param _lines table|nil INTERNAL USE ONLY: The array collecting the lines.
+---@return table # An array of strings, where each string is a line.
+table.to_yaml_lines = function(tbl, indent, _lines)
+    if type(tbl) ~= "table" then
+        return { tostring(tbl) }
+    end
+
+    local is_root = (_lines == nil)
+    local lines = _lines or {}
+    indent = indent or 0
+    local spacing = string.rep("  ", indent)
+
+    local is_list = (#tbl > 0)
+
+    if is_list then
+        for i = 1, #tbl do
+            local v = tbl[i]
+            if type(v) == "table" then
+                lines[#lines + 1] = spacing .. "-"
+                table.to_yaml_lines(v, indent + 1, lines)
+            else
+                lines[#lines + 1] = spacing .. "- " .. tostring(v)
+            end
+        end
+    else
+        local keys = {}
+        for k in pairs(tbl) do
+            keys[#keys + 1] = k
+        end
+        table.sort(keys)
+
+        for i = 1, #keys do
+            local k = keys[i]
+            local v = tbl[k]
+
+            if type(v) == "table" then
+                lines[#lines + 1] = spacing .. tostring(k) .. ":"
+                if next(v) ~= nil then
+                    table.to_yaml_lines(v, indent + 1, lines)
+                end
+            else
+                lines[#lines + 1] = spacing .. tostring(k) .. ": " .. tostring(v)
+            end
+        end
+    end
+
+    if is_root then
+        return lines
+        ---@diagnostic disable-next-line: missing-return
+    end
+end
+
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Helper
@@ -770,7 +826,7 @@ local function config__load_and_set(registry, config_full_path)
         end
         -- set default path for recipes or correct them
         if string.is_nil_or_empty(registry.recipes.path) then
-            registry.recipes.path = "./"
+            registry.recipes.path = "."
         end
     end
     return true
@@ -840,22 +896,13 @@ local function mode_config__help()
     log.print("  help               display this help and exit")
 end
 
+---Print config.
+---@param registry table
 local function mode_config__print(registry)
-    log.print("simulate: " .. tostring(registry.config.simulate))
-    log.print("pods:")
-    log.print("  path: " .. registry.config.pods.path)
-    log.print("recipes:")
-    log.print("  path: " .. registry.config.recipes.path)
-    log.print("  groups:")
-
-    local group_names = {}
-    for name, _ in pairs(registry.config.recipes.groups) do
-        table.insert(group_names, name)
-    end
-    table.sort(group_names)
-
-    for _, name in ipairs(group_names) do
-        log.print("    - " .. name)
+    local yaml_lines = table.to_yaml_lines(registry.config)
+    for i = 1, #yaml_lines do
+        local prefix = string.format("%3d: ", i)
+        log.print(prefix .. yaml_lines[i])
     end
 end
 

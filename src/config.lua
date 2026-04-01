@@ -68,7 +68,7 @@ function config__load_and_set(registry, config_full_path)
         end
         -- set default path for recipes or correct them
         if string.is_nil_or_empty(registry.recipes.path) then
-            registry.recipes.path = "./"
+            registry.recipes.path = "."
         end
     end
     return true
