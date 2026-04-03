@@ -29,6 +29,17 @@ require "src.helper"
 --
 -- ------------------------------------------------------------------------- --
 
+---Edit config.
+---@param registry table
+local function mode_config__edit(registry)
+    local editor = registry.config.editor
+    if editor == "" then
+        log.error("No editor configured.")
+        return
+    end
+    local command = editor .. " " .. registry.config.full_path
+    system.exec(command, "", false, true)
+end
 ---Print config help.
 function mode_config__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
@@ -38,6 +49,7 @@ function mode_config__help()
     log.print("  --config=NAME      use config with given name or path")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
+    log.print("  edit               edit config")
     log.print("  print              print config")
 end
 
@@ -60,6 +72,7 @@ function mode_config__handle(registry)
     local action, _ = parse_action_and_targets_parameters(registry)
     local actions = {
         help = mode_config__help,
+        edit = mode_config__edit,
         print = mode_config__print
     }
     local execute = actions[action] or function()

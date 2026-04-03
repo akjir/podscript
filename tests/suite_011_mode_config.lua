@@ -25,5 +25,22 @@ return {
                 { 11, "  8: }" },
             },
         },
+        [s .. "03"] = {
+            description = "Edit config with no editor configured.",
+            config = "config_011_no_editor",
+            parameters = { "config", "edit" },
+            expectations = {
+                { 4, "ERROR: No editor configured." },
+            },
+        },
+        [s .. "04"] = {
+            description = "Edit config with invalid editor.",
+            config = "config_012_invalid_editor",
+            parameters = { "config", "edit" },
+            expectations = {
+                { 4, "DEBUG: Execute: editor ./tests/configs/config_012_invalid_editor.lua;" },
+                { 5, "ERROR: Command exited with code '127'!" },
+            },
+        },
     }
 }

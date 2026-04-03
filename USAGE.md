@@ -97,7 +97,21 @@ The `config` mode allows you to inspect the active configuration.
 | Action | Description |
 | :--- | :--- |
 | `print` | Display the content of the current configuration file with line numbers. |
-| `help` | Display help for the config mode. |
+| `edit`  | Open the current configuration file in an external editor. |
+| `help`  | Display help for the config mode. |
+
+### Configuration
+
+To use the `edit` action, you must define an `editor` command in your configuration file:
+
+```lua
+return {
+    editor = "vim", -- or "nano", "code", etc.
+    -- ...
+}
+```
+
+If no `editor` is defined, the `edit` action will return an error.
 
 ### Usage
 
@@ -108,6 +122,10 @@ The `config` mode allows you to inspect the active configuration.
 2.  **Print a specific configuration:**
     ```bash
     lua pods.lua --config alternative_config config print
+    ```
+3.  **Edit the default configuration:**
+    ```bash
+    lua pods.lua config edit
     ```
 
 ---

@@ -317,11 +317,18 @@ system = {
     ---@param command string
     ---@param prefix string
     ---@param simulate boolean
-    exec = function(command, prefix, simulate)
+    ---@param direct boolean
+    exec = function(command, prefix, simulate, direct)
         if not string.ends_with(command, ";") then
             command = command .. ";"
         end
-        if simulate then
+        if direct then
+            log.debug("Execute: " .. command)
+            local success, _, exit_code = os.execute(command)
+            if not success then
+                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+            end
+        elseif simulate then
             if not string.is_nil_or_empty(prefix) then
                 log.print(prefix)
             end
@@ -476,7 +483,7 @@ local function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate)
+    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate, false)
 end
 
 ---Ensure container name.
@@ -522,8 +529,8 @@ end
 ---@param container table
 ---@param simulate boolean
 local function container__remove(container, simulate)
-    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate)
-    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate)
+    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate, false)
 end
 
 ---Update a container image.
@@ -533,7 +540,7 @@ end
 local function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate)
+    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate, false)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -583,7 +590,7 @@ local function pod__create(recipe, simulate)
 
     -- create pod
     system.exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate)
+        simulate, false)
 
     -- create containers
     local containers = recipe.containers
@@ -608,7 +615,7 @@ local function pod__remove(recipe, simulate)
 
     -- remove pod
     system.exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate)
+        simulate, false)
 end
 
 ---Remove and create pod and containers.
@@ -748,6 +755,9 @@ local function config__load_and_set(registry, config_full_path)
     registry.config.full_path = config_full_path
     if registry.config.simulate == nil then
         registry.config.simulate = true
+    end
+    if registry.config.editor == nil then
+        registry.config.editor = ""
     end
 
     -- pod values
@@ -897,6 +907,17 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Edit config.
+---@param registry table
+local function mode_config__edit(registry)
+    local editor = registry.config.editor
+    if editor == "" then
+        log.error("No editor configured.")
+        return
+    end
+    local command = editor .. " " .. registry.config.full_path
+    system.exec(command, "", false, true)
+end
 ---Print config help.
 local function mode_config__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
@@ -906,6 +927,7 @@ local function mode_config__help()
     log.print("  --config=NAME      use config with given name or path")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
+    log.print("  edit               edit config")
     log.print("  print              print config")
 end
 
@@ -928,6 +950,7 @@ local function mode_config__handle(registry)
     local action, _ = parse_action_and_targets_parameters(registry)
     local actions = {
         help = mode_config__help,
+        edit = mode_config__edit,
         print = mode_config__print
     }
     local execute = actions[action] or function()

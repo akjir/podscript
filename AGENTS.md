@@ -65,7 +65,7 @@ Each module in `src/` corresponds to a section with specific function naming con
 | **Helper**   | General-purpose utility functions.            | Global functions (no prefix)       | `helper.lua`   |
 | **Mode Default** | Default logic (create, remove, update, etc.). | Prefix `mode_default__`            | `mode_default.lua` |
 | **Mode Simulate** | Simulates commands in default mode.          | Prefix `mode_simulate__`           | `mode_simulate.lua` |
-| **Mode Config**   | Handles configuration inspection.           | Prefix `mode_config__`             | `mode_config.lua`  |
+| **Mode Config**   | Handles configuration inspection and editing. | Prefix `mode_config__`             | `mode_config.lua`  |
 | **Mode Recipe**   | Handles recipe inspection.                 | Prefix `mode_recipe__`             | `mode_recipe.lua`  |
 | **Mode Help**     | Displays usage help for different modes.     | Prefix `mode_help__`               | `mode_help.lua`    |
 | **Container**     | Manages Podman container lifecycle.          | Prefix `container__`               | `container.lua`    |

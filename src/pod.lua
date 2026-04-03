@@ -69,7 +69,7 @@ function pod__create(recipe, simulate)
 
     -- create pod
     system.exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate)
+        simulate, false)
 
     -- create containers
     local containers = recipe.containers
@@ -94,7 +94,7 @@ function pod__remove(recipe, simulate)
 
     -- remove pod
     system.exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate)
+        simulate, false)
 end
 
 ---Remove and create pod and containers.

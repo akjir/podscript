@@ -1,5 +1,8 @@
 -- PodScript Configuration
 return {
+    -- The editor to use for editing files.
+    editor = "vim",
+
     -- If true, commands will be printed but not executed.
     simulate = true,
 

@@ -69,11 +69,18 @@ system = {
     ---@param command string
     ---@param prefix string
     ---@param simulate boolean
-    exec = function(command, prefix, simulate)
+    ---@param direct boolean
+    exec = function(command, prefix, simulate, direct)
         if not string.ends_with(command, ";") then
             command = command .. ";"
         end
-        if simulate then
+        if direct then
+            log.debug("Execute: " .. command)
+            local success, _, exit_code = os.execute(command)
+            if not success then
+                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+            end
+        elseif simulate then
             if not string.is_nil_or_empty(prefix) then
                 log.print(prefix)
             end

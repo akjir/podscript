@@ -48,6 +48,9 @@ function config__load_and_set(registry, config_full_path)
     if registry.config.simulate == nil then
         registry.config.simulate = true
     end
+    if registry.config.editor == nil then
+        registry.config.editor = ""
+    end
 
     -- pod values
     if not registry.config.pods then
