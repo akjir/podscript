@@ -73,6 +73,7 @@ Each module in `src/` corresponds to a section with specific function naming con
 | **Recipe**        | Core logic for recipe processing.            | Prefix `recipe__`                  | `recipe.lua`       |
 | **Config**        | Configuration management logic.              | Prefix `config__`                  | `config.lua`       |
 | **Main**          | Application entry and mode dispatching.     | Prefix `main__`                    | `main.lua`         |
+| **Header**        | License header and global variables.        | Global variables (no prefix)       | `header.lua`       |
 
 ### 3.3. Command Structure Handling
 
@@ -131,7 +132,7 @@ This is the mandatory workflow for all changes:
     *   Example: `lua test.lua 00101`
 5.  **Document & Maintain**:
     *   Update `CHANGELOG.md` for all user-facing changes, including new checks or additional functionality.
-    *   **CRITICAL:** Update `INSTRUCTIONS.md` and `USAGE.md` to reflect any architectural or usage changes.
+    *   **CRITICAL:** Update `AGENTS.md` and `USAGE.md` to reflect any architectural or usage changes.
 
 ## 8. Testing Framework
 
@@ -143,6 +144,7 @@ The testing framework (`test.lua`) captures output and compares it against expec
 ### 8.1. Test Suites and Identifiers
 
 *   **Location**: Test suites are located in the `tests/` directory.
+*   **Support**: Core test utility functions are defined in `tests/test_helpers.lua`.
 *   **Suite ID**: Each suite defines its own 3-digit number (e.g., `local s = "004"`).
 *   **Test ID**: Individual tests within a suite use a sequential 2-digit suffix (e.g., `[s .. "01"]`).
 *   **Test Types**:

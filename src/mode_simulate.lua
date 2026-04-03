@@ -30,7 +30,8 @@ require "src.mode_default"
 ---Handle simulate mode.
 ---@param registry table
 function mode_simulate__handle(registry)
-    registry.flags.simulate = true
+    log.debug("Simulate mode is used.")
     log.info("Simulate mode is active.")
+    registry.flags.simulate = true
     mode_default__handle(registry)
 end

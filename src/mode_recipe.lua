@@ -43,12 +43,17 @@ function mode_recipe__help()
     log.print("  print              print recipe")
 end
 
----Print config.
+---Print recipe content.
 ---@param registry table
 ---@param name string
 local function mode_recipe__print(registry, name)
+    local normalized_name = normalize_name(name)
+    local found = config__untangle_recipes(registry.config.recipes.groups, { normalized_name })
+    -- config__untangle_recipes already logs the error
+    if found == nil then return end
+
     local recipe_path = registry.recipes.path
-    local recipe = recipe__load(recipe_path, name)
+    local recipe = recipe__load(recipe_path, normalized_name)
     if recipe == nil then return end
 
     local yaml_lines = table.to_yaml_lines(recipe)
@@ -58,16 +63,25 @@ local function mode_recipe__print(registry, name)
     end
 end
 
----Handle config mode.
+---Handle recipe mode.
 ---@param registry table
 function mode_recipe__handle(registry)
-    local name, targets = parse_action_and_targets_parameters(registry)
-    local action = targets[1]
+    log.debug("Recipe mode is used.")
+    local name = registry.parameters[1]
+    local action = registry.parameters[2]
+    if string.is_nil_or_empty(name) or name == "help" then
+        action = "help"
+    end
     local actions = {
         help = mode_recipe__help,
         print = mode_recipe__print
     }
-    local execute = actions[action] or function()
-        log.error("Unknown action: " .. tostring(action))
+    local execute = actions[action] or function(_, _)
+        if action == nil then
+            log.error("No name or action given. (name: '" .. tostring(name) .. "', action: '" .. tostring(action) .. "')")
+        else
+            log.error("Unknown action: " .. tostring(action))
+        end
     end
+    execute(registry, name)
 end

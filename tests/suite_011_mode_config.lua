@@ -7,7 +7,7 @@ return {
             description = "Print config help.",
             parameters = { "config", "help" },
             expectations = {
-                { 3, "Usage: pods config [OPTIONS] ACTION [TARGETS]" },
+                { 4, "Usage: pods config [OPTIONS] ACTION" },
             },
         },
         [s .. "02"] = {
@@ -15,13 +15,13 @@ return {
             config = "config_003_simulate_true",
             parameters = { "config", "print" },
             expectations = {
-                { 3, "  1: pods:" },
-                { 4, "  2:   path: " },
-                { 5, "  3: recipes:" },
-                { 6, "  4:   groups:" },
-                { 7, "  5:     all:" },
-                { 8, "  6:   path: ." },
-                { 9, "  7: simulate: true" },
+                { 4,  "  1: pods:" },
+                { 5,  "  2:   path: " },
+                { 6,  "  3: recipes:" },
+                { 7,  "  4:   groups:" },
+                { 8,  "  5:     all:" },
+                { 9,  "  6:   path: ." },
+                { 10, "  7: simulate: true" },
             },
         },
     }

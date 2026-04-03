@@ -21,6 +21,7 @@ Modes determine the primary behavior of the script. If no mode is specified, Pod
 | `(empty)` | **Default Mode**: Executes actions as defined in the recipes. |
 | `simulate` | **Simulate Mode**: Previews all commands without actually executing them. Useful for verifying changes. |
 | `config` | **Config Mode**: Manages and displays the current configuration. |
+| `recipe` | **Recipe Mode**: Inspects a specific recipe. |
 | `help` | **Help Mode**: Displays the built-in help message and exits. |
 
 ---
@@ -107,6 +108,30 @@ The `config` mode allows you to inspect the active configuration.
 2.  **Print a specific configuration:**
     ```bash
     lua pods.lua --config alternative_config config print
+    ```
+
+---
+
+## Recipe Mode
+
+The `recipe` mode allows you to inspect a specific recipe.
+
+### Actions
+
+| Action | Description |
+| :--- | :--- |
+| `print` | Display the content of a specific recipe (normalized and formatted). |
+| `help` | Display help for the recipe mode. |
+
+### Usage
+
+1.  **Print a specific recipe:**
+    ```bash
+    lua pods.lua recipe my-recipe print
+    ```
+2.  **Print a recipe using a specific configuration:**
+    ```bash
+    lua pods.lua --config alternative_config recipe my-recipe print
     ```
 
 ---

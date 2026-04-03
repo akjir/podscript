@@ -32,12 +32,13 @@ require "src.helper"
 ---Print config help.
 function mode_config__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
-    log.print("Usage: pods config [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua config [OPTIONS] ACTION [TARGETS]\n")
+    log.print("Usage: pods config [OPTIONS] ACTION")
+    log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
+    log.print("  print              print config")
 end
 
 ---Print config.
@@ -53,7 +54,8 @@ end
 ---Handle config mode.
 ---@param registry table
 function mode_config__handle(registry)
-    local action, targets = parse_action_and_targets_parameters(registry)
+    log.debug("Config mode is used.")
+    local action, _ = parse_action_and_targets_parameters(registry)
     local actions = {
         help = mode_config__help,
         print = mode_config__print
