@@ -20,8 +20,10 @@ For the formal definition of the user-facing command structure, always refer to 
 
 ## 2. Technical Specifications
 
-*   **Language:** Lua 5.4 or higher (a built-in version check is performed on startup).
-*   **Dependencies:** None. Do not add any external dependencies.
+*   **Language:** Lua 5.4 or higher.
+*   **Operating System:** Linux only.
+*   **Dependencies:** Podman version 5.8.0 or higher.
+*   **Checks:** Built-in checks for Lua version, OS, Podman version, and elevated privileges (sudo) with a mandatory confirmation prompt.
 
 ## 3. Codebase Architecture
 
@@ -42,6 +44,8 @@ The development takes place in the `src/` directory. These files are bundled int
     *   `main.lua`: Entry point and argument parsing.
     *   `mode_default.lua`: Default mode handling (create, remove, etc.).
     *   `mode_simulate.lua`: Simulate mode handling.
+    *   `mode_config.lua`: Config mode handling.
+    *   `mode_recipe.lua`: Recipe mode handling.
     *   `mode_help.lua`: Help mode handling and information.
 *   `test.lua`: The main entry point for the test runner.
 *   `build.lua`: The build script that bundles `src/` into `pods.lua`.
@@ -59,9 +63,11 @@ Each module in `src/` corresponds to a section with specific function naming con
 | **Table**    | Utility functions for Lua tables.             | Extends `table` library (e.g., `table.size`) | `helper_table.lua` |
 | **System**   | System-wide operations and version checks.    | Global `system` object (e.g., `system.exec`) | `system.lua`   |
 | **Helper**   | General-purpose utility functions.            | Global functions (no prefix)       | `helper.lua`   |
-| **Mode Default** | Default logic (create, remove, update, etc.). | Prefix `default__`                 | `mode_default.lua` |
-| **Mode Simulate** | Simulates commands in default mode.          | Prefix `simulate__`                | `mode_simulate.lua` |
-| **Mode Help**     | Displays usage help for different modes.     | Prefix `help__`                    | `mode_help.lua`    |
+| **Mode Default** | Default logic (create, remove, update, etc.). | Prefix `mode_default__`            | `mode_default.lua` |
+| **Mode Simulate** | Simulates commands in default mode.          | Prefix `mode_simulate__`           | `mode_simulate.lua` |
+| **Mode Config**   | Handles configuration inspection.           | Prefix `mode_config__`             | `mode_config.lua`  |
+| **Mode Recipe**   | Handles recipe inspection.                 | Prefix `mode_recipe__`             | `mode_recipe.lua`  |
+| **Mode Help**     | Displays usage help for different modes.     | Prefix `mode_help__`               | `mode_help.lua`    |
 | **Container**     | Manages Podman container lifecycle.          | Prefix `container__`               | `container.lua`    |
 | **Pod**           | Manages Podman pod lifestyle.                | Prefix `pod__`                     | `pod.lua`          |
 | **Recipe**        | Core logic for recipe processing.            | Prefix `recipe__`                  | `recipe.lua`       |
