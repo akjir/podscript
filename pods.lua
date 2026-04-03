@@ -324,7 +324,7 @@ system = {
         end
         if direct then
             log.debug("Execute: " .. command)
-            local success, _, exit_code = os.execute(command)
+            local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
             if not success then
                 log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
             end
@@ -335,7 +335,7 @@ system = {
             log.print(command)
         else
             -- combine STDOUT and STDERR using 2>&1
-            local handle = io.popen(command .. " 2>&1")
+            local handle = io.popen("( " .. command .. " ) 2>&1")
             if not handle then
                 log.error("Failed to execute command '" .. command .. "'!")
                 return
