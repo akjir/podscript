@@ -20,6 +20,7 @@ Modes determine the primary behavior of the script. If no mode is specified, Pod
 | :--- | :--- |
 | `(empty)` | **Default Mode**: Executes actions as defined in the recipes. |
 | `simulate` | **Simulate Mode**: Previews all commands without actually executing them. Useful for verifying changes. |
+| `config` | **Config Mode**: Manages and displays the current configuration. |
 | `help` | **Help Mode**: Displays the built-in help message and exits. |
 
 ---
@@ -60,6 +61,12 @@ Recipes can be declared in multiple groups. When multiple groups or individual r
 *   **Order Matters:** The order of recipes within a group is significant; recipes are executed in the sequence they are listed.
 *   **First Appearance Rule:** If a recipe is mentioned multiple times (either directly or through multiple groups), only its first occurrence in the target list determines its execution position in all actions.
 
+### Usage
+
+```bash
+lua pods.lua create my-pod
+```
+
 ---
 
 ## Help Mode
@@ -77,6 +84,30 @@ You can also combine it with other modes to see context-specific help (if availa
 ```bash
 lua pods.lua simulate help
 ```
+
+---
+
+## Config Mode
+
+The `config` mode allows you to inspect the active configuration.
+
+### Actions
+
+| Action | Description |
+| :--- | :--- |
+| `print` | Display the current configuration (as defined in `config.lua` or through `--config`). |
+| `help` | Display help for the config mode. |
+
+### Usage
+
+1.  **Print the default configuration:**
+    ```bash
+    lua pods.lua config print
+    ```
+2.  **Print a specific configuration:**
+    ```bash
+    lua pods.lua --config alternative_config config print
+    ```
 
 ---
 
