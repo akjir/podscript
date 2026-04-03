@@ -15,7 +15,9 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "recipe_002_no_pod", "print" },
             expectations = {
-                { 6, "  1: name: nopod" },
+                { 6, "  1: return {" },
+                { 7, "  2:     name = \"nopod\"," },
+                { 8, "  3: }" },
             },
         },
         [s .. "03"] = {
@@ -31,7 +33,7 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "recipe_000_unkown", "print" },
             expectations = {
-                { 7, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
+                { 6, "ERROR: Could not open file './tests/recipes/recipe_000_unkown.lua'!" },
             },
         },
         [s .. "05"] = {

@@ -53,13 +53,14 @@ local function mode_recipe__print(registry, name)
     if found == nil then return end
 
     local recipe_path = registry.recipes.path
-    local recipe = recipe__load(recipe_path, normalized_name)
-    if recipe == nil then return end
+    local full_path = build_full_path(recipe_path, normalized_name, ".lua")
 
-    local yaml_lines = table.to_yaml_lines(recipe)
-    for i = 1, #yaml_lines do
+    local lines = system.read_file_content_by_line(full_path)
+    if not lines then return end
+
+    for i = 1, #lines do
         local prefix = string.format("%3d: ", i)
-        log.print(prefix .. yaml_lines[i])
+        log.print(prefix .. lines[i])
     end
 end
 

@@ -44,6 +44,7 @@ function config__load_and_set(registry, config_full_path)
 
     -- config values
     registry.config = config
+    registry.config.full_path = config_full_path
     if registry.config.simulate == nil then
         registry.config.simulate = true
     end

@@ -12,8 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a system check for Linux OS, as only Linux is supported.
 - Added a system check for Podman version 5.8.0+ on startup.
 - Added a check for elevated privileges (sudo) with a mandatory confirmation prompt.
-- Added a new `config` mode to display PodScript configurations.
-- Added a new `recipe` mode to display recipe content.
+- Added a new `config` mode to display the content of the configuration file.
+- Added a new `recipe` mode to display the content of a recipe file.
 
 ## [1.2.0] - 2026-03-28
 

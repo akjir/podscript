@@ -44,10 +44,12 @@ end
 ---Print config.
 ---@param registry table
 local function mode_config__print(registry)
-    local yaml_lines = table.to_yaml_lines(registry.config)
-    for i = 1, #yaml_lines do
+    local lines = system.read_file_content_by_line(registry.config.full_path)
+    if not lines then return end
+
+    for i = 1, #lines do
         local prefix = string.format("%3d: ", i)
-        log.print(prefix .. yaml_lines[i])
+        log.print(prefix .. lines[i])
     end
 end
 

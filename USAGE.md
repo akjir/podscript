@@ -96,7 +96,7 @@ The `config` mode allows you to inspect the active configuration.
 
 | Action | Description |
 | :--- | :--- |
-| `print` | Display the current configuration (as defined in `config.lua` or through `--config`). |
+| `print` | Display the content of the current configuration file with line numbers. |
 | `help` | Display help for the config mode. |
 
 ### Usage
@@ -120,7 +120,7 @@ The `recipe` mode allows you to inspect a specific recipe.
 
 | Action | Description |
 | :--- | :--- |
-| `print` | Display the content of a specific recipe (normalized and formatted). |
+| `print` | Display the content of a specific recipe file with line numbers. |
 | `help` | Display help for the recipe mode. |
 
 ### Usage

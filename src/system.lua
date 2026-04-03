@@ -119,6 +119,23 @@ system = {
         return result, nil, nil
     end,
 
+    ---Read file content line by line and return as a table.
+    ---@param full_path string
+    ---@return table|nil
+    read_file_content_by_line = function(full_path)
+        local file = io.open(full_path, "r")
+        if not file then
+            log.error("Could not open file '" .. full_path .. "'!")
+            return nil
+        end
+        local lines = {}
+        for line in file:lines() do
+            lines[#lines + 1] = line
+        end
+        file:close()
+        return lines
+    end,
+
     ---Check if the program is run with elevated execution rights (sudo).
     ---@return boolean
     runs_elevated = function()

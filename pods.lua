@@ -209,62 +209,6 @@ table.size = function(table)
     return count
 end
 
----Converts a table to an array of YAML-style strings (one string per line).
----@diagnostic disable-next-line: missing-return
----@param tbl table|nil The table to convert.
----@param indent integer|nil Current indentation level.
----@param _lines table|nil INTERNAL USE ONLY: The array collecting the lines.
----@return table # An array of strings, where each string is a line.
-table.to_yaml_lines = function(tbl, indent, _lines)
-    if type(tbl) ~= "table" then
-        return { tostring(tbl) }
-    end
-
-    local is_root = (_lines == nil)
-    local lines = _lines or {}
-    indent = indent or 0
-    local spacing = string.rep("  ", indent)
-
-    local is_list = (#tbl > 0)
-
-    if is_list then
-        for i = 1, #tbl do
-            local v = tbl[i]
-            if type(v) == "table" then
-                lines[#lines + 1] = spacing .. "-"
-                table.to_yaml_lines(v, indent + 1, lines)
-            else
-                lines[#lines + 1] = spacing .. "- " .. tostring(v)
-            end
-        end
-    else
-        local keys = {}
-        for k in pairs(tbl) do
-            keys[#keys + 1] = k
-        end
-        table.sort(keys)
-
-        for i = 1, #keys do
-            local k = keys[i]
-            local v = tbl[k]
-
-            if type(v) == "table" then
-                lines[#lines + 1] = spacing .. tostring(k) .. ":"
-                if next(v) ~= nil then
-                    table.to_yaml_lines(v, indent + 1, lines)
-                end
-            else
-                lines[#lines + 1] = spacing .. tostring(k) .. ": " .. tostring(v)
-            end
-        end
-    end
-
-    if is_root then
-        return lines
-        ---@diagnostic disable-next-line: missing-return
-    end
-end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Helper
@@ -421,6 +365,23 @@ system = {
             return nil, result, "execution"
         end
         return result, nil, nil
+    end,
+
+    ---Read file content line by line and return as a table.
+    ---@param full_path string
+    ---@return table|nil
+    read_file_content_by_line = function(full_path)
+        local file = io.open(full_path, "r")
+        if not file then
+            log.error("Could not open file '" .. full_path .. "'!")
+            return nil
+        end
+        local lines = {}
+        for line in file:lines() do
+            lines[#lines + 1] = line
+        end
+        file:close()
+        return lines
     end,
 
     ---Check if the program is run with elevated execution rights (sudo).
@@ -784,6 +745,7 @@ local function config__load_and_set(registry, config_full_path)
 
     -- config values
     registry.config = config
+    registry.config.full_path = config_full_path
     if registry.config.simulate == nil then
         registry.config.simulate = true
     end
@@ -891,13 +853,14 @@ local function mode_recipe__print(registry, name)
     if found == nil then return end
 
     local recipe_path = registry.recipes.path
-    local recipe = recipe__load(recipe_path, normalized_name)
-    if recipe == nil then return end
+    local full_path = build_full_path(recipe_path, normalized_name, ".lua")
 
-    local yaml_lines = table.to_yaml_lines(recipe)
-    for i = 1, #yaml_lines do
+    local lines = system.read_file_content_by_line(full_path)
+    if not lines then return end
+
+    for i = 1, #lines do
         local prefix = string.format("%3d: ", i)
-        log.print(prefix .. yaml_lines[i])
+        log.print(prefix .. lines[i])
     end
 end
 
@@ -945,10 +908,12 @@ end
 ---Print config.
 ---@param registry table
 local function mode_config__print(registry)
-    local yaml_lines = table.to_yaml_lines(registry.config)
-    for i = 1, #yaml_lines do
+    local lines = system.read_file_content_by_line(registry.config.full_path)
+    if not lines then return end
+
+    for i = 1, #lines do
         local prefix = string.format("%3d: ", i)
-        log.print(prefix .. yaml_lines[i])
+        log.print(prefix .. lines[i])
     end
 end
 
