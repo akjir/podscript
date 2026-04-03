@@ -127,11 +127,11 @@ The `recipe` mode allows you to inspect a specific recipe.
 
 1.  **Print a specific recipe:**
     ```bash
-    lua pods.lua recipe my-recipe print
+    lua pods.lua recipe print my-recipe
     ```
 2.  **Print a recipe using a specific configuration:**
     ```bash
-    lua pods.lua --config alternative_config recipe my-recipe print
+    lua pods.lua --config alternative_config recipe print my-recipe
     ```
 
 ---

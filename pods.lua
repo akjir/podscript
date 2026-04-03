@@ -832,21 +832,25 @@ end
 ---Print config help.
 local function mode_recipe__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
-    log.print("Usage: pods recipe [OPTIONS] NAME ACTION")
-    log.print("   or: lua pods.lua recipe [OPTIONS] NAME ACTION\n")
+    log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
+    log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path\n")
-    log.print("NAME:")
-    log.print("  *                  name of the recipe\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
-    log.print("  print              print recipe")
+    log.print("  print              print recipe\n")
+    log.print("NAME:")
+    log.print("  *                  name of the recipe")
 end
 
 ---Print recipe content.
 ---@param registry table
 ---@param name string
 local function mode_recipe__print(registry, name)
+    if string.is_nil_or_empty(name) then
+        log.error("No recipe name given.")
+        return
+    end
     local normalized_name = normalize_name(name)
     local found = config__untangle_recipes(registry.config.recipes.groups, { normalized_name })
     -- config__untangle_recipes already logs the error
@@ -868,9 +872,13 @@ end
 ---@param registry table
 local function mode_recipe__handle(registry)
     log.debug("Recipe mode is used.")
-    local name = registry.parameters[1]
-    local action = registry.parameters[2]
-    if string.is_nil_or_empty(name) or name == "help" then
+    local action = registry.parameters[1]
+    if action == nil then
+        log.error("No action given.")
+        return
+    end
+    local name = registry.parameters[2]
+    if string.is_nil_or_empty(action) or action == "help" then
         action = "help"
     end
     local actions = {
@@ -878,11 +886,7 @@ local function mode_recipe__handle(registry)
         print = mode_recipe__print
     }
     local execute = actions[action] or function(_, _)
-        if action == nil then
-            log.error("No name or action given. (name: '" .. tostring(name) .. "', action: '" .. tostring(action) .. "')")
-        else
-            log.error("Unknown action: " .. tostring(action))
-        end
+        log.error("Unknown action: " .. tostring(action))
     end
     execute(registry, name)
 end
