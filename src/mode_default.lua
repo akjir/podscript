@@ -56,13 +56,20 @@ function mode_default__handle(registry)
 
     -- handle recipes
     local recipe_path = registry.recipes.path
+    local pod_actions = {
+        create   = pod__create,
+        recreate = pod__recreate,
+        remove   = pod__remove,
+        update   = pod__update,
+    }
     for i = 1, #untangled_targets do
         local target = untangled_targets[i]
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
-        if recipe ~= nil then
-            recipe__validate_and_handle(registry, recipe, action, target)
+        if recipe ~= nil and recipe__validate(registry, recipe, target) then
+            --- action is valid at this point
+            pod_actions[action](recipe, registry.flags.simulate)
         end
     end
 end

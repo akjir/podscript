@@ -84,6 +84,7 @@ function main(arguments)
         default = mode_default__handle,
         config = mode_config__handle,
         help = mode_help__handle,
+        recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,
     }
 

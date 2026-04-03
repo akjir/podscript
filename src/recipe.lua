@@ -47,24 +47,24 @@ function recipe__load(recipe_path, recipe_name)
     end
 end
 
----Switch correct pod function and test pod values.
+---Validate recipe.
 ---@param registry table
 ---@param recipe table
----@param action string
----@param target string
-function recipe__validate_and_handle(registry, recipe, action, target)
+---@param file_name string
+---@return boolean
+function recipe__validate(registry, recipe, file_name)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
-        log.error("No recipe name in recipe '" .. target .. "' set!")
-        return
+        log.error("No recipe name in recipe '" .. file_name .. "' set!")
+        return false
     else
         recipe.name = string.trim(recipe.name)
     end
 
     -- test for pod section
     if table.is_nil_or_empty(recipe.pod) then
-        log.error("Pod section in recipe '" .. target .. "' not defined! or empty")
-        return
+        log.error("Pod section in recipe '" .. file_name .. "' not defined! or empty")
+        return false
     end
 
     -- test for pod name
@@ -77,54 +77,36 @@ function recipe__validate_and_handle(registry, recipe, action, target)
 
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
-        log.error("No default registry in recipe '" .. target .. "' set or empty!")
-        return
+        log.error("No default registry in recipe '" .. file_name .. "' set or empty!")
+        return false
     end
 
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
         if string.is_nil_or_empty(registry.config.pods.path) then
-            log.error("No default pod path and pod path in recipe '" .. target .. "' set or empty!")
-            return
+            log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
+            return false
         else
             -- if pod path not set use default path with pod name as folder name
             local path = build_full_path(registry.config.pods.path, recipe.pod.name, "")
-            log.info("No pod path in recipe '" .. target .. "' set. Path '" .. path .. "' used.")
+            log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
     end
 
     -- test for container section
     if table.is_nil_or_empty(recipe.containers) then
-        log.error("Container section in recipe '" .. target .. "' not defined or empty!")
-        return
+        log.error("Container section in recipe '" .. file_name .. "' not defined or empty!")
+        return false
     end
 
     -- test if containers are valid
     local pod_name = recipe.pod.name
     for id = 1, #recipe.containers do
         if not container__is_valid(recipe.containers[id], pod_name) then
-            return
+            return false
         end
     end
-
-    -- switch for correct function
-    if (action == "update") then
-        -- most of the tests above arn't necessary for update
-        pod__update(recipe, registry.flags.simulate)
-        return
-    end
-    if action == "recreate" then
-        pod__recreate(recipe, registry.flags.simulate)
-        return
-    end
-    if action == "remove" then
-        pod__remove(recipe, registry.flags.simulate)
-        return
-    end
-    if action == "create" then
-        pod__create(recipe, registry.flags.simulate)
-        return
-    end
+    return true
 end
