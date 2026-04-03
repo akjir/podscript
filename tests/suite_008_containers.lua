@@ -112,5 +112,12 @@ return {
                 { 12, "podman run --name volumes-1 --pod volumes --volume /pods/volumes/named_volume:/container/dir/named:ro --volume /absolute/path:/container/dir/absolute registry.io/name:latest;" },
             },
         },
+        [s .. "13"] = {
+            description = "Container with shell command.",
+            parameters = { "create", "recipe_020_container_commands_2" },
+            expectations = {
+                { 12, "podman run --name cmd_con --pod cmd_test registry.io/alpine:latest sh -c echo 'hello world';" },
+            },
+        },
     },
 }

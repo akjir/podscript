@@ -504,7 +504,7 @@ local function container__ensure_name(container, pod_name, container_alternate_n
     return true
 end
 
----Test if container is valid.
+---Test if container is valid. Container.name is optional.
 ---@param container table
 ---@param pod_name string
 ---@return boolean
@@ -513,15 +513,11 @@ local function container__is_valid(container, pod_name)
         log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
     end
-
-    -- container.name is optional, will be set later
-
     -- test for container image
     if string.is_nil_or_empty(container.image) then
         log.error("Image not set for container '" .. container.name .. "'!")
         return false
     end
-
     return true
 end
 

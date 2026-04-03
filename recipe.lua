@@ -32,6 +32,8 @@ return {
             restart = "never",
             -- Image to use.
             image = "simple:latest",
+            -- Optional commands to run in the container.
+            commands = { "command", "arg1", "arg2" },
         },
         { -- 2
             -- Missing name will use pod name.
