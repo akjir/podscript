@@ -139,6 +139,7 @@ The `recipe` mode allows you to inspect a specific recipe.
 | Action | Description |
 | :--- | :--- |
 | `print` | Display the content of a specific recipe file with line numbers. |
+| `edit`  | Open a specific recipe file in an external editor. |
 | `help` | Display help for the recipe mode. |
 
 ### Usage
@@ -150,6 +151,10 @@ The `recipe` mode allows you to inspect a specific recipe.
 2.  **Print a recipe using a specific configuration:**
     ```bash
     lua pods.lua --config alternative_config recipe print my-recipe
+    ```
+3.  **Edit a specific recipe:**
+    ```bash
+    lua pods.lua recipe edit my-recipe
     ```
 
 ---

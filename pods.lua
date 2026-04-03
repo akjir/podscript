@@ -839,6 +839,27 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Edit recipe.
+---@param registry table
+---@param name string
+local function mode_recipe__edit(registry, name)
+    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
+    -- config__untangle_recipes already logs the error
+    if found == nil then return end
+
+    local editor = registry.config.editor
+    if editor == "" then
+        log.error("No editor configured.")
+        return
+    end
+
+    local recipe_path = registry.recipes.path
+    local full_path = build_full_path(recipe_path, name, ".lua")
+
+    local command = editor .. " " .. full_path
+    system.exec(command, "", false, true)
+end
+
 ---Print config help.
 local function mode_recipe__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
@@ -848,6 +869,7 @@ local function mode_recipe__help()
     log.print("  --config=NAME      use config with given name or path\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
+    log.print("  edit               edit recipe")
     log.print("  print              print recipe\n")
     log.print("NAME:")
     log.print("  *                  name of the recipe")
@@ -857,17 +879,12 @@ end
 ---@param registry table
 ---@param name string
 local function mode_recipe__print(registry, name)
-    if string.is_nil_or_empty(name) then
-        log.error("No recipe name given.")
-        return
-    end
-    local normalized_name = normalize_name(name)
-    local found = config__untangle_recipes(registry.config.recipes.groups, { normalized_name })
+    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
     -- config__untangle_recipes already logs the error
     if found == nil then return end
 
     local recipe_path = registry.recipes.path
-    local full_path = build_full_path(recipe_path, normalized_name, ".lua")
+    local full_path = build_full_path(recipe_path, name, ".lua")
 
     local lines = system.read_file_content_by_line(full_path)
     if not lines then return end
@@ -888,11 +905,17 @@ local function mode_recipe__handle(registry)
         return
     end
     local name = registry.parameters[2]
-    if string.is_nil_or_empty(action) or action == "help" then
-        action = "help"
+    if action ~= "help" then
+        if string.is_nil_or_empty(name) then
+            log.error("No recipe name given.")
+            return
+        else
+            name = normalize_name(name)
+        end
     end
     local actions = {
         help = mode_recipe__help,
+        edit = mode_recipe__edit,
         print = mode_recipe__print
     }
     local execute = actions[action] or function(_, _)

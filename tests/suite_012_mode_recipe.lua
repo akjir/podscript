@@ -60,5 +60,30 @@ return {
                 { 4, "ERROR: No action given." },
             },
         },
+        [s .. "08"] = {
+            description = "Edit recipe with no editor configured.",
+            config = "config_014_recipe_edit_no_editor",
+            parameters = { "recipe", "edit", "recipe_002_no_pod" },
+            expectations = {
+                { 6, "ERROR: No editor configured." },
+            },
+        },
+        [s .. "09"] = {
+            description = "Edit recipe simulation.",
+            config = "config_013_recipe_edit",
+            parameters = { "recipe", "edit", "recipe_002_no_pod" },
+            expectations = {
+                { 6, "DEBUG: Execute: editor ./tests/recipes/recipe_002_no_pod.lua;" },
+                { 7, "ERROR: Command exited with code '127'!" },
+            },
+        },
+        [s .. "10"] = {
+            description = "Edit recipe with missing name.",
+            config = "config_013_recipe_edit",
+            parameters = { "recipe", "edit" },
+            expectations = {
+                { 4, "ERROR: No recipe name given." },
+            },
+        },
     }
 }
