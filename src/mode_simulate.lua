@@ -18,6 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
+require "src.mode_command"
 require "src.mode_default"
 
 ---@build block:
@@ -30,8 +31,14 @@ require "src.mode_default"
 ---Handle simulate mode.
 ---@param registry table
 function mode_simulate__handle(registry)
-    log.debug("Simulate mode is used.")
     log.info("Simulate mode is active.")
     registry.flags.simulate = true
-    mode_default__handle(registry)
+    local parameters = registry.parameters
+    if parameters[1] == "command" then
+        -- remove "command" from parameters
+        registry.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_command__handle(registry)
+    else
+        mode_default__handle(registry)
+    end
 end

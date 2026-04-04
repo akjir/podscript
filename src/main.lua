@@ -24,6 +24,7 @@ require "src.helper_string"
 require "src.helper_table"
 require "src.helper"
 require "src.config"
+require "src.mode_command"
 require "src.mode_recipe"
 require "src.mode_config"
 require "src.mode_default"
@@ -82,8 +83,9 @@ end
 ---@build global:
 function main(arguments)
     local modes = {
-        default = mode_default__handle,
+        command = mode_command__handle,
         config = mode_config__handle,
+        default = mode_default__handle,
         help = mode_help__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,

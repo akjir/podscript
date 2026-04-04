@@ -74,37 +74,39 @@ system = {
         if not string.ends_with(command, ";") then
             command = command .. ";"
         end
-        if direct then
-            log.debug("Execute: " .. command)
-            local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
-            if not success then
-                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
-            end
-        elseif simulate then
+        if simulate then
             if not string.is_nil_or_empty(prefix) then
                 log.print(prefix)
             end
             log.print(command)
         else
-            -- combine STDOUT and STDERR using 2>&1
-            local handle = io.popen("( " .. command .. " ) 2>&1")
-            if not handle then
-                log.error("Failed to execute command '" .. command .. "'!")
-                return
-            end
-
-            local output = handle:read("*a")
-            local success, exit_type, exit_code = handle:close()
-            if not string.is_nil_or_empty(output) then
-                -- include the error message if the command failed
-                log.print(prefix .. output:gsub("%s+$", ""))
+            log.debug("Execute: " .. command)
+            if direct then
+                local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
+                if not success then
+                    log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                end
             else
-                log.print(prefix .. "...")
-            end
+                -- combine STDOUT and STDERR using 2>&1
+                local handle = io.popen("( " .. command .. " ) 2>&1")
+                if not handle then
+                    log.error("Failed to execute command '" .. command .. "'!")
+                    return
+                end
 
-            -- check if the command actually succeeded
-            if not success then
-                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                local output = handle:read("*a")
+                local success, _, exit_code = handle:close()
+                if not string.is_nil_or_empty(output) then
+                    -- include the error message if the command failed
+                    log.print(prefix .. output:gsub("%s+$", ""))
+                else
+                    log.print(prefix .. "...")
+                end
+
+                -- check if the command actually succeeded
+                if not success then
+                    log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                end
             end
         end
     end,

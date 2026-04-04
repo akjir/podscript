@@ -20,7 +20,7 @@ return {
             simulate = true,
             expectations = {
                 { 2, "DEBUG: Config './tests/configs/config_002_simulate_false.lua' is used." },
-                { 4, "INFO: Simulate mode is active." },
+                { 3, "INFO: Simulate mode is active." },
             },
         },
         [s .. "03"] = {
@@ -30,7 +30,7 @@ return {
             simulate = false,
             expectations = {
                 { 2, "DEBUG: Config './tests/configs/config_003_simulate_true.lua' is used." },
-                { 4, "INFO: Simulate mode is active." },
+                { 3, "INFO: Simulate mode is active." },
             },
         },
         [s .. "04"] = {

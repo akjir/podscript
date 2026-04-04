@@ -16,6 +16,7 @@ return {
                 "recipe_017_container_naming",
                 "recipe_018_container_volumes",
                 "recipe_019_container_volumes_with_no_path",
+                "recipe_020_container_commands_2",
             },
         },
     },

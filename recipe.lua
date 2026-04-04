@@ -16,6 +16,15 @@ return {
             { 8433, 433 },
             { 8080, 80, "TCP" },
         },
+        -- Execute a command in a running container.
+        commands = {
+            add_missing_indices = {
+                description = "Adds missing database indices.",
+                container = "*db",
+                user = "33",
+                execute = "/usr/local/bin/script.sh add-missing-indices",
+            },
+        },
         -- Raw options.
         options = {
             "--userns=host",

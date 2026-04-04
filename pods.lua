@@ -322,37 +322,39 @@ system = {
         if not string.ends_with(command, ";") then
             command = command .. ";"
         end
-        if direct then
-            log.debug("Execute: " .. command)
-            local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
-            if not success then
-                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
-            end
-        elseif simulate then
+        if simulate then
             if not string.is_nil_or_empty(prefix) then
                 log.print(prefix)
             end
             log.print(command)
         else
-            -- combine STDOUT and STDERR using 2>&1
-            local handle = io.popen("( " .. command .. " ) 2>&1")
-            if not handle then
-                log.error("Failed to execute command '" .. command .. "'!")
-                return
-            end
-
-            local output = handle:read("*a")
-            local success, exit_type, exit_code = handle:close()
-            if not string.is_nil_or_empty(output) then
-                -- include the error message if the command failed
-                log.print(prefix .. output:gsub("%s+$", ""))
+            log.debug("Execute: " .. command)
+            if direct then
+                local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
+                if not success then
+                    log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                end
             else
-                log.print(prefix .. "...")
-            end
+                -- combine STDOUT and STDERR using 2>&1
+                local handle = io.popen("( " .. command .. " ) 2>&1")
+                if not handle then
+                    log.error("Failed to execute command '" .. command .. "'!")
+                    return
+                end
 
-            -- check if the command actually succeeded
-            if not success then
-                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                local output = handle:read("*a")
+                local success, _, exit_code = handle:close()
+                if not string.is_nil_or_empty(output) then
+                    -- include the error message if the command failed
+                    log.print(prefix .. output:gsub("%s+$", ""))
+                else
+                    log.print(prefix .. "...")
+                end
+
+                -- check if the command actually succeeded
+                if not success then
+                    log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+                end
             end
         end
     end,
@@ -689,6 +691,11 @@ local function recipe__validate(registry, recipe, file_name)
         recipe.pod.name = normalize_name(recipe.pod.name)
     end
 
+    -- test for commands
+    if table.is_nil_or_empty(recipe.commands) then
+        recipe.commands = {}
+    end
+
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
         log.error("No default registry in recipe '" .. file_name .. "' set or empty!")
@@ -831,7 +838,105 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---    SECTION Mode Config
+--    SECTION Mode Command
+--
+-- ------------------------------------------------------------------------- --
+
+---Validates command_table.
+local function mode_command__validate(command_table, recipe)
+    if string.is_nil_or_empty(command_table.container) then
+        log.error("No container in command table set!")
+        return
+    end
+    if string.is_nil_or_empty(command_table.execute) then
+        log.error("No command in command table set!")
+        return
+    end
+    -- validate container name : APP *APP and 1
+    return true
+end
+
+---Build and execute command.
+---@param registry table
+---@param recipe table
+---@param command_table table
+local function mode_command__execute(registry, recipe, command_table)
+    local commands = { "podman exec -it" }
+
+    system.exec(table.concat(commands, " "),
+        "Execute command '" .. command_table.execute .. "' in container '" .. command_table.container .. "': ",
+        registry.flags.simulate, false)
+end
+
+---Print command help.
+local function mode_command__help(registry)
+    if registry.flags.simulate then
+        log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATE)")
+        log.print("Simulate the execution of a command defined in a recipe for a container.")
+        log.print("Usage: pods simulate command [OPTIONS] NAME COMMAND")
+        log.print("   or: lua pods.lua simulate command [OPTIONS] NAME COMMAND\n")
+    else
+        log.print("PODSCRIPT " .. VERSION .. " - Command Mode")
+        log.print("Execute a command defined in a recipe for a container.")
+        log.print("Usage: pods command [OPTIONS] NAME COMMAND")
+        log.print("   or: lua pods.lua command [OPTIONS] NAME COMMAND\n")
+    end
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("NAME:")
+    log.print("  *                  name of the recipe")
+    log.print("COMMAND:")
+    log.print("  *                  command defined in recipe to execute")
+    log.print("  list               list all commands for a recipe")
+end
+
+---List all commands for a recipe.
+---@param registry table
+---@param recipe table
+---@param target string
+local function mode_command__list(registry, recipe, target)
+    -- print formated - comand name, command, description (optional)
+    log.print("Commands for recipe '" .. target .. "':")
+    for command, command_table in pairs(recipe.commands) do
+        log.print("  " .. command .. ": " .. command_table.execute)
+    end
+end
+
+---Handle recipe mode.
+---@param registry table
+local function mode_command__handle(registry)
+    log.debug("Command mode is used.")
+    local name = registry.parameters[1]
+    local command = registry.parameters[2]
+
+    if string.is_nil_or_empty(name) or name == "help" then
+        mode_command__help(registry)
+        return
+    end
+    name = normalize_name(name)
+    local untangled_targets = config__untangle_recipes(registry.config.recipes.groups, { name })
+    if untangled_targets == nil then return end
+    local target = untangled_targets[1]
+    local recipe = recipe__load(registry.config.recipes.path, target)
+    if recipe ~= nil and recipe__validate(registry, recipe, target) then
+        if command == "list" then
+            mode_command__list(registry, recipe, target)
+        else
+            local command_table = recipe.commands[command]
+            if command_table == nil then
+                log.error("Command '" .. command .. "' not found in recipe '" .. target .. "'.")
+                return
+            end
+            if mode_command__validate(command_table) then
+                mode_command__execute(registry, recipe, command_table)
+            end
+        end
+    end
+end
+
+-- ------------------------------------------------------------------------- --
+--
+--    SECTION Mode Recipe
 --
 -- ------------------------------------------------------------------------- --
 
@@ -1039,10 +1144,16 @@ end
 ---Handle simulate mode.
 ---@param registry table
 local function mode_simulate__handle(registry)
-    log.debug("Simulate mode is used.")
     log.info("Simulate mode is active.")
     registry.flags.simulate = true
-    mode_default__handle(registry)
+    local parameters = registry.parameters
+    if parameters[1] == "command" then
+        -- remove "command" from parameters
+        registry.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_command__handle(registry)
+    else
+        mode_default__handle(registry)
+    end
 end
 
 -- ------------------------------------------------------------------------- --
@@ -1124,8 +1235,9 @@ end
 ---@param arguments string[]
 function main(arguments)
     local modes = {
-        default = mode_default__handle,
+        command = mode_command__handle,
         config = mode_config__handle,
+        default = mode_default__handle,
         help = mode_help__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,

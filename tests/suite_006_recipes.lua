@@ -85,8 +85,8 @@ return {
             config = "config_009_same_directory",
             parameters = { "create", "target" },
             expectations = {
-                { 8, "ERROR: cannot open ./target.lua: No such file or directory" },
-                { 9, "ERROR: Couldn't load recipe './target.lua'!" },
+                { 7, "ERROR: cannot open ./target.lua: No such file or directory" },
+                { 8, "ERROR: Couldn't load recipe './target.lua'!" },
             }
         },
         [s .. "12"] = {

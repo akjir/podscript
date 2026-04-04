@@ -75,6 +75,11 @@ function recipe__validate(registry, recipe, file_name)
         recipe.pod.name = normalize_name(recipe.pod.name)
     end
 
+    -- test for commands
+    if table.is_nil_or_empty(recipe.commands) then
+        recipe.commands = {}
+    end
+
     -- test for pod registry
     if string.is_nil_or_empty(recipe.pod.registry) then
         log.error("No default registry in recipe '" .. file_name .. "' set or empty!")
