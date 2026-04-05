@@ -1,6 +1,6 @@
 local s = "002"
 return {
-    -- Tests for string helper functions.
+    -- Tests for string utility functions.
     -- config = none,
     suite = s,
     tests = {

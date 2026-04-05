@@ -103,9 +103,9 @@ end
 local files = {
     "header",
     "log",
-    "helper_string",
-    "helper_table",
-    "helper",
+    "utilities_string",
+    "utilities_table",
+    "utilities",
     "system",
     "container",
     "pod",

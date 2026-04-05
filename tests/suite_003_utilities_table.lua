@@ -1,6 +1,6 @@
 local s = "003"
 return {
-    -- Tests for table helper functions.
+    -- Tests for table utility functions.
     -- config = none,
     suite = s,
     tests = {

@@ -6,7 +6,7 @@ PodScript uses a mode-driven command structure. The general syntax is:
 lua pods.lua [MODE] [OPTIONS] [ACTION] [TARGETS]
 ```
 
-Or, if you have the helper script installed:
+Or, if you have the utility script installed:
 
 ```bash
 pods [MODE] [OPTIONS] [ACTION] [TARGETS]

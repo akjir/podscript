@@ -48,13 +48,13 @@ The order in which containers are defined within a recipe is significant:
 *   **Removal & Shutdown:** When removing a pod, the containers are stopped and removed in reverse order.
 *   **Recreation:** Recreating a pod follows both behaviors—containers are first stopped and removed in reverse order, then created and started in the original order.
 
-## Helper Script
+## Utility Script
 
-For easier usage of PodScript from any directory, you can create a helper script in your PATH (e.g., `/usr/local/bin/pods`).
+For easier usage of PodScript from any directory, you can create a utility script in your PATH (e.g., `/usr/local/bin/pods`).
 
 **Example installation:**
 
-1. Create and edit the helper script:
+1. Create and edit the utility script:
    ```bash
    sudo vi /usr/local/bin/pods
    ```
@@ -99,7 +99,7 @@ The test suite can be run in two modes:
     ```bash
     lua test.lua
     ```
-*   **Development Mode:** Tests the modular source files in `src/` directly. This also enables internal helper tests.
+*   **Development Mode:** Tests the modular source files in `src/` directly. This also enables internal utility tests.
     ```bash
     lua test.lua --dev
     ```
@@ -118,7 +118,7 @@ lua test.lua 001 --dev
 lua test.lua 00101 --dev
 ```
 
-### Internal Helper Tests
+### Internal Utility Tests
 
 Some tests are marked as `dev_only = true`. These tests verify internal calculations that are not accessible in the release version (`pods.lua`). When running in release mode (default), these tests are skipped, and a message is shown: `Some tests can only be run in development mode.` Running a specific dev-only test will result in: `Test 'NNNNN' can only be used in development mode.`
 

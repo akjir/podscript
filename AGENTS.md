@@ -33,10 +33,10 @@ The development takes place in the `src/` directory. These files are bundled int
 
 *   `src/`: Contains the modular source code.
     *   `header.lua`: License header and global variables.
-    *   `helper_*.lua`: Specialized utility functions (String, Table).
+    *   `utilities_*.lua`: Specialized utility functions (String, Table).
     *   `log.lua`: Central logging system.
     *   `system.lua`: System-wide checks and command execution.
-    *   `helper.lua`: General helper functions.
+    *   `utilities.lua`: General utility functions.
     *   `container.lua`: Container management logic.
     *   `pod.lua`: Pod management logic.
     *   `recipe.lua`: Recipe loading and validation.
@@ -59,10 +59,10 @@ Each module in `src/` corresponds to a section with specific function naming con
 | Section      | Purpose                                       | Naming / Access                    | File in `src/` |
 |--------------|-----------------------------------------------|------------------------------------|----------------|
 | **Log**      | Central logging system with levels.           | Global `log` object (e.g., `log.info`) | `log.lua`      |
-| **String**   | Utility functions for string manipulation.    | Extends `string` library (e.g., `string.trim`) | `helper_string.lua` |
-| **Table**    | Utility functions for Lua tables.             | Extends `table` library (e.g., `table.size`) | `helper_table.lua` |
+| **String**   | Utility functions for string manipulation.    | Extends `string` library (e.g., `string.trim`) | `utilities_string.lua` |
+| **Table**    | Utility functions for Lua tables.             | Extends `table` library (e.g., `table.size`) | `utilities_table.lua` |
 | **System**   | System-wide operations and version checks.    | Global `system` object (e.g., `system.exec`) | `system.lua`   |
-| **Helper**   | General-purpose utility functions.            | Global functions (no prefix)       | `helper.lua`   |
+| **Utilities**| General-purpose utility functions.            | Global functions (no prefix)       | `utilities.lua`   |
 | **Mode Default** | Default logic (create, remove, update, etc.). | Prefix `mode_default__`            | `mode_default.lua` |
 | **Mode Simulate** | Simulates commands in default mode.          | Prefix `mode_simulate__`           | `mode_simulate.lua` |
 | **Mode Config**   | Handles configuration inspection and editing. | Prefix `mode_config__`             | `mode_config.lua`  |
@@ -124,7 +124,7 @@ This is the mandatory workflow for all changes:
 1.  **Modify Source**: Edit files in the `src/` directory.
 2.  **Test (Dev Mode)**: Run `lua test.lua --dev` to verify changes using the source files.
     *   **Always test with `--dev` first.**
-    *   **Note:** Certain internal functions (like those in `src/helper.lua`) are only accessible in development mode and were specifically tested for that mode.
+    *   **Note:** Certain internal functions (like those in `src/utilities.lua`) are only accessible in development mode and were specifically tested for that mode.
     *   Example: `lua test.lua --dev 00101`
 3.  **Build**: Run `lua build.lua` to generate the updated `pods.lua`.
 4.  **Test (Release Mode)**: Run `lua test.lua` to verify the generated release file.
@@ -144,7 +144,7 @@ The testing framework (`test.lua`) captures output and compares it against expec
 ### 8.1. Test Suites and Identifiers
 
 *   **Location**: Test suites are located in the `tests/` directory.
-*   **Support**: Core test utility functions are defined in `tests/test_helpers.lua`.
+*   **Support**: Core test utility functions are defined in `tests/test_utilities.lua`.
 *   **Suite ID**: Each suite defines its own 3-digit number (e.g., `local s = "004"`).
 *   **Test ID**: Individual tests within a suite use a sequential 2-digit suffix (e.g., `[s .. "01"]`).
 *   **Test Types**:

@@ -211,7 +211,7 @@ end
 
 -- ------------------------------------------------------------------------- --
 --
---    SECTION Helper
+--    SECTION Utilities
 --
 -- ------------------------------------------------------------------------- --
 
@@ -871,12 +871,12 @@ end
 ---Print command help.
 local function mode_command__help(registry)
     if registry.flags.simulate then
-        log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATE)")
+        log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
         log.print("Usage: pods simulate command [OPTIONS] NAME COMMAND")
         log.print("   or: lua pods.lua simulate command [OPTIONS] NAME COMMAND\n")
     else
-        log.print("PODSCRIPT " .. VERSION .. " - Command Mode")
+        log.print("PODSCRIPT " .. VERSION .. " - Command Mode\n")
         log.print("Execute a command defined in a recipe for a container.")
         log.print("Usage: pods command [OPTIONS] NAME COMMAND")
         log.print("   or: lua pods.lua command [OPTIONS] NAME COMMAND\n")

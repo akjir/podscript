@@ -22,7 +22,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --   PODSCRIPT TEST
 -- ------------------------------------------------------------------------- --
 
-require "tests.test_helpers"
+require "tests.test_utilities"
 
 local output_stack = {}
 local single_test_name = ""
@@ -188,15 +188,15 @@ local function add_suite(name)
 end
 
 add_suite("suite_001_argument_options")
-add_suite("suite_002_helpers_string")
-add_suite("suite_003_helpers_table")
+add_suite("suite_002_utilities_string")
+add_suite("suite_003_utilities_table")
 add_suite("suite_004_actions")
 add_suite("suite_005_targets")
 add_suite("suite_006_recipes")
 add_suite("suite_007_pods")
 add_suite("suite_008_containers")
 add_suite("suite_009_system")
-add_suite("suite_010_helper")
+add_suite("suite_010_utilities")
 add_suite("suite_011_mode_config")
 add_suite("suite_012_mode_recipe")
 

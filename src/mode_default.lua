@@ -20,7 +20,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.config"
 require "src.recipe"
-require "src.helper"
+require "src.utilities"
 
 ---@build block:
 -- ------------------------------------------------------------------------- --

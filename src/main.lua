@@ -20,9 +20,9 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.header"
 require "src.log"
-require "src.helper_string"
-require "src.helper_table"
-require "src.helper"
+require "src.utilities_string"
+require "src.utilities_table"
+require "src.utilities"
 require "src.config"
 require "src.mode_command"
 require "src.mode_recipe"
