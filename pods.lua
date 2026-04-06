@@ -1297,9 +1297,9 @@ function main(arguments)
     -- build full config path
     local config_full_path = build_full_path(config_path, "", ".lua")
 
-    -- print info if non default confi is used and debug is enabled
-    if config_path ~= "config" then
-        log.debug("Config '" .. config_full_path .. "' is used.")
+    -- print debug message if non-default-configuration is used
+    if debug and config_path ~= "config" then
+        log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
     end
 
     -- parse config
