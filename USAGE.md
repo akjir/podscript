@@ -96,7 +96,7 @@ The `config` mode allows you to inspect the active configuration.
 
 | Action | Description |
 | :--- | :--- |
-| `print` | Display the content of the current configuration file with line numbers. |
+| `print` | Display the content of the current configuration file with line numbers. (Default if no action is provided). |
 | `edit`  | Open the current configuration file in an external editor. |
 | `help`  | Display help for the config mode. |
 

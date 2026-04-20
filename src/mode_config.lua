@@ -70,6 +70,9 @@ end
 function mode_config__handle(registry)
     log.debug("Config mode is used.")
     local action, _ = parse_action_and_targets_parameters(registry)
+    if action == "" then
+        action = "print"
+    end
     local actions = {
         help = mode_config__help,
         edit = mode_config__edit,

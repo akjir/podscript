@@ -75,7 +75,7 @@ local function mode_command__help(registry)
     log.print("NAME:")
     log.print("  *                  name of the recipe")
     log.print("COMMAND:")
-    log.print("  *                  command defined in recipe to execute")
+    log.print("  *                  command by name defined in recipe to execute")
     log.print("  list               list all commands for a recipe")
 end
 

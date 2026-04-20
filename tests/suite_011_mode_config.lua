@@ -42,5 +42,20 @@ return {
                 { 5, "ERROR: Command exited with code '127'!" },
             },
         },
+        [s .. "05"] = {
+            description = "Print current config (no action).",
+            config = "config_003_simulate_true",
+            parameters = { "config" },
+            expectations = {
+                { 4,  "  1: return {" },
+                { 5,  "  2:     simulate = true," },
+                { 6,  "  3:     recipes = {" },
+                { 7,  "  4:         groups = {" },
+                { 8,  "  5:             all = {}" },
+                { 9,  "  6:         }," },
+                { 10, "  7:     }," },
+                { 11, "  8: }" },
+            },
+        },
     }
 }

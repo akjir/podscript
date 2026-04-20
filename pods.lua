@@ -886,7 +886,7 @@ local function mode_command__help(registry)
     log.print("NAME:")
     log.print("  *                  name of the recipe")
     log.print("COMMAND:")
-    log.print("  *                  command defined in recipe to execute")
+    log.print("  *                  command by name defined in recipe to execute")
     log.print("  list               list all commands for a recipe")
 end
 
@@ -1072,6 +1072,9 @@ end
 local function mode_config__handle(registry)
     log.debug("Config mode is used.")
     local action, _ = parse_action_and_targets_parameters(registry)
+    if action == "" then
+        action = "print"
+    end
     local actions = {
         help = mode_config__help,
         edit = mode_config__edit,
