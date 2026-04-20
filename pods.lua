@@ -860,13 +860,13 @@ end
 
 ---Validates command_table.
 local function mode_command__validate(command_table, recipe)
-    if string.is_nil_or_empty(command_table.container) then
+    if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
         log.error("No container in command table set!")
-        return
+        return false
     end
     if string.is_nil_or_empty(command_table.execute) then
         log.error("No command in command table set!")
-        return
+        return false
     end
     -- validate container name : APP *APP and 1
     return true
@@ -879,8 +879,22 @@ end
 local function mode_command__execute(registry, recipe, command_table)
     local commands = { "podman exec -it" }
 
+    if command_table.user ~= nil then
+        commands[#commands + 1] = "-u"
+        commands[#commands + 1] = tostring(command_table.user)
+    end
+
+    local container_name = tostring(command_table.container)
+    container_name = normalize_name(container_name)
+    if string.begins_with(container_name, "*") then
+        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    end
+
+    commands[#commands + 1] = container_name
+    commands[#commands + 1] = command_table.execute
+
     system.exec(table.concat(commands, " "),
-        "Execute command '" .. command_table.execute .. "' in container '" .. command_table.container .. "': ",
+        "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
         registry.flags.simulate, false)
 end
 
@@ -913,8 +927,11 @@ end
 local function mode_command__list(registry, recipe, target)
     -- print formated - comand name, command, description (optional)
     log.print("Commands for recipe '" .. target .. "':")
-    for command, command_table in pairs(recipe.commands) do
-        log.print("  " .. command .. ": " .. command_table.execute)
+    if not table.is_nil_or_empty(recipe.pod.commands) then
+        for command, command_table in pairs(recipe.pod.commands) do
+            local execute_str = command_table.execute or "<missing execute>"
+            log.print("  " .. command .. ": " .. execute_str)
+        end
     end
 end
 
@@ -938,7 +955,10 @@ local function mode_command__handle(registry)
         if command == "list" then
             mode_command__list(registry, recipe, target)
         else
-            local command_table = recipe.commands[command]
+            local command_table = nil
+            if not table.is_nil_or_empty(recipe.pod.commands) then
+                command_table = recipe.pod.commands[command]
+            end
             if command_table == nil then
                 log.error("Command '" .. command .. "' not found in recipe '" .. target .. "'.")
                 return

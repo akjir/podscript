@@ -199,6 +199,7 @@ add_suite("suite_009_system")
 add_suite("suite_010_utilities")
 add_suite("suite_011_mode_config")
 add_suite("suite_012_mode_recipe")
+add_suite("suite_013_mode_command")
 
 -- ------------------------------------------------------------------------- --
 --      Main
