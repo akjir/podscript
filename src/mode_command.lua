@@ -105,13 +105,37 @@ end
 ---@param recipe table
 ---@param target string
 local function mode_command__list(registry, recipe, target)
-    -- print formated - comand name, command, description (optional)
-    log.print("Commands for recipe '" .. target .. "':")
-    if not table.is_nil_or_empty(recipe.pod.commands) then
-        for command, command_table in pairs(recipe.pod.commands) do
-            local execute_str = command_table.execute or "<missing execute>"
-            log.print("  " .. command .. ": " .. execute_str)
+    if table.is_nil_or_empty(recipe.pod.commands) then
+        log.print("There are no commands defined in recipe '" .. target .. "'.")
+        return
+    end
+
+    local sorted_commands = {}
+    for command, _ in pairs(recipe.pod.commands) do
+        table.insert(sorted_commands, command)
+    end
+    table.sort(sorted_commands)
+
+    local valid_commands = {}
+    for i = 1, #sorted_commands do
+        local command = sorted_commands[i]
+        local command_table = recipe.pod.commands[command]
+        local description = command_table.description
+        if string.is_nil_or_empty(description) then
+            log.warning("Command '" .. command .. "' has no description.")
+        else
+            table.insert(valid_commands, { name = command, desc = description })
         end
+    end
+
+    if #valid_commands == 0 then
+        log.print("There is no valid command in recipe '" .. target .. "'.")
+        return
+    end
+
+    log.print("Commands for recipe '" .. target .. "':")
+    for i = 1, #valid_commands do
+        log.print("  " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
     end
 end
 

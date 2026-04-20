@@ -15,7 +15,14 @@ return {
             description = "Print command list.",
             parameters = { "command", "recipe_006_commands", "list" },
             expectations = {
-                { 6, "Commands for recipe 'recipe_006_commands':" },
+                { 6, "WARNING: Command 'missing_container' has no description." },
+                { 7, "WARNING: Command 'missing_execute' has no description." },
+                { 8, "WARNING: Command 'run_absolute' has no description." },
+                { 9, "WARNING: Command 'run_int_container' has no description." },
+                { 10, "WARNING: Command 'run_int_container_2' has no description." },
+                { 11, "WARNING: Command 'run_int_user' has no description." },
+                { 12, "Commands for recipe 'recipe_006_commands':" },
+                { 13, "  add_index: Adds missing database indices." },
             },
         },
         [s .. "03"] = {
@@ -85,6 +92,23 @@ return {
             expectations = {
                 { 7, "Execute command 'script.sh run-int-container-2' in container 'cmd_pod-db': " },
                 { 8, "podman exec -it cmd_pod-db script.sh run-int-container-2;" },
+            },
+        },
+        [s .. "11"] = {
+            description = "Print command list for recipe without commands.",
+            parameters = { "command", "recipe_011_simple_container", "list" },
+            expectations = {
+                { 6, "INFO: No pod path in recipe 'recipe_011_simple_container' set. Path '/tmp/simple_container' used." },
+                { 7, "There are no commands defined in recipe 'recipe_011_simple_container'." },
+            },
+        },
+        [s .. "12"] = {
+            description = "Print command list for recipe with only invalid commands.",
+            parameters = { "command", "recipe_021_no_description_commands", "list" },
+            expectations = {
+                { 6, "WARNING: Command 'cmd1' has no description." },
+                { 7, "WARNING: Command 'cmd2' has no description." },
+                { 8, "There is no valid command in recipe 'recipe_021_no_description_commands'." },
             },
         },
     }

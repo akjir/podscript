@@ -46,6 +46,7 @@ The development takes place in the `src/` directory. These files are bundled int
     *   `mode_simulate.lua`: Simulate mode handling.
     *   `mode_config.lua`: Config mode handling.
     *   `mode_recipe.lua`: Recipe mode handling.
+    *   `mode_command.lua`: Command mode handling.
     *   `mode_help.lua`: Help mode handling and information.
 *   `test.lua`: The main entry point for the test runner.
 *   `build.lua`: The build script that bundles `src/` into `pods.lua`.
@@ -67,6 +68,7 @@ Each module in `src/` corresponds to a section with specific function naming con
 | **Mode Simulate** | Simulates commands in default mode.          | Prefix `mode_simulate__`           | `mode_simulate.lua` |
 | **Mode Config**   | Handles configuration inspection and editing. | Prefix `mode_config__`             | `mode_config.lua`  |
 | **Mode Recipe**   | Handles recipe inspection and editing.     | Prefix `mode_recipe__`            | `mode_recipe.lua`  |
+| **Mode Command**  | Handles command execution in containers.   | Prefix `mode_command__`           | `mode_command.lua` |
 | **Mode Help**     | Displays usage help for different modes.     | Prefix `mode_help__`               | `mode_help.lua`    |
 | **Container**     | Manages Podman container lifecycle.          | Prefix `container__`               | `container.lua`    |
 | **Pod**           | Manages Podman pod lifestyle.                | Prefix `pod__`                     | `pod.lua`          |
