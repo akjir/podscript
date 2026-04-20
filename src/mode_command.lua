@@ -83,31 +83,31 @@ local function mode_command__help(registry)
     if registry.flags.simulate then
         log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
-        log.print("Usage: pods simulate command [OPTIONS] NAME COMMAND")
-        log.print("   or: lua pods.lua simulate command [OPTIONS] NAME COMMAND\n")
+        log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua simulate command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
     else
         log.print("PODSCRIPT " .. VERSION .. " - Command Mode\n")
         log.print("Execute a command defined in a recipe for a container.")
-        log.print("Usage: pods command [OPTIONS] NAME COMMAND")
-        log.print("   or: lua pods.lua command [OPTIONS] NAME COMMAND\n")
+        log.print("Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
     end
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("NAME:")
+    log.print("RECIPE:")
     log.print("  *                  name of the recipe")
-    log.print("COMMAND:")
+    log.print("COMMAND|INDEX:")
     log.print("  *                  command by name defined in recipe to execute")
-    log.print("  list               list all commands for a recipe")
+    log.print("  <number>           command by numeric index defined in recipe to execute")
+    log.print("  list               list all valid commands for a recipe (default)")
 end
 
----List all commands for a recipe.
----@param registry table
+---Get a list of valid commands for a recipe.
 ---@param recipe table
----@param target string
-local function mode_command__list(registry, recipe, target)
+---@param suppress_warnings boolean|nil
+---@return table
+local function mode_command__get_valid_commands(recipe, suppress_warnings)
     if table.is_nil_or_empty(recipe.pod.commands) then
-        log.print("There are no commands defined in recipe '" .. target .. "'.")
-        return
+        return {}
     end
 
     local sorted_commands = {}
@@ -122,11 +122,27 @@ local function mode_command__list(registry, recipe, target)
         local command_table = recipe.pod.commands[command]
         local description = command_table.description
         if string.is_nil_or_empty(description) then
-            log.warning("Command '" .. command .. "' has no description.")
+            if not suppress_warnings then
+                log.warning("Command '" .. command .. "' has no description.")
+            end
         else
-            table.insert(valid_commands, { name = command, desc = description })
+            table.insert(valid_commands, { name = command, desc = description, table = command_table })
         end
     end
+    return valid_commands
+end
+
+---List all commands for a recipe.
+---@param registry table
+---@param recipe table
+---@param target string
+local function mode_command__list(registry, recipe, target)
+    if table.is_nil_or_empty(recipe.pod.commands) then
+        log.print("There are no commands defined in recipe '" .. target .. "'.")
+        return
+    end
+
+    local valid_commands = mode_command__get_valid_commands(recipe)
 
     if #valid_commands == 0 then
         log.print("There is no valid command in recipe '" .. target .. "'.")
@@ -135,7 +151,11 @@ local function mode_command__list(registry, recipe, target)
 
     log.print("Commands for recipe '" .. target .. "':")
     for i = 1, #valid_commands do
-        log.print("  " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
+        local prefix = i .. ")"
+        if #valid_commands > 9 and i < 10 then
+            prefix = " " .. prefix
+        end
+        log.print("  " .. prefix .. " " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
     end
 end
 
@@ -150,6 +170,11 @@ function mode_command__handle(registry)
         mode_command__help(registry)
         return
     end
+
+    if string.is_nil_or_empty(command) then
+        command = "list"
+    end
+
     name = normalize_name(name)
     local untangled_targets = config__untangle_recipes(registry.config.recipes.groups, { name })
     if untangled_targets == nil then return end
@@ -160,9 +185,18 @@ function mode_command__handle(registry)
             mode_command__list(registry, recipe, target)
         else
             local command_table = nil
-            if not table.is_nil_or_empty(recipe.pod.commands) then
+            local command_num = tonumber(command)
+            
+            if command_num ~= nil then
+                local valid_commands = mode_command__get_valid_commands(recipe, true)
+                if command_num > 0 and command_num <= #valid_commands then
+                    command_table = valid_commands[command_num].table
+                    command = valid_commands[command_num].name
+                end
+            elseif not table.is_nil_or_empty(recipe.pod.commands) then
                 command_table = recipe.pod.commands[command]
             end
+
             if command_table == nil then
                 log.error("Command '" .. command .. "' not found in recipe '" .. target .. "'.")
                 return

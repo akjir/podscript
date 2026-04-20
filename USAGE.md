@@ -168,21 +168,28 @@ The `command` mode allows you to execute commands defined in a recipe for a spec
 
 | Action | Description |
 | :--- | :--- |
-| `<command>` | Execute the command by its name as defined in the recipe. |
-| `list` | List all commands defined for the specified recipe. |
+| `COMMAND` | Execute the command by its name as defined in the recipe. |
+| `INDEX` | Execute the command by its numeric index from the valid commands list. |
+| `list` | List all valid commands defined for the specified recipe. (Default if no action is provided). |
 | `help` | Display help for the command mode. |
 
 ### Usage
 
-1.  **List all commands for a recipe:**
+1.  **List all valid commands for a recipe (Default action):**
     ```bash
+    lua pods.lua command my-recipe
+    # or
     lua pods.lua command my-recipe list
     ```
-2.  **Execute a command:**
+2.  **Execute a command by name:**
     ```bash
     lua pods.lua command my-recipe add_index
     ```
-3.  **Execute a command with options:**
+3.  **Execute a command by numeric index:**
+    ```bash
+    lua pods.lua command my-recipe 1
+    ```
+4.  **Execute a command with options:**
     ```bash
     lua pods.lua simulate command my-recipe add_index
     ```

@@ -8,7 +8,7 @@ return {
             description = "Print command help.",
             parameters = { "command", "help" },
             expectations = {
-                { 6, "Usage: pods command [OPTIONS] NAME COMMAND" },
+                { 6, "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]" },
             },
         },
         [s .. "02"] = {
@@ -22,7 +22,7 @@ return {
                 { 10, "WARNING: Command 'run_int_container_2' has no description." },
                 { 11, "WARNING: Command 'run_int_user' has no description." },
                 { 12, "Commands for recipe 'recipe_006_commands':" },
-                { 13, "  add_index: Adds missing database indices." },
+                { 13, "  1) add_index: Adds missing database indices." },
             },
         },
         [s .. "03"] = {
@@ -109,6 +109,29 @@ return {
                 { 6, "WARNING: Command 'cmd1' has no description." },
                 { 7, "WARNING: Command 'cmd2' has no description." },
                 { 8, "There is no valid command in recipe 'recipe_021_no_description_commands'." },
+            },
+        },
+        [s .. "13"] = {
+            description = "Simulate command using numeric index.",
+            simulate = true,
+            parameters = { "command", "recipe_006_commands", "1" },
+            expectations = {
+                { 7, "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': " },
+                { 8, "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;" },
+            },
+        },
+        [s .. "14"] = {
+            description = "Default to list when no command is provided.",
+            parameters = { "command", "recipe_006_commands" },
+            expectations = {
+                { 6, "WARNING: Command 'missing_container' has no description." },
+                { 7, "WARNING: Command 'missing_execute' has no description." },
+                { 8, "WARNING: Command 'run_absolute' has no description." },
+                { 9, "WARNING: Command 'run_int_container' has no description." },
+                { 10, "WARNING: Command 'run_int_container_2' has no description." },
+                { 11, "WARNING: Command 'run_int_user' has no description." },
+                { 12, "Commands for recipe 'recipe_006_commands':" },
+                { 13, "  1) add_index: Adds missing database indices." },
             },
         },
     }
