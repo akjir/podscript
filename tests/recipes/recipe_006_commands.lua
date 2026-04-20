@@ -24,6 +24,10 @@ return {
                 container = 1,
                 execute = "script.sh run-int-container",
             },
+            run_int_container_2 = {
+                container = 2,
+                execute = "script.sh run-int-container-2",
+            },
             missing_container = {
                 execute = "script.sh missing-container",
             },
@@ -33,6 +37,12 @@ return {
         },
     },
     containers = {
-        { image = "test:latest" }
+        {
+            image = "test:latest",
+        },
+        {
+            name = "*db",
+            image = "test:latest",
+        },
     },
 }

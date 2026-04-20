@@ -46,12 +46,12 @@ return {
             },
         },
         [s .. "06"] = {
-            description = "Simulate command integer container.",
+            description = "Simulate command integer container (index 1).",
             simulate = true,
             parameters = { "command", "recipe_006_commands", "run_int_container" },
             expectations = {
-                { 7, "Execute command 'script.sh run-int-container' in container '1': " },
-                { 8, "podman exec -it 1 script.sh run-int-container;" },
+                { 7, "Execute command 'script.sh run-int-container' in container 'cmd_pod-1': " },
+                { 8, "podman exec -it cmd_pod-1 script.sh run-int-container;" },
             },
         },
         [s .. "07"] = {
@@ -76,6 +76,15 @@ return {
             parameters = { "command", "recipe_006_commands", "unknown" },
             expectations = {
                 { 7, "ERROR: Command 'unknown' not found in recipe 'recipe_006_commands'." },
+            },
+        },
+        [s .. "10"] = {
+            description = "Simulate command integer container (index 2, named *db).",
+            simulate = true,
+            parameters = { "command", "recipe_006_commands", "run_int_container_2" },
+            expectations = {
+                { 7, "Execute command 'script.sh run-int-container-2' in container 'cmd_pod-db': " },
+                { 8, "podman exec -it cmd_pod-db script.sh run-int-container-2;" },
             },
         },
     }

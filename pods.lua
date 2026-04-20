@@ -884,10 +884,17 @@ local function mode_command__execute(registry, recipe, command_table)
         commands[#commands + 1] = tostring(command_table.user)
     end
 
-    local container_name = tostring(command_table.container)
-    container_name = normalize_name(container_name)
-    if string.begins_with(container_name, "*") then
-        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    local container_name
+    if type(command_table.container) == "number" and recipe.containers[command_table.container] then
+        local container = recipe.containers[command_table.container]
+        container__ensure_name(container, recipe.pod.name, tostring(command_table.container))
+        container_name = container.name
+    else
+        container_name = tostring(command_table.container)
+        container_name = normalize_name(container_name)
+        if string.begins_with(container_name, "*") then
+            container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+        end
     end
 
     commands[#commands + 1] = container_name
