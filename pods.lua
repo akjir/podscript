@@ -910,21 +910,22 @@ local function mode_command__help(registry)
     if registry.flags.simulate then
         log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
-        log.print("Usage: pods simulate command [OPTIONS] NAME COMMAND")
-        log.print("   or: lua pods.lua simulate command [OPTIONS] NAME COMMAND\n")
+        log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua simulate command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
     else
         log.print("PODSCRIPT " .. VERSION .. " - Command Mode\n")
         log.print("Execute a command defined in a recipe for a container.")
-        log.print("Usage: pods command [OPTIONS] NAME COMMAND")
-        log.print("   or: lua pods.lua command [OPTIONS] NAME COMMAND\n")
+        log.print("Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
     end
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("NAME:")
+    log.print("RECIPE:")
     log.print("  *                  name of the recipe")
-    log.print("COMMAND:")
+    log.print("COMMAND|INDEX:")
     log.print("  *                  command by name defined in recipe to execute")
-    log.print("  list               list all commands for a recipe")
+    log.print("  <number>           command by numeric index defined in recipe to execute")
+    log.print("  list               list all valid commands for a recipe (default)")
 end
 
 ---Get a list of valid commands for a recipe.

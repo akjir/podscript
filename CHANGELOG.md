@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.3.0] - 2026-04-24
 
 ### Added
 
@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a check for elevated privileges (sudo) with a mandatory confirmation prompt.
 - Added a new `config` mode with `edit`, `print`, and `help` actions.
 - Added a new `recipe` mode with `edit`, `print`, and `help` actions.
+- Added a new `command` mode with `list`, `execute`, and `help` actions.
 
 ## [1.2.0] - 2026-03-28
 
