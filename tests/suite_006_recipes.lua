@@ -97,5 +97,20 @@ return {
                 { 7, "ERROR: Couldn't load recipe './tests/recipes/recipe_016_container_lua_error.lua'!" },
             }
         },
+        [s .. "13"] = {
+            description = "Initialize recipe.pod.commands as empty table if missing.",
+            dev_only = true,
+            run = function()
+                local registry = { config = { pods = { path = "/pods" } } }
+                local recipe = {
+                    name = "test_recipe",
+                    pod = { registry = "test.io" },
+                    containers = { { image = "test:latest" } },
+                }
+                local valid = recipe__validate(registry, recipe, "test_recipe")
+                return valid and type(recipe.pod.commands) == "table" and table.size(recipe.pod.commands) == 0 and recipe.commands == nil
+            end,
+            expected = true,
+        },
     },
 }

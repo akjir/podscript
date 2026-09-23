@@ -78,8 +78,8 @@ global function recipe__validate(registry, recipe, file_name)
     end
 
     -- test for commands
-    if table.is_nil_or_empty(recipe.commands) then
-        recipe.commands = {}
+    if table.is_nil_or_empty(recipe.pod.commands) then
+        recipe.pod.commands = {}
     end
 
     -- test for pod registry

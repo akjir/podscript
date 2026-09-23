@@ -5,6 +5,7 @@
 
 * **Goal:** Lightweight Lua script managing Podman pods/containers via declarative recipes.
 * **Core Rules:** Zero external dependencies. Modular `src/`. NEVER edit `pods.lua` directly.
+* **Language & Tone:** Always communicate and respond in English, regardless of input language. All code, comments, documentation, and git commits must be exclusively in English. Keep language concise and precise; never use emojis.
 * **Style:** 4 spaces. English comments/vars. Sort functions alphabetically. Avoid globals (`global<const> *` enforced). Initialize vars (no `nil`).
 * **Reqs:** Lua 5.5+, Linux, Podman 5.8.0+.
 * **CLI:** Mode-driven. See [USAGE.md](USAGE.md).

@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Fixed path corruption for hidden host volume directories in container creation.
+- Fixed recipe validation scope by initializing missing commands under pod node.
 
 ## [1.3.0] - 2026-04-24
 
