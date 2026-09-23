@@ -37,7 +37,7 @@ local function mode_config__edit(registry)
         log.error("No editor configured.")
         return
     end
-    local command = editor .. " " .. registry.config.full_path
+    local command = editor .. " " .. string.escape_shell(registry.config.full_path)
     system.exec(command, "", false, true)
 end
 ---Print config help.

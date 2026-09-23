@@ -37,11 +37,11 @@ function container__create(container, pod, simulate)
 
     -- container name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = container.name
+    commands[#commands + 1] = string.escape_shell(container.name)
 
     -- add container to pod
     commands[#commands + 1] = "--pod"
-    commands[#commands + 1] = pod.name
+    commands[#commands + 1] = string.escape_shell(pod.name)
 
     -- detach
     -- default is false
@@ -80,7 +80,7 @@ function container__create(container, pod, simulate)
                     command = command .. ":" .. options
                 end
                 commands[#commands + 1] = "--volume"
-                commands[#commands + 1] = command
+                commands[#commands + 1] = string.escape_shell(command)
             end
         end
     end
@@ -93,7 +93,7 @@ function container__create(container, pod, simulate)
 
     -- container image
     local registry = table.get_or_default(container, "registry", pod.registry)
-    commands[#commands + 1] = registry .. "/" .. container.image
+    commands[#commands + 1] = string.escape_shell(registry .. "/" .. container.image)
 
     -- commands
     -- see: podman run --detach image:tag command
@@ -144,8 +144,8 @@ end
 ---@param container table
 ---@param simulate boolean
 function container__remove(container, simulate)
-    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate, false)
-    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman stop " .. string.escape_shell(container.name), "Stop container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman rm " .. string.escape_shell(container.name), "Remove container '" .. container.name .. "': ", simulate, false)
 end
 
 ---Update a container image.
@@ -155,5 +155,5 @@ end
 function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate, false)
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)
 end

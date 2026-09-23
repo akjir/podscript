@@ -36,7 +36,7 @@ function pod__create(recipe, simulate)
 
     -- pod name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = recipe.pod.name
+    commands[#commands + 1] = string.escape_shell(recipe.pod.name)
 
     -- pod publish
     if not table.is_nil_or_empty(recipe.pod.publish) then
@@ -93,7 +93,7 @@ function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    system.exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
         simulate, false)
 end
 

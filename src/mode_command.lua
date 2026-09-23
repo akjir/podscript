@@ -54,7 +54,7 @@ local function mode_command__execute(registry, recipe, command_table)
 
     if command_table.user ~= nil then
         commands[#commands + 1] = "-u"
-        commands[#commands + 1] = tostring(command_table.user)
+        commands[#commands + 1] = string.escape_shell(tostring(command_table.user))
     end
 
     local container_name
@@ -70,7 +70,7 @@ local function mode_command__execute(registry, recipe, command_table)
         end
     end
 
-    commands[#commands + 1] = container_name
+    commands[#commands + 1] = string.escape_shell(container_name)
     commands[#commands + 1] = command_table.execute
 
     system.exec(table.concat(commands, " "),

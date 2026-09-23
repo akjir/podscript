@@ -41,6 +41,21 @@ string.ends_with = function(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
+---Escapes a string for safe use in shell commands.
+---@param str string|nil
+---@param always_quote boolean|nil
+---@return string
+string.escape_shell = function(str, always_quote)
+    if str == nil then
+        return "''"
+    end
+    str = tostring(str)
+    if always_quote or str == "" or str:find("[^%w_%-./:=@]") then
+        return "'" .. str:gsub("'", "'\\''") .. "'"
+    end
+    return str
+end
+
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean

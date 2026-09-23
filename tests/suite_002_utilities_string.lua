@@ -102,5 +102,54 @@ return {
             end,
             expected = "The  anwser is 42!"
         },
+        [s .. "15"] = {
+            description = "string.escape_shell - string with spaces",
+            run = function()
+                return string.escape_shell("hello world")
+            end,
+            expected = "'hello world'"
+        },
+        [s .. "16"] = {
+            description = "string.escape_shell - string with single quote",
+            run = function()
+                return string.escape_shell("it's")
+            end,
+            expected = "'it'\\''s'"
+        },
+        [s .. "17"] = {
+            description = "string.escape_shell - string with special characters",
+            run = function()
+                return string.escape_shell("foo;bar$baz")
+            end,
+            expected = "'foo;bar$baz'"
+        },
+        [s .. "18"] = {
+            description = "string.escape_shell - safe string without special characters",
+            run = function()
+                return string.escape_shell("simple_container")
+            end,
+            expected = "simple_container"
+        },
+        [s .. "19"] = {
+            description = "string.escape_shell - empty string",
+            run = function()
+                return string.escape_shell("")
+            end,
+            expected = "''"
+        },
+        [s .. "20"] = {
+            description = "string.escape_shell - nil value",
+            run = function()
+                return string.escape_shell(nil)
+            end,
+            expected = "''"
+        },
+        [s .. "21"] = {
+            description = "string.escape_shell - always_quote flag on safe string",
+            run = function()
+                return string.escape_shell("simple", true)
+            end,
+            expected = "'simple'"
+        },
     },
 }

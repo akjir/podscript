@@ -91,6 +91,21 @@ string.ends_with = function(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
+---Escapes a string for safe use in shell commands.
+---@param str string|nil
+---@param always_quote boolean|nil
+---@return string
+string.escape_shell = function(str, always_quote)
+    if str == nil then
+        return "''"
+    end
+    str = tostring(str)
+    if always_quote or str == "" or str:find("[^%w_%-./:=@]") then
+        return "'" .. str:gsub("'", "'\\''") .. "'"
+    end
+    return str
+end
+
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean
@@ -436,11 +451,11 @@ local function container__create(container, pod, simulate)
 
     -- container name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = container.name
+    commands[#commands + 1] = string.escape_shell(container.name)
 
     -- add container to pod
     commands[#commands + 1] = "--pod"
-    commands[#commands + 1] = pod.name
+    commands[#commands + 1] = string.escape_shell(pod.name)
 
     -- detach
     -- default is false
@@ -479,7 +494,7 @@ local function container__create(container, pod, simulate)
                     command = command .. ":" .. options
                 end
                 commands[#commands + 1] = "--volume"
-                commands[#commands + 1] = command
+                commands[#commands + 1] = string.escape_shell(command)
             end
         end
     end
@@ -492,7 +507,7 @@ local function container__create(container, pod, simulate)
 
     -- container image
     local registry = table.get_or_default(container, "registry", pod.registry)
-    commands[#commands + 1] = registry .. "/" .. container.image
+    commands[#commands + 1] = string.escape_shell(registry .. "/" .. container.image)
 
     -- commands
     -- see: podman run --detach image:tag command
@@ -543,8 +558,8 @@ end
 ---@param container table
 ---@param simulate boolean
 local function container__remove(container, simulate)
-    system.exec("podman stop " .. container.name, "Stop container '" .. container.name .. "': ", simulate, false)
-    system.exec("podman rm " .. container.name, "Remove container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman stop " .. string.escape_shell(container.name), "Stop container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman rm " .. string.escape_shell(container.name), "Remove container '" .. container.name .. "': ", simulate, false)
 end
 
 ---Update a container image.
@@ -554,7 +569,7 @@ end
 local function container__update(container, pod, simulate)
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. registry .. "/" .. container.image, "", simulate, false)
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)
 end
 
 -- ------------------------------------------------------------------------- --
@@ -571,7 +586,7 @@ local function pod__create(recipe, simulate)
 
     -- pod name
     commands[#commands + 1] = "--name"
-    commands[#commands + 1] = recipe.pod.name
+    commands[#commands + 1] = string.escape_shell(recipe.pod.name)
 
     -- pod publish
     if not table.is_nil_or_empty(recipe.pod.publish) then
@@ -628,7 +643,7 @@ local function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    system.exec("podman pod rm " .. recipe.pod.name, "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
         simulate, false)
 end
 
@@ -881,7 +896,7 @@ local function mode_command__execute(registry, recipe, command_table)
 
     if command_table.user ~= nil then
         commands[#commands + 1] = "-u"
-        commands[#commands + 1] = tostring(command_table.user)
+        commands[#commands + 1] = string.escape_shell(tostring(command_table.user))
     end
 
     local container_name
@@ -897,7 +912,7 @@ local function mode_command__execute(registry, recipe, command_table)
         end
     end
 
-    commands[#commands + 1] = container_name
+    commands[#commands + 1] = string.escape_shell(container_name)
     commands[#commands + 1] = command_table.execute
 
     system.exec(table.concat(commands, " "),
@@ -1058,7 +1073,7 @@ local function mode_recipe__edit(registry, name)
     local recipe_path = registry.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
-    local command = editor .. " " .. full_path
+    local command = editor .. " " .. string.escape_shell(full_path)
     system.exec(command, "", false, true)
 end
 
@@ -1140,7 +1155,7 @@ local function mode_config__edit(registry)
         log.error("No editor configured.")
         return
     end
-    local command = editor .. " " .. registry.config.full_path
+    local command = editor .. " " .. string.escape_shell(registry.config.full_path)
     system.exec(command, "", false, true)
 end
 ---Print config help.

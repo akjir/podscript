@@ -46,7 +46,7 @@ local function mode_recipe__edit(registry, name)
     local recipe_path = registry.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
-    local command = editor .. " " .. full_path
+    local command = editor .. " " .. string.escape_shell(full_path)
     system.exec(command, "", false, true)
 end
 

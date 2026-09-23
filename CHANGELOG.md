@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Added `string.escape_shell` utility function to safely wrap and escape strings for shell execution.
+- Added shell escaping for dynamic variables (names and paths) in Podman and editor commands to prevent errors from spaces and special characters.
+
 ## [1.3.0] - 2026-04-24
 
 ### Added
