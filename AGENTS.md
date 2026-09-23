@@ -16,6 +16,7 @@
 * `main.lua`: Prefixed `main__*`.
 * `mode_{default,simulate,config,recipe,command,help}.lua`: Prefixed `mode_<name>__*`.
 * Strict Globals: `global<const> *` is enforced at the top of every chunk; any accidental undeclared global causes a compile error.
+* Lua 5.5 Features: `global<const> *` for strict globals, `table.create` for table preallocation, and named varargs (`... args`) for variadic functions without manual packing.
 
 ## Workflows (Building & Testing)
 For the build system (`build.lua`), testing framework (`test.lua`), and the development workflow, the agent should activate and follow the **`podscript-dev-workflow`** skill.

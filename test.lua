@@ -51,9 +51,17 @@ else
 end
 
 ---Print function
----@param str string
-local function print_to_stack(str)
-    output_stack[#output_stack + 1] = str
+---@param ... any
+local function print_to_stack(... args)
+    if args.n <= 1 then
+        output_stack[#output_stack + 1] = tostring(args[1] or "")
+    else
+        local parts = table.create(args.n)
+        for i = 1, args.n do
+            parts[i] = tostring(args[i])
+        end
+        output_stack[#output_stack + 1] = table.concat(parts, "\t")
+    end
 end
 
 -- global function for capture output
@@ -203,6 +211,7 @@ add_suite("suite_011_mode_config")
 add_suite("suite_012_mode_recipe")
 add_suite("suite_013_mode_command")
 add_suite("suite_014_globals")
+add_suite("suite_015_varargs")
 
 -- ------------------------------------------------------------------------- --
 --      Main

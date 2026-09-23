@@ -26,14 +26,18 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Appends a sequential table to another.
+---Appends one or more sequential tables to another.
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
----@param source table|nil
-table.append = function(target, source)
+---@param ... table|nil
+table.append = function(target, ... sources)
     if target == nil then return end
-    if source == nil then return end
-    table.move(source, 1, #source, #target + 1, target)
+    for i = 1, sources.n do
+        local source = sources[i]
+        if source ~= nil then
+            table.move(source, 1, #source, #target + 1, target)
+        end
+    end
 end
 
 ---Test if a table contains a value. Only works with sequential tables.
@@ -79,16 +83,22 @@ table.is_nil_or_empty = function(table)
     return table == nil or next(table) == nil
 end
 
----Merges two tables by adding key-value pairs from one table to another.
----If a key from the source table already exists in the target table, its value will be overwritten.
+---Merges two or more tables by adding key-value pairs from sources to target.
+---If a key from a source table already exists in the target table, its value will be overwritten.
 ---@param target table|nil
----@param source table|nil
-table.merge = function(target, source)
-    if target == nil then return source end
-    if source == nil then return target end
-    for key, value in pairs(source) do
-        target[key] = value
+---@param ... table|nil
+---@return table|nil
+table.merge = function(target, ... sources)
+    if target == nil then return sources[1] end
+    for i = 1, sources.n do
+        local source = sources[i]
+        if source ~= nil then
+            for key, value in pairs(source) do
+                target[key] = value
+            end
+        end
     end
+    return target
 end
 
 ---Remove duplicates from a table. Returns a new table and don't modify the original.

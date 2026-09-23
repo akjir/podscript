@@ -45,29 +45,47 @@ global log<const> = {
     print = print,
 
     ---Print debug message if debug is enabled.
-    ---@param message string
-    debug = function(message)
+    ---@param ... any
+    debug = function(... args)
         if log.debug_enabled then
-            log.print("DEBUG: " .. message)
+            log.print("DEBUG: " .. log.format_args(...))
         end
     end,
 
+    ---Print error message.
+    ---@param ... any
+    error = function(... args)
+        log.print("ERROR: " .. log.format_args(...))
+    end,
+
+    ---Format variable arguments into a single string separated by spaces.
+    ---@param ... any
+    ---@return string
+    format_args = function(... args)
+        local count = args.n
+        if count == 0 then
+            return ""
+        elseif count == 1 then
+            return tostring(args[1])
+        end
+
+        local parts = table.create(count)
+        for i = 1, count do
+            parts[i] = tostring(args[i])
+        end
+        return table.concat(parts, " ")
+    end,
+
     ---Print info message.
-    ---@param message string
-    info = function(message)
-        log.print("INFO: " .. message)
+    ---@param ... any
+    info = function(... args)
+        log.print("INFO: " .. log.format_args(...))
     end,
 
     ---Print warning message.
-    ---@param message string
-    warning = function(message)
-        log.print("WARNING: " .. message)
-    end,
-
-    ---Print error message.
-    ---@param message string
-    error = function(message)
-        log.print("ERROR: " .. message)
+    ---@param ... any
+    warning = function(... args)
+        log.print("WARNING: " .. log.format_args(...))
     end,
 }
 
@@ -129,14 +147,18 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Appends a sequential table to another.
+---Appends one or more sequential tables to another.
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
----@param source table|nil
-table.append = function(target, source)
+---@param ... table|nil
+table.append = function(target, ... sources)
     if target == nil then return end
-    if source == nil then return end
-    table.move(source, 1, #source, #target + 1, target)
+    for i = 1, sources.n do
+        local source = sources[i]
+        if source ~= nil then
+            table.move(source, 1, #source, #target + 1, target)
+        end
+    end
 end
 
 ---Test if a table contains a value. Only works with sequential tables.
@@ -182,16 +204,22 @@ table.is_nil_or_empty = function(table)
     return table == nil or next(table) == nil
 end
 
----Merges two tables by adding key-value pairs from one table to another.
----If a key from the source table already exists in the target table, its value will be overwritten.
+---Merges two or more tables by adding key-value pairs from sources to target.
+---If a key from a source table already exists in the target table, its value will be overwritten.
 ---@param target table|nil
----@param source table|nil
-table.merge = function(target, source)
-    if target == nil then return source end
-    if source == nil then return target end
-    for key, value in pairs(source) do
-        target[key] = value
+---@param ... table|nil
+---@return table|nil
+table.merge = function(target, ... sources)
+    if target == nil then return sources[1] end
+    for i = 1, sources.n do
+        local source = sources[i]
+        if source ~= nil then
+            for key, value in pairs(source) do
+                target[key] = value
+            end
+        end
     end
+    return target
 end
 
 ---Remove duplicates from a table. Returns a new table and don't modify the original.

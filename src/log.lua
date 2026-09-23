@@ -37,28 +37,46 @@ global log<const> = {
     print = print,
 
     ---Print debug message if debug is enabled.
-    ---@param message string
-    debug = function(message)
+    ---@param ... any
+    debug = function(... args)
         if log.debug_enabled then
-            log.print("DEBUG: " .. message)
+            log.print("DEBUG: " .. log.format_args(...))
         end
     end,
 
+    ---Print error message.
+    ---@param ... any
+    error = function(... args)
+        log.print("ERROR: " .. log.format_args(...))
+    end,
+
+    ---Format variable arguments into a single string separated by spaces.
+    ---@param ... any
+    ---@return string
+    format_args = function(... args)
+        local count = args.n
+        if count == 0 then
+            return ""
+        elseif count == 1 then
+            return tostring(args[1])
+        end
+
+        local parts = table.create(count)
+        for i = 1, count do
+            parts[i] = tostring(args[i])
+        end
+        return table.concat(parts, " ")
+    end,
+
     ---Print info message.
-    ---@param message string
-    info = function(message)
-        log.print("INFO: " .. message)
+    ---@param ... any
+    info = function(... args)
+        log.print("INFO: " .. log.format_args(...))
     end,
 
     ---Print warning message.
-    ---@param message string
-    warning = function(message)
-        log.print("WARNING: " .. message)
-    end,
-
-    ---Print error message.
-    ---@param message string
-    error = function(message)
-        log.print("ERROR: " .. message)
+    ---@param ... any
+    warning = function(... args)
+        log.print("WARNING: " .. log.format_args(...))
     end,
 }
