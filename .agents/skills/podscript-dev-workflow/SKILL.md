@@ -1,0 +1,31 @@
+---
+name: podscript-dev-workflow
+description: >-
+  Use this skill to build, test, and release the PodScript project. Provides the mandatory 
+  development workflow, build system details (build.lua, ---@build annotations), and 
+  testing framework (test.lua, test suites, dev_only) guidelines.
+---
+
+# PodScript Development Workflow
+
+Follow these rules for testing and building the PodScript project.
+
+## 1. Development & Release Workflow
+1. **Edit** `src/` modular files.
+2. **Test Dev:** `lua test.lua --dev [testID]` (always first).
+3. **Build:** `lua build.lua` (Concatenates `src/` into single `pods.lua`).
+4. **Test Release:** `lua test.lua [testID]` (final verification).
+5. **Update docs:** Update `CHANGELOG.md`, `AGENTS.md`, and `USAGE.md` as needed.
+
+## 2. Build System (`build.lua`)
+The script processes `src/` into `pods.lua`.
+* `---@build block:`: Starts included code block (ignores prior dev `require`s).
+* `---@build global:`: Forces global function in release. (Functions declared `global function` without this tag are localized to `local function`).
+* `---@build const:`: Transforms `[global] VAR[<const>] = "1"` to `local VAR <const> = "1"`.
+* **Add new file:** Add to `src/` with `block:` tag, require it for dev, add to `files` list in `build.lua`.
+
+## 3. Testing (`test.lua`)
+* **Format:** Tests are in `tests/suite_*.lua`.
+* **IDs:** Suite ID is 3-digit (e.g., `004`). Test ID is `[suiteID]..[2-digit]` (e.g., `00401`). Test IDs must be explicit in code for searchability.
+* **Types:** Mode tests (CLI output capture vs `expectations`), Code tests (`run` fn vs `expected`).
+* **Dev-Only:** `dev_only = true` skips test in release mode (used for internal fns localized during build).

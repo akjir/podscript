@@ -18,6 +18,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
+global<const> *
+
 -- ------------------------------------------------------------------------- --
 --   PODSCRIPT TEST
 -- ------------------------------------------------------------------------- --
@@ -58,7 +60,7 @@ end
 log.print = print_to_stack
 
 -- set debug flag in pods.lua
-debug = true
+log.debug_enabled = true
 
 local function print_full_stack(stack)
     print()
@@ -200,6 +202,7 @@ add_suite("suite_010_utilities")
 add_suite("suite_011_mode_config")
 add_suite("suite_012_mode_recipe")
 add_suite("suite_013_mode_command")
+add_suite("suite_014_globals")
 
 -- ------------------------------------------------------------------------- --
 --      Main

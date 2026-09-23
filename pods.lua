@@ -19,6 +19,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@diagnostic disable: duplicate-set-field
 ---@diagnostic disable: lowercase-global
 
+global<const> *
+
 -- ------------------------------------------------------------------------- --
 --
 --
@@ -29,23 +31,23 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 local VERSION <const> = "1.3.0"
 
--- debug flag
-debug = false
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Log
 --
 -- ------------------------------------------------------------------------- --
 
-log = {
+global log<const> = {
+    -- Debug flag to enable verbose logging
+    debug_enabled = false,
+
     -- Proxy to handle output, defaults to standard print
     print = print,
 
     ---Print debug message if debug is enabled.
     ---@param message string
     debug = function(message)
-        if debug then
+        if log.debug_enabled then
             log.print("DEBUG: " .. message)
         end
     end,
@@ -288,15 +290,15 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
-system = {
-    ---Check if the current Lua version is 5.4 or higher.
+global system<const> = {
+    ---Check if the current Lua version is 5.5 or higher.
     ---@return boolean
     check_lua_version = function()
         local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
         if not major_string or not minor_string then return false end
         local major = tonumber(major_string)
         local minor = tonumber(minor_string)
-        return major > 5 or (major == 5 and minor >= 4)
+        return major > 5 or (major == 5 and minor >= 5)
     end,
 
     ---Check if the current operating system is Linux.
@@ -1332,7 +1334,7 @@ local function main__parse_arguments(registry, arguments, startup_config, modes)
                 local _, value = split_argument(argument)
                 startup_config.config_path = value
             elseif argument == "--debug" then
-                debug = true
+                log.debug_enabled = true
             else
                 local parameter, value = split_argument(argument)
                 registry.flags[parameter] = value
@@ -1352,7 +1354,7 @@ end
 
 ---Main function.
 ---@param arguments string[]
-function main(arguments)
+global function main(arguments)
     local modes = {
         command = mode_command__handle,
         config = mode_config__handle,
@@ -1375,7 +1377,7 @@ function main(arguments)
 
     -- check lua version
     if not system.check_lua_version() then
-        log.error("Lua 5.4 or higher is required.")
+        log.error("Lua 5.5 or higher is required.")
         return
     end
 
@@ -1417,7 +1419,7 @@ function main(arguments)
     local config_full_path = build_full_path(config_path, "", ".lua")
 
     -- print debug message if non-default-configuration is used
-    if debug and config_path ~= "config" then
+    if log.debug_enabled and config_path ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
     end
 

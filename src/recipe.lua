@@ -22,6 +22,8 @@ require "src.utilities"
 require "src.container"
 require "src.pod"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -33,7 +35,7 @@ require "src.pod"
 ---@param recipe_path string
 ---@param recipe_name string
 ---@return table|nil
-function recipe__load(recipe_path, recipe_name)
+global function recipe__load(recipe_path, recipe_name)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
@@ -52,7 +54,7 @@ end
 ---@param recipe table
 ---@param file_name string
 ---@return boolean
-function recipe__validate(registry, recipe, file_name)
+global function recipe__validate(registry, recipe, file_name)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")

@@ -20,6 +20,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.header"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -27,14 +29,17 @@ require "src.header"
 --
 -- ------------------------------------------------------------------------- --
 
-log = {
+global log<const> = {
+    -- Debug flag to enable verbose logging
+    debug_enabled = false,
+
     -- Proxy to handle output, defaults to standard print
     print = print,
 
     ---Print debug message if debug is enabled.
     ---@param message string
     debug = function(message)
-        if debug then
+        if log.debug_enabled then
             log.print("DEBUG: " .. message)
         end
     end,

@@ -22,6 +22,8 @@ require "src.header"
 require "src.log"
 require "src.utilities"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -41,7 +43,7 @@ local function mode_config__edit(registry)
     system.exec(command, "", false, true)
 end
 ---Print config help.
-function mode_config__help()
+global function mode_config__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods config [OPTIONS] ACTION")
     log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
@@ -67,7 +69,7 @@ end
 
 ---Handle config mode.
 ---@param registry table
-function mode_config__handle(registry)
+global function mode_config__handle(registry)
     log.debug("Config mode is used.")
     local action, _ = parse_action_and_targets_parameters(registry)
     if action == "" then

@@ -17,6 +17,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 ---@diagnostic disable: lowercase-global
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -25,15 +26,15 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --
 -- ------------------------------------------------------------------------- --
 
-system = {
-    ---Check if the current Lua version is 5.4 or higher.
+global system<const> = {
+    ---Check if the current Lua version is 5.5 or higher.
     ---@return boolean
     check_lua_version = function()
         local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
         if not major_string or not minor_string then return false end
         local major = tonumber(major_string)
         local minor = tonumber(minor_string)
-        return major > 5 or (major == 5 and minor >= 4)
+        return major > 5 or (major == 5 and minor >= 5)
     end,
 
     ---Check if the current operating system is Linux.

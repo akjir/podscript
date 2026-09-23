@@ -32,6 +32,8 @@ require "src.mode_simulate"
 require "src.mode_help"
 require "src.system"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -60,7 +62,7 @@ local function main__parse_arguments(registry, arguments, startup_config, modes)
                 local _, value = split_argument(argument)
                 startup_config.config_path = value
             elseif argument == "--debug" then
-                debug = true
+                log.debug_enabled = true
             else
                 local parameter, value = split_argument(argument)
                 registry.flags[parameter] = value
@@ -81,7 +83,7 @@ end
 ---Main function.
 ---@param arguments string[]
 ---@build global:
-function main(arguments)
+global function main(arguments)
     local modes = {
         command = mode_command__handle,
         config = mode_config__handle,
@@ -104,7 +106,7 @@ function main(arguments)
 
     -- check lua version
     if not system.check_lua_version() then
-        log.error("Lua 5.4 or higher is required.")
+        log.error("Lua 5.5 or higher is required.")
         return
     end
 
@@ -146,7 +148,7 @@ function main(arguments)
     local config_full_path = build_full_path(config_path, "", ".lua")
 
     -- print debug message if non-default-configuration is used
-    if debug and config_path ~= "config" then
+    if log.debug_enabled and config_path ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
     end
 

@@ -21,6 +21,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 require "src.utilities"
 require "src.container"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -31,7 +33,7 @@ require "src.container"
 ---Create pod and containers.
 ---@param recipe table
 ---@param simulate boolean
-function pod__create(recipe, simulate)
+global function pod__create(recipe, simulate)
     local commands = { "podman pod create" }
 
     -- pod name
@@ -83,7 +85,7 @@ end
 ---Remove pod and containers.
 ---@param recipe table
 ---@param simulate boolean
-function pod__remove(recipe, simulate)
+global function pod__remove(recipe, simulate)
     -- remove containers
     local containers = recipe.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
@@ -100,7 +102,7 @@ end
 ---Remove and create pod and containers.
 ---@param recipe table
 ---@param simulate boolean
-function pod__recreate(recipe, simulate)
+global function pod__recreate(recipe, simulate)
     pod__remove(recipe, simulate)
     pod__create(recipe, simulate)
 end
@@ -108,7 +110,7 @@ end
 ---Update containers of the pod.
 ---@param recipe table
 ---@param simulate boolean
-function pod__update(recipe, simulate)
+global function pod__update(recipe, simulate)
     log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 

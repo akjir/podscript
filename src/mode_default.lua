@@ -22,6 +22,8 @@ require "src.config"
 require "src.recipe"
 require "src.utilities"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -31,7 +33,7 @@ require "src.utilities"
 
 ---Handle default mode.
 ---@param registry table
-function mode_default__handle(registry)
+global function mode_default__handle(registry)
     log.debug("Default mode is used.")
     local action, targets = parse_action_and_targets_parameters(registry)
 

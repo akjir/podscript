@@ -21,6 +21,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 require "src.mode_command"
 require "src.mode_default"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -30,7 +32,7 @@ require "src.mode_default"
 
 ---Handle simulate mode.
 ---@param registry table
-function mode_simulate__handle(registry)
+global function mode_simulate__handle(registry)
     log.info("Simulate mode is active.")
     registry.flags.simulate = true
     local parameters = registry.parameters

@@ -17,6 +17,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 ---@diagnostic disable: duplicate-set-field
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --

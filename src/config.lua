@@ -20,6 +20,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.utilities"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -32,7 +34,7 @@ require "src.utilities"
 ---@param registry table
 ---@param config_full_path string
 ---@return boolean
-function config__load_and_set(registry, config_full_path)
+global function config__load_and_set(registry, config_full_path)
     local config, error, _ = system.load_lua_file(config_full_path)
     if config == nil then
         if error ~= nil then
@@ -84,7 +86,7 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
-function config__untangle_recipes(groups, targets)
+global function config__untangle_recipes(groups, targets)
     log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}
 

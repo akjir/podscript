@@ -5,9 +5,13 @@
 		}
 	],
 	"settings": {
+		"Lua.runtime.version": "Lua 5.5",
+		"Lua.diagnostics.globals": [
+			"global"
+		],
 		"editor.formatOnSave": true,
 		"editor.insertSpaces": true,
 		"editor.tabSize": 4,
-		"outline.collapseItems": "alwaysCollapse",
-	},
-}  
+		"outline.collapseItems": "alwaysCollapse"
+	}
+}

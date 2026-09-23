@@ -17,6 +17,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 ---@diagnostic disable: lowercase-global
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -30,7 +31,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@param file_name string
 ---@param file_extension string
 ---@return string
-function build_full_path(path, file_name, file_extension)
+global function build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
     then
@@ -52,14 +53,14 @@ end
 ---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
-function normalize_name(str)
+global function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
 ---Parse the action and targets parameters from a registry.
 ---@param registry table The registry to parse.
 ---@return string, table # The action and targets.
-function parse_action_and_targets_parameters(registry)
+global function parse_action_and_targets_parameters(registry)
     local parameters = registry.parameters
     local targets = table.move(parameters, 2, #parameters, 1, {})
     return parameters[1] or "", targets
@@ -68,7 +69,7 @@ end
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
 ---@return string, string|boolean # The key and value.
-function split_argument(argument)
+global function split_argument(argument)
     local clean_argument = string.gsub(argument, "^%-+", "")
     local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
     if parameter then

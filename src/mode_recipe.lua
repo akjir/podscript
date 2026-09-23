@@ -22,6 +22,8 @@ require "src.header"
 require "src.log"
 require "src.utilities"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -51,7 +53,7 @@ local function mode_recipe__edit(registry, name)
 end
 
 ---Print config help.
-function mode_recipe__help()
+global function mode_recipe__help()
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
@@ -87,7 +89,7 @@ end
 
 ---Handle recipe mode.
 ---@param registry table
-function mode_recipe__handle(registry)
+global function mode_recipe__handle(registry)
     log.debug("Recipe mode is used.")
     local action = registry.parameters[1]
     if action == nil then

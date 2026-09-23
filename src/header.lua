@@ -20,6 +20,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@diagnostic disable: duplicate-set-field
 ---@diagnostic disable: lowercase-global
 
+global<const> *
+
 -- ------------------------------------------------------------------------- --
 --
 --
@@ -29,7 +31,4 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 -- ------------------------------------------------------------------------- --
 
 ---@build const:
-VERSION = "1.3.0"
-
--- debug flag
-debug = false
+global VERSION<const> = "1.3.0"

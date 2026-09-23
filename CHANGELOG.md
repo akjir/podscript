@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added `string.escape_shell` utility function to safely wrap and escape strings for shell execution.
 - Added shell escaping for dynamic variables (names and paths) in Podman and editor commands to prevent errors from spaces and special characters.
+- Added strict global declarations using Lua 5.5 `global<const> *` across all source modules and the release build to prevent accidental global variable creation.
+- Added `suite_014_globals` to verify compile-time error catching for undeclared globals and preservation of standard libraries.
+
+### Changed
+
+- Updated minimum Lua requirement from 5.4 to 5.5.
+- Refactored `debug` boolean flag into `log.debug_enabled` to eliminate a global variable and preserve the standard Lua `debug` library.
+- Updated build system (`build.lua`) to convert `global function` declarations in `src/` to `local function` in `pods.lua`.
 
 ## [1.3.0] - 2026-04-24
 

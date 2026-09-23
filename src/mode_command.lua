@@ -24,6 +24,8 @@ require "src.utilities"
 require "src.recipe"
 require "src.system"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -161,7 +163,7 @@ end
 
 ---Handle recipe mode.
 ---@param registry table
-function mode_command__handle(registry)
+global function mode_command__handle(registry)
     log.debug("Command mode is used.")
     local name = registry.parameters[1]
     local command = registry.parameters[2]

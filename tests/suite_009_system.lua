@@ -4,7 +4,7 @@ return {
     suite = s,
     tests = {
         [s .. "01"] = {
-            description = "Check Lua version (must be >= 5.4).",
+            description = "Check Lua version (must be >= 5.5).",
             run = function()
                 return system.check_lua_version()
             end,

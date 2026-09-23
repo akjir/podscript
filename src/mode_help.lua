@@ -20,6 +20,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.header"
 
+global<const> *
+
 ---@build block:
 -- ------------------------------------------------------------------------- --
 --
@@ -29,7 +31,7 @@ require "src.header"
 
 ---Handle help mode. Prints help.
 ---@param registry table
-function mode_help__handle(registry)
+global function mode_help__handle(registry)
     log.print("PODSCRIPT " .. VERSION .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
