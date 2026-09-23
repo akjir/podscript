@@ -72,7 +72,7 @@ global function container__create(container, pod, simulate)
                     command = container_dir
                 else
                     if not string.begins_with(host_dir, "/") then
-                        if string.begins_with(host_dir, ".") then
+                        if string.begins_with(host_dir, "./") then
                             host_dir = string.sub(host_dir, 2)
                         end
                         host_dir = build_full_path(pod.path, host_dir, "")

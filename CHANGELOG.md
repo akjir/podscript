@@ -25,6 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
 - Updated test runner to capture tab-separated variadic arguments.
 
+### Fixed
+
+- Fixed path corruption for hidden host volume directories in container creation.
+
 ## [1.3.0] - 2026-04-24
 
 ### Added

@@ -14,6 +14,8 @@ return {
                 { "./relative/path", "/container/dir/relative",  "z" },
                 { ".relative/path2", "/container/dir/relative2", "" },
                 { "relative/path3",  "/container/dir/relative3", "" },
+                { ".config",         "/container/dir/hidden1",   "" },
+                { "./.config2",      "/container/dir/hidden2",   "" },
             }
         }
     }
