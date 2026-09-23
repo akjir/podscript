@@ -29,3 +29,15 @@ The script processes `src/` into `pods.lua`.
 * **IDs:** Suite ID is 3-digit (e.g., `004`). Test ID is `[suiteID]..[2-digit]` (e.g., `00401`). Test IDs must be explicit in code for searchability.
 * **Types:** Mode tests (CLI output capture vs `expectations`), Code tests (`run` fn vs `expected`).
 * **Dev-Only:** `dev_only = true` skips test in release mode (used for internal fns localized during build).
+
+## 4. Changelog Rules (`CHANGELOG.md`)
+Follow the established conventions from historical releases:
+* **Format:** [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) sections (`Added`, `Changed`, `Fixed`, `Removed`).
+* **Length:** Short and concise (approx. 6–15 words, ~50–85 characters, max ~90 chars). Exactly one sentence per entry ending with a period.
+* **Grammar & Voice:**
+  * Lead with a capitalized past-tense verb matching the section: `Added ...`, `Updated ...`, `Renamed ...`, `Refactored ...`, `Optimized ...`, `Improved ...`, `Fixed ...`, `Removed ...`.
+  * Never use "Added" under `### Changed`.
+* **Sentence Structure:** `[Past Verb] [Subject/Feature] [concise purpose/context clause (to/for/in)].`
+* **Content Focus:** Feature- and user-facing impact. Avoid sprawling explanations or exhaustively listing multiple internal function names.
+* **Code Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (e.g. `--simulate`, `table.create`).
+

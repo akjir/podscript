@@ -8,22 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Added `string.escape_shell` utility function to safely wrap and escape strings for shell execution.
-- Added shell escaping for dynamic variables (names and paths) in Podman and editor commands to prevent errors from spaces and special characters.
-- Added strict global declarations using Lua 5.5 `global<const> *` across all source modules and the release build to prevent accidental global variable creation.
-- Added `suite_014_globals` to verify compile-time error catching for undeclared globals and preservation of standard libraries.
-- Added Lua 5.5 named vararg tables (`... args`) support to `log` wrappers (`log.debug`, `log.info`, `log.warning`, `log.error`) and added `log.format_args`.
-- Added multi-source variadic support (`... sources`) to `table.append` and `table.merge`.
-- Added `suite_015_varargs` to test Lua 5.5 named varargs semantics, argument packing, constness, logging wrappers, and variadic table utilities.
+- Added `string.escape_shell` for safe shell argument execution.
+- Added shell escaping for dynamic command arguments and paths.
+- Added strict global declarations using Lua 5.5 `global<const> *`.
+- Added `suite_014_globals` to test strict global declarations.
+- Added Lua 5.5 named varargs support to log wrappers and `log.format_args`.
+- Added multi-source variadic support to `table.append` and `table.merge`.
+- Added `suite_015_varargs` to test Lua 5.5 named varargs handling.
 
 ### Changed
 
 - Updated minimum Lua requirement from 5.4 to 5.5.
-- Refactored `debug` boolean flag into `log.debug_enabled` to eliminate a global variable and preserve the standard Lua `debug` library.
-- Updated build system (`build.lua`) to convert `global function` declarations in `src/` to `local function` in `pods.lua`.
-- Optimized table allocations across the codebase using Lua 5.5 `table.create` (preallocating sequences and hash sets in `table.remove_duplicates`, `container__create`, `pod__create`, and `mode_command`).
-- Added defensive `nil` and empty-table validation to `table.remove_duplicates` and ensured alphabetical function order in `src/utilities_table.lua`.
-- Updated test runner `print_to_stack` in `test.lua` to capture variadic arguments separated by tabs.
+- Refactored debug flag into `log.debug_enabled` to avoid global collisions.
+- Updated `build.lua` to localize modular functions in release builds.
+- Optimized table allocations across the codebase using `table.create`.
+- Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
+- Updated test runner to capture tab-separated variadic arguments.
 
 ## [1.3.0] - 2026-04-24
 

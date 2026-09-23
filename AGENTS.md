@@ -8,6 +8,7 @@
 * **Style:** 4 spaces. English comments/vars. Sort functions alphabetically. Avoid globals (`global<const> *` enforced). Initialize vars (no `nil`).
 * **Reqs:** Lua 5.5+, Linux, Podman 5.8.0+.
 * **CLI:** Mode-driven. See [USAGE.md](USAGE.md).
+* **Changelog:** Short, concise entries (6–15 words, past tense e.g. `Added ...`, `Changed ...`, backticks for code). See dev skill.
 
 ## Architecture & Naming
 * `header.lua`: `global<const> *`, `VERSION` / `log.lua`: `log.*` (including `log.debug_enabled`) / `system.lua`: `system.*` / `utilities.lua`: global utility functions.
