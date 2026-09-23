@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated minimum Lua requirement from 5.4 to 5.5.
 - Refactored `debug` boolean flag into `log.debug_enabled` to eliminate a global variable and preserve the standard Lua `debug` library.
 - Updated build system (`build.lua`) to convert `global function` declarations in `src/` to `local function` in `pods.lua`.
+- Optimized table allocations across the codebase using Lua 5.5 `table.create` (preallocating sequences and hash sets in `table.remove_duplicates`, `container__create`, `pod__create`, and `mode_command`).
+- Added defensive `nil` and empty-table validation to `table.remove_duplicates` and ensured alphabetical function order in `src/utilities_table.lua`.
 
 ## [1.3.0] - 2026-04-24
 

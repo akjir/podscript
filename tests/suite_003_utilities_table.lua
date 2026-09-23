@@ -186,5 +186,37 @@ return {
             end,
             expected = false
         },
+        [s .. "25"] = {
+            description = "table.remove_duplicates - empty table",
+            run = function()
+                return table.to_string(table.remove_duplicates({}))
+            end,
+            expected = table.to_string({})
+        },
+        [s .. "26"] = {
+            description = "table.remove_duplicates - nil table",
+            run = function()
+                return table.to_string(table.remove_duplicates(nil))
+            end,
+            expected = table.to_string({})
+        },
+        [s .. "27"] = {
+            description = "table.remove_duplicates - already unique",
+            run = function()
+                return table.to_string(table.remove_duplicates({ "x", "y", "z" }))
+            end,
+            expected = table.to_string({ "x", "y", "z" })
+        },
+        [s .. "28"] = {
+            description = "table.create - preallocated table length and insertion",
+            run = function()
+                local t = table.create(10, 5)
+                local initial_len = #t
+                t[#t + 1] = "first"
+                t[#t + 1] = "second"
+                return initial_len == 0 and #t == 2 and t[1] == "first" and t[2] == "second"
+            end,
+            expected = true
+        },
     },
 }

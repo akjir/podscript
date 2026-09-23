@@ -34,7 +34,8 @@ global<const> *
 ---@param recipe table
 ---@param simulate boolean
 global function pod__create(recipe, simulate)
-    local commands = { "podman pod create" }
+    local commands = table.create(8)
+    commands[1] = "podman pod create"
 
     -- pod name
     commands[#commands + 1] = "--name"

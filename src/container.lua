@@ -35,7 +35,8 @@ global<const> *
 ---@param simulate boolean
 global function container__create(container, pod, simulate)
     -- main command
-    local commands = { "podman run" }
+    local commands = table.create(16)
+    commands[1] = "podman run"
 
     -- container name
     commands[#commands + 1] = "--name"

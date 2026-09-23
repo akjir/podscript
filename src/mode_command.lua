@@ -52,7 +52,8 @@ end
 ---@param recipe table
 ---@param command_table table
 local function mode_command__execute(registry, recipe, command_table)
-    local commands = { "podman exec -it" }
+    local commands = table.create(8)
+    commands[1] = "podman exec -it"
 
     if command_table.user ~= nil then
         commands[#commands + 1] = "-u"
@@ -112,13 +113,14 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
         return {}
     end
 
-    local sorted_commands = {}
+    local command_count = table.size(recipe.pod.commands)
+    local sorted_commands = table.create(command_count)
     for command, _ in pairs(recipe.pod.commands) do
         table.insert(sorted_commands, command)
     end
     table.sort(sorted_commands)
 
-    local valid_commands = {}
+    local valid_commands = table.create(command_count)
     for i = 1, #sorted_commands do
         local command = sorted_commands[i]
         local command_table = recipe.pod.commands[command]

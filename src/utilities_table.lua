@@ -49,26 +49,6 @@ table.contains = function(table, value)
     return false
 end
 
----Remove duplicates from a table. Returns a new table and don't modify the original.
----@param table table
----@return table
-table.remove_duplicates = function(table)
-    local seen = {}   -- Keeps track of values we've already encountered
-    local result = {} -- The new table with unique values
-    local index = 1   -- Manual index tracker is faster than table.insert
-
-    for i = 1, #table do
-        local value = table[i]
-        -- If the value hasn't been added to 'seen' yet...
-        if not seen[value] then
-            seen[value] = true    -- Mark it as seen
-            result[index] = value -- Add it to the result array
-            index = index + 1     -- Increment the index
-        end
-    end
-
-    return result
-end
 
 ---Get value from table or default if key not found.
 ---You can use "table and table[key] or default" instead, if there is no false value in table.
@@ -109,6 +89,31 @@ table.merge = function(target, source)
     for key, value in pairs(source) do
         target[key] = value
     end
+end
+
+---Remove duplicates from a table. Returns a new table and don't modify the original.
+---@param tbl table|nil
+---@return table
+table.remove_duplicates = function(tbl)
+    if tbl == nil then return {} end
+    local count = #tbl
+    if count == 0 then return {} end
+
+    local seen = table.create(0, count) -- Keeps track of values we've already encountered
+    local result = table.create(count)  -- The new table with unique values
+    local index = 1                     -- Manual index tracker is faster than table.insert
+
+    for i = 1, count do
+        local value = tbl[i]
+        -- If the value hasn't been added to 'seen' yet...
+        if not seen[value] then
+            seen[value] = true    -- Mark it as seen
+            result[index] = value -- Add it to the result array
+            index = index + 1     -- Increment the index
+        end
+    end
+
+    return result
 end
 
 ---Get table size, including non-numeric keys.
