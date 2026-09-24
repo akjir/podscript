@@ -30,7 +30,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.3.0"
-local BUILD <const> = "148.51221bc.dev"
+local BUILD <const> = "149.6622fc2.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -904,7 +904,7 @@ local function config__untangle_recipes(groups, targets)
             end
 
             if found == nil then
-                log.error("Target '" .. target .. "' not found in config.")
+                log.error("Recipe '" .. target .. "' not found in config.")
                 return nil
             else
                 table.insert(untangled, found)

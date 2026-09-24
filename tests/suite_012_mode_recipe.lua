@@ -25,7 +25,7 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "unknown" },
             expectations = {
-                { 5, "ERROR: Target 'unknown' not found in config." },
+                { 5, "ERROR: Recipe 'unknown' not found in config." },
             },
         },
         [s .. "04"] = {

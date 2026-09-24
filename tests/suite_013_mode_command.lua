@@ -157,5 +157,12 @@ return {
                 { 8, "podman exec -it absolute_db script.sh run-absolute;" },
             },
         },
+        [s .. "16"] = {
+            description = "Recipe not found in config.",
+            parameters = { "command", "unknown" },
+            expectations = {
+                { 5, "ERROR: Recipe 'unknown' not found in config." },
+            },
+        },
     }
 }

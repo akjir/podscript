@@ -114,7 +114,7 @@ global function config__untangle_recipes(groups, targets)
             end
 
             if found == nil then
-                log.error("Target '" .. target .. "' not found in config.")
+                log.error("Recipe '" .. target .. "' not found in config.")
                 return nil
             else
                 table.insert(untangled, found)

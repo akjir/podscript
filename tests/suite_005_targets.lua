@@ -15,7 +15,7 @@ return {
             description = "Unknow target given.",
             parameters = { "create", "invalid" },
             expectations = {
-                { 5, "ERROR: Target 'invalid' not found in config." },
+                { 5, "ERROR: Recipe 'invalid' not found in config." },
             },
         },
         [s .. "03"] = {
@@ -46,7 +46,7 @@ return {
             parameters = { "create", "push", "invalid", "pop" },
             expectations = {
                 { 4, "DEBUG: Targets   - push invalid pop" },
-                { 5, "ERROR: Target 'invalid' not found in config." },
+                { 5, "ERROR: Recipe 'invalid' not found in config." },
             },
         },
         [s .. "07"] = {

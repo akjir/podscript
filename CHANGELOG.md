@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Optimized table allocations across the codebase using `table.create`.
 - Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
 - Updated mode help banners to display extended SemVer version strings.
+- Updated recipe resolution error to report missing recipes instead of targets.
 
 ### Fixed
 
