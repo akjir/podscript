@@ -120,5 +120,5 @@ global function mode_init__handle(registry)
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry)
+    execute()
 end

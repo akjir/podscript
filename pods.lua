@@ -30,7 +30,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "153.5b65ca6.dev"
+local BUILD <const> = "154.da4a448.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1539,7 +1539,7 @@ local function mode_init__handle(registry)
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry)
+    execute()
 end
 -- ------------------------------------------------------------------------- --
 --
