@@ -22,7 +22,7 @@ return {
             description = "Container options.",
             parameters = { "create", "recipe_012_container_options" },
             expectations = {
-                { 11, "podman run --name snoitpo --pod copti '--unknown thing' '--another unknown' conop.io/simple:latest;" },
+                { 11, "podman run --name snoitpo --pod copti --unknown thing --another unknown conop.io/simple:latest;" },
             },
         },
         [s .. "04"] = {

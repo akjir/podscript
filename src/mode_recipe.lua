@@ -20,6 +20,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.header"
 require "src.log"
+require "src.recipe"
 require "src.utilities"
 
 global<const> *
@@ -63,9 +64,75 @@ global function mode_recipe__help()
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
+    log.print("  list               list all recipes")
     log.print("  print              print recipe\n")
     log.print("NAME:")
     log.print("  *                  name of the recipe")
+end
+
+---List recipes defined in config.
+---@param registry table
+local function mode_recipe__list(registry)
+    if table.is_nil_or_empty(registry.recipes) or table.is_nil_or_empty(registry.recipes.groups) then
+        log.print("There are no recipes defined in config.")
+        return
+    end
+
+    local recipe_map = {}
+    local recipe_list = {}
+
+    for _, group_targets in pairs(registry.recipes.groups) do
+        if type(group_targets) == "table" then
+            for _, target in ipairs(group_targets) do
+                if type(target) == "string" and not string.begins_with(target, "@") then
+                    local clean_target = string.trim(target)
+                    if clean_target ~= "" and not recipe_map[clean_target] then
+                        recipe_map[clean_target] = true
+                        recipe_list[#recipe_list + 1] = clean_target
+                    end
+                end
+            end
+        end
+    end
+
+    if #recipe_list == 0 then
+        log.print("There are no recipes defined in config.")
+        return
+    end
+
+    table.sort(recipe_list)
+
+    log.print("Recipes:")
+    for i = 1, #recipe_list do
+        local target = recipe_list[i]
+        local prefix = i .. ")"
+        if #recipe_list > 9 and i < 10 then
+            prefix = " " .. prefix
+        end
+
+        local recipe = recipe__load(registry.recipes.path, target, true)
+        local recipe_name = ""
+        local description = ""
+
+        if type(recipe) == "table" then
+            if not string.is_nil_or_empty(recipe.name) then
+                recipe_name = string.trim(tostring(recipe.name))
+            end
+            if not string.is_nil_or_empty(recipe.description) then
+                description = string.trim(tostring(recipe.description))
+            end
+        end
+
+        local entry = target
+        if recipe_name ~= "" then
+            entry = entry .. " (" .. recipe_name .. ")"
+        end
+        if description ~= "" then
+            entry = entry .. ": " .. description
+        end
+
+        log.print("  " .. prefix .. " " .. entry)
+    end
 end
 
 ---Print recipe content.
@@ -93,21 +160,22 @@ end
 global function mode_recipe__handle(registry)
     log.debug("Recipe mode is used.")
     local action = registry.parameters[1]
-    if action == nil then
-        log.error("No action given.")
+    if string.is_nil_or_empty(action) or action == "help" then
+        mode_recipe__help()
+        return
+    end
+    if action == "list" then
+        mode_recipe__list(registry)
         return
     end
     local name = registry.parameters[2]
-    if action ~= "help" then
-        if string.is_nil_or_empty(name) then
-            log.error("No recipe name given.")
-            return
-        else
-            name = normalize_name(name)
-        end
+    if string.is_nil_or_empty(name) then
+        log.error("No recipe name given.")
+        return
+    else
+        name = normalize_name(name)
     end
     local actions = {
-        help = mode_recipe__help,
         edit = mode_recipe__edit,
         print = mode_recipe__print
     }

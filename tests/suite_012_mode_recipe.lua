@@ -53,11 +53,10 @@ return {
             },
         },
         [s .. "07"] = {
-            description = "Recipe with missing action.",
-            config = "config_005_recipes",
+            description = "Print recipe help without action.",
             parameters = { "recipe" },
             expectations = {
-                { 4, "ERROR: No action given." },
+                { 4, "Usage: pods recipe [OPTIONS] ACTION NAME" },
             },
         },
         [s .. "08"] = {
@@ -83,6 +82,24 @@ return {
             parameters = { "recipe", "edit" },
             expectations = {
                 { 4, "ERROR: No recipe name given." },
+            },
+        },
+        [s .. "11"] = {
+            description = "List recipes defined in config.",
+            config = "config_016_recipe_list",
+            parameters = { "recipe", "list" },
+            expectations = {
+                { 4, "Recipes:" },
+                { 5, "  1) recipe_011_simple_container (Simple Container)" },
+                { 6, "  2) recipe_022_description (Super Pod): Super Pod is great" },
+            },
+        },
+        [s .. "12"] = {
+            description = "List recipes when no recipes defined.",
+            config = "config_003_simulate_true",
+            parameters = { "recipe", "list" },
+            expectations = {
+                { 4, "There are no recipes defined in config." },
             },
         },
     }

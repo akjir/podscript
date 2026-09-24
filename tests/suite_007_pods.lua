@@ -60,7 +60,7 @@ return {
             description = "Test for options.",
             parameters = { "create", "recipe_010_pod_options" },
             expectations = {
-                { 9, "podman pod create --name options '--some thing' '--another thing';" },
+                { 9, "podman pod create --name options --network slirp4netns:port_handler=slirp4netns --some thing --another thing;" },
             },
         },
     },

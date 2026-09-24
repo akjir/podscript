@@ -91,9 +91,7 @@ global function container__create(container, pod, simulate)
     -- container options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(container.options) then
-        for i = 1, #container.options do
-            commands[#commands + 1] = string.escape_shell(container.options[i])
-        end
+        commands[#commands + 1] = table.concat(container.options, " ")
     end
 
     -- container image

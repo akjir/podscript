@@ -265,16 +265,17 @@ pods config edit
 The `recipe` mode provides inspection and editing capabilities for individual recipe files.
 
 ```bash
-pods recipe [OPTIONS] <action> <recipe>
+pods recipe [OPTIONS] [ACTION] [RECIPE]
 ```
 
 ### Actions
 
 | Action | Description |
 | :--- | :--- |
-| `print` | Display the contents of the specified recipe file with line numbers. |
 | `edit` | Open the specified recipe file in the configured external editor. |
-| `help` | Display command-line help for recipe mode. |
+| `help` | Display command-line help for recipe mode. (Default when omitted). |
+| `list` | List all available recipes defined in configuration groups. |
+| `print` | Display the contents of the specified recipe file with line numbers. |
 
 ### Options
 
@@ -286,6 +287,13 @@ pods recipe [OPTIONS] <action> <recipe>
 ### Usage
 
 ```bash
+# Display help for recipe mode
+pods recipe
+pods recipe help
+
+# List all available recipes
+pods recipe list
+
 # Print a recipe file with line numbers
 pods recipe print web-service
 

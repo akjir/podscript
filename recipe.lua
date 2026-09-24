@@ -70,7 +70,7 @@ return {
             restart = "on-failure",
             image = "simple3:1.1",
             options = {
-                "--env=ADMIN_TOKEN=1234567890",
+                "--env ADMIN_TOKEN='1234567890'",
             },
         },
     },

@@ -34,15 +34,18 @@ global<const> *
 ---Load PodScript recipe.
 ---@param recipe_path string
 ---@param recipe_name string
+---@param suppress_errors boolean|nil
 ---@return table|nil
-global function recipe__load(recipe_path, recipe_name)
+global function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
-        if error ~= nil then
-            log.error(error)
+        if not suppress_errors then
+            if error ~= nil then
+                log.error(error)
+            end
+            log.error("Couldn't load recipe '" .. full_path .. "'!")
         end
-        log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
         return recipe

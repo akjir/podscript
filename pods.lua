@@ -30,14 +30,13 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.3.0"
-local BUILD <const> = "149.6622fc2.dev"
+local BUILD <const> = "152.95e3efd.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
 local function get_version_string()
     return "v" .. VERSION .. "+" .. BUILD
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Log
@@ -95,7 +94,6 @@ global log<const> = {
         log.print("WARNING: " .. log.format_args(...))
     end,
 }
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION String
@@ -147,7 +145,6 @@ string.trim = function(str)
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Table
@@ -265,7 +262,6 @@ table.size = function(table)
     end
     return count
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Utilities
@@ -323,7 +319,6 @@ local function split_argument(argument)
     end
     return clean_argument, true
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION System
@@ -476,7 +471,6 @@ global system<const> = {
         return "0" == string.trim(result)
     end,
 }
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Container
@@ -545,9 +539,7 @@ local function container__create(container, pod, simulate)
     -- container options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(container.options) then
-        for i = 1, #container.options do
-            commands[#commands + 1] = string.escape_shell(container.options[i])
-        end
+        commands[#commands + 1] = table.concat(container.options, " ")
     end
 
     -- container image
@@ -618,7 +610,6 @@ local function container__update(container, pod, simulate)
     log.print("Update container '" .. container.name .. "' ...")
     system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Pod
@@ -662,9 +653,7 @@ local function pod__create(recipe, simulate)
     -- pod options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(recipe.pod.options) then
-        for i = 1, #recipe.pod.options do
-            commands[#commands + 1] = string.escape_shell(recipe.pod.options[i])
-        end
+        commands[#commands + 1] = table.concat(recipe.pod.options, " ")
     end
 
     -- create pod
@@ -719,7 +708,6 @@ local function pod__update(recipe, simulate)
         container__update(containers[id], recipe.pod, simulate)
     end
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Recipe
@@ -729,15 +717,18 @@ end
 ---Load PodScript recipe.
 ---@param recipe_path string
 ---@param recipe_name string
+---@param suppress_errors boolean|nil
 ---@return table|nil
-local function recipe__load(recipe_path, recipe_name)
+local function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
-        if error ~= nil then
-            log.error(error)
+        if not suppress_errors then
+            if error ~= nil then
+                log.error(error)
+            end
+            log.error("Couldn't load recipe '" .. full_path .. "'!")
         end
-        log.error("Couldn't load recipe '" .. full_path .. "'!")
         return nil
     else
         return recipe
@@ -812,7 +803,6 @@ local function recipe__validate(registry, recipe, file_name)
     end
     return true
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Config
@@ -916,7 +906,6 @@ local function config__untangle_recipes(groups, targets)
     log.debug("Untangled - " .. table.concat(untangled, " "))
     return untangled
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Command
@@ -1106,7 +1095,6 @@ local function mode_command__handle(registry)
         end
     end
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Recipe
@@ -1145,9 +1133,75 @@ local function mode_recipe__help()
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
+    log.print("  list               list all recipes")
     log.print("  print              print recipe\n")
     log.print("NAME:")
     log.print("  *                  name of the recipe")
+end
+
+---List recipes defined in config.
+---@param registry table
+local function mode_recipe__list(registry)
+    if table.is_nil_or_empty(registry.recipes) or table.is_nil_or_empty(registry.recipes.groups) then
+        log.print("There are no recipes defined in config.")
+        return
+    end
+
+    local recipe_map = {}
+    local recipe_list = {}
+
+    for _, group_targets in pairs(registry.recipes.groups) do
+        if type(group_targets) == "table" then
+            for _, target in ipairs(group_targets) do
+                if type(target) == "string" and not string.begins_with(target, "@") then
+                    local clean_target = string.trim(target)
+                    if clean_target ~= "" and not recipe_map[clean_target] then
+                        recipe_map[clean_target] = true
+                        recipe_list[#recipe_list + 1] = clean_target
+                    end
+                end
+            end
+        end
+    end
+
+    if #recipe_list == 0 then
+        log.print("There are no recipes defined in config.")
+        return
+    end
+
+    table.sort(recipe_list)
+
+    log.print("Recipes:")
+    for i = 1, #recipe_list do
+        local target = recipe_list[i]
+        local prefix = i .. ")"
+        if #recipe_list > 9 and i < 10 then
+            prefix = " " .. prefix
+        end
+
+        local recipe = recipe__load(registry.recipes.path, target, true)
+        local recipe_name = ""
+        local description = ""
+
+        if type(recipe) == "table" then
+            if not string.is_nil_or_empty(recipe.name) then
+                recipe_name = string.trim(tostring(recipe.name))
+            end
+            if not string.is_nil_or_empty(recipe.description) then
+                description = string.trim(tostring(recipe.description))
+            end
+        end
+
+        local entry = target
+        if recipe_name ~= "" then
+            entry = entry .. " (" .. recipe_name .. ")"
+        end
+        if description ~= "" then
+            entry = entry .. ": " .. description
+        end
+
+        log.print("  " .. prefix .. " " .. entry)
+    end
 end
 
 ---Print recipe content.
@@ -1175,21 +1229,22 @@ end
 local function mode_recipe__handle(registry)
     log.debug("Recipe mode is used.")
     local action = registry.parameters[1]
-    if action == nil then
-        log.error("No action given.")
+    if string.is_nil_or_empty(action) or action == "help" then
+        mode_recipe__help()
+        return
+    end
+    if action == "list" then
+        mode_recipe__list(registry)
         return
     end
     local name = registry.parameters[2]
-    if action ~= "help" then
-        if string.is_nil_or_empty(name) then
-            log.error("No recipe name given.")
-            return
-        else
-            name = normalize_name(name)
-        end
+    if string.is_nil_or_empty(name) then
+        log.error("No recipe name given.")
+        return
+    else
+        name = normalize_name(name)
     end
     local actions = {
-        help = mode_recipe__help,
         edit = mode_recipe__edit,
         print = mode_recipe__print
     }
@@ -1198,7 +1253,6 @@ local function mode_recipe__handle(registry)
     end
     execute(registry, name)
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Config
@@ -1260,7 +1314,6 @@ local function mode_config__handle(registry)
     end
     execute(registry)
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Default
@@ -1312,7 +1365,6 @@ local function mode_default__handle(registry)
         end
     end
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Simulate
@@ -1333,7 +1385,6 @@ local function mode_simulate__handle(registry)
         mode_default__handle(registry)
     end
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Help
@@ -1366,7 +1417,6 @@ local function mode_help__handle(registry)
     log.print("  *                  names of recipes or groups defined in a config\n")
     log.print("For more: lua pods.lua [MODE] help")
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Main
@@ -1502,4 +1552,3 @@ if arg[0] ~= "test.lua" then
     -- execute main
     main(arg)
 end
-

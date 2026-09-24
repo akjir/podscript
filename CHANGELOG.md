@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added shell escaping for dynamic command arguments and paths.
 - Added strict global declarations using Lua 5.5 `global<const> *`.
 - Added dynamic Git build numbers and metadata to version outputs.
+- Added `list` action to `recipe` mode for displaying configured recipes.
 
 ### Changed
 
@@ -21,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
 - Updated mode help banners to display extended SemVer version strings.
 - Updated recipe resolution error to report missing recipes instead of targets.
+- Updated `recipe` mode to display help when no action is specified.
 
 ### Fixed
 
@@ -28,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed recipe validation scope by initializing missing commands under pod node.
 - Fixed command index table to retain undocumented commands for numeric execution.
 - Fixed missing CLI modes and debug option across help outputs.
+- Fixed shell escaping on pod and container options preventing multi-word flags.
 
 ### Removed
 

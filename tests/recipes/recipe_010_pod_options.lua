@@ -3,6 +3,7 @@ return {
     pod = {
         registry = "options.io",
         options = {
+            "--network slirp4netns:port_handler=slirp4netns",
             "--some thing",
             "--another thing"
         },
