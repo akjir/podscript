@@ -85,7 +85,7 @@ The following flags can be supplied across CLI modes:
 
 The `default` and `simulate` modes manage container and pod lifecycles. They require an **Action** followed by one or more **Targets**.
 
-Simulate mode operates identically to default mode, except commands are printed rather than executed. It can be invoked either as the mode keyword `simulate` or via the `--simulate` flag.
+Simulate mode operates identically to default mode, except commands are printed rather than executed. It is invoked using the mode keyword `simulate`.
 
 ### Actions
 
@@ -102,7 +102,6 @@ Simulate mode operates identically to default mode, except commands are printed 
 | :--- | :--- |
 | `--config=<name>` | Load a specific configuration file (e.g., `--config=staging`). |
 | `--debug` | Enable verbose debug output for troubleshooting. |
-| `--simulate` | Enable dry-run simulation mode without executing commands. |
 
 ### Targets & Grouping
 

@@ -1,6 +1,6 @@
 local s = "001"
 return {
-    -- Tests for arguments options like --config and --simulate.
+    -- Tests for argument options like --config and --debug.
     -- config = none,
     suite = s,
     tests = {

@@ -33,6 +33,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed command index table to retain undocumented commands for numeric execution.
 - Fixed missing CLI modes and debug option across help outputs.
 
+### Removed
+
+- Removed `--simulate` flag in favor of dedicated `simulate` mode.
+
 ## [1.3.0] - 2026-04-24
 
 ### Added

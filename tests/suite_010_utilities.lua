@@ -47,10 +47,10 @@ return {
             description = "Split argument: flag (no value).",
             dev_only = true,
             run = function()
-                local k, v = split_argument("--simulate")
+                local k, v = split_argument("--dry-run")
                 return k .. "=" .. tostring(v)
             end,
-            expected = "simulate=true"
+            expected = "dry-run=true"
         },
         [s .. "07"] = {
             description = "Parse action and targets: multiple targets.",

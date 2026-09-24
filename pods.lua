@@ -30,7 +30,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.3.0"
-local BUILD <const> = "146.fe9986c.dev"
+local BUILD <const> = "148.51221bc.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string

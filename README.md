@@ -34,7 +34,7 @@ PodScript simplifies container operations by replacing complex shell scripts and
 
 - **Declarative Recipes:** Define pods and containers using concise, readable Lua tables.
 - **Deterministic Lifecycle:** Sequential container startup (top-to-bottom) and reverse shutdown (bottom-to-top) for reliable multi-container dependencies.
-- **Dry-Run Simulation:** Preview exact Podman commands before execution using the `simulate` mode or the `--simulate` flag.
+- **Dry-Run Simulation:** Preview exact Podman commands before execution using the `simulate` mode.
 - **Recipe Groups:** Aggregate multiple recipes into logical groups (`@group_name`) to orchestrate entire stacks in a single command.
 - **Container Maintenance Commands:** Define and execute ad-hoc maintenance tasks inside running containers by command name or numeric index.
 - **Built-in Inspection & Editing:** Quickly inspect (`print`) or modify (`edit`) configuration files and recipes via integrated CLI modes.

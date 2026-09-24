@@ -41,5 +41,5 @@ Follow the established conventions from historical releases:
 * **Sentence Structure:** `[Past Verb] [Subject/Feature] [concise purpose/context clause (to/for/in)].`
 * **Content Focus:** Feature- and user-facing impact. Avoid sprawling explanations or exhaustively listing multiple internal function names.
 * **Exclusions:** Do not document changes, additions, or updates to tests or test suites.
-* **Code Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (e.g. `--simulate`, `table.create`).
+* **Code Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (e.g. `--debug`, `table.create`).
 

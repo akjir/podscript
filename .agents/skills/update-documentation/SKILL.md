@@ -28,7 +28,7 @@ The `USAGE.md` is the comprehensive manual for CLI operations.
 * **Scope**: Detailed syntax, exhaustive option lists, and practical examples.
 * **Formatting**:
   * **Tables**: Always use markdown tables for listing Modes, Actions, and Options. Keep columns aligned.
-  * **Code Blocks**: Enclose all CLI commands, filenames, modes, and options in backticks (\`--simulate\`) or bash code blocks.
+  * **Code Blocks**: Enclose all CLI commands, filenames, modes, and options in backticks (`--debug`) or bash code blocks.
   * **Hierarchy**: Maintain the existing structure (`## Mode Name`, `### Actions`, `### Options`, `### Usage`).
 * **Content**:
   * Ensure every new action or option is documented with a clear, single-sentence description.
