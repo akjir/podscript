@@ -7,6 +7,7 @@ This document provides a comprehensive command-line reference for PodScript, cov
 ## Table of Contents
 
 - [Command Syntax](#command-syntax)
+- [Quick Start](#quick-start)
 - [Modes Overview](#modes-overview)
 - [Global Options](#global-options)
 - [Default & Simulate Modes](#default--simulate-modes)
@@ -14,23 +15,29 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Options](#options)
   - [Targets & Grouping](#targets--grouping)
   - [Usage](#usage)
-- [Command Mode](#command-mode)
+- [Init Mode](#init-mode)
   - [Actions](#actions-1)
   - [Options](#options-1)
-  - [Command Definition](#command-definition)
+  - [Generated Files](#generated-files)
   - [Usage](#usage-1)
-- [Config Mode](#config-mode)
+- [Command Mode](#command-mode)
   - [Actions](#actions-2)
   - [Options](#options-2)
-  - [Editor Configuration](#editor-configuration)
+  - [Command Definition](#command-definition)
   - [Usage](#usage-2)
-- [Recipe Mode](#recipe-mode)
+- [Config Mode](#config-mode)
   - [Actions](#actions-3)
   - [Options](#options-3)
+  - [Editor Configuration](#editor-configuration)
   - [Usage](#usage-3)
-- [Help Mode](#help-mode)
+- [Recipe Mode](#recipe-mode)
+  - [Actions](#actions-4)
+  - [Options](#options-4)
   - [Usage](#usage-4)
+- [Help Mode](#help-mode)
+  - [Usage](#usage-5)
 - [Comprehensive Examples](#comprehensive-examples)
+  - [Configuration File (`config.lua`)](#configuration-file-configlua)
   - [Basic Pod Lifecycle](#basic-pod-lifecycle)
   - [Dry-Run Simulation](#dry-run-simulation)
   - [Recipe Group Targeting](#recipe-group-targeting)
@@ -55,6 +62,67 @@ lua pods.lua [MODE] [OPTIONS] [ACTION] [TARGETS...]
 
 ---
 
+## Quick Start
+
+### 1. Initialize Configuration and Recipe
+
+Run the `init` mode to create the default `config.lua` and an example `recipe.lua`:
+
+```bash
+pods init
+```
+
+This creates:
+- `recipe.lua`: An example recipe defining the `web-service` pod.
+- `config.lua`: A default configuration with `recipe` registered under the `all` group.
+
+### 2. Inspect the Recipe
+
+The generated `recipe.lua` defines the pod, network publishing, and container specification:
+
+```lua
+return {
+    name = "Example Pod",
+    description = "Example web service pod managed by PodScript.",
+    pod = {
+        name = "web-service",
+        path = "/pods",
+        registry = "docker.io",
+        publish = {
+            { 8080, 80, "TCP" },
+        },
+    },
+    containers = {
+        {
+            name = "*app",
+            detach = true,
+            image = "example:latest",
+            restart = "always",
+        },
+    },
+}
+```
+
+### 3. Manage the Pod
+
+Execute lifecycle commands against your target recipe:
+
+```bash
+# Preview the Podman commands without executing them
+pods simulate create recipe
+
+# Create and start the pod and containers
+pods create recipe
+
+# Pull updated images and recreate containers if changed
+pods update recipe
+
+# Stop and remove the pod and containers
+pods remove recipe
+```
+
+---
+
 ## Modes Overview
 
 PodScript is organized into operational modes. When no explicit mode is specified as the first positional argument, PodScript defaults to the **Default Mode**.
@@ -63,6 +131,7 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | :--- | :--- |
 | `(empty)` | **Default Mode**: Executes lifecycle actions on pods and containers defined in recipe files. |
 | `simulate` | **Simulate Mode**: Previews all generated Podman commands without executing them. |
+| `init` | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
 | `command` | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
 | `config` | **Config Mode**: Displays or modifies the active PodScript configuration file. |
 | `recipe` | **Recipe Mode**: Displays or modifies a specific recipe file. |
@@ -131,6 +200,87 @@ pods remove frontend @backend-services redis
 
 # Preview pod creation without executing
 pods simulate create my-web-server
+```
+
+---
+
+## Init Mode
+
+The `init` mode bootstraps a new project directory by generating a default configuration file (`config.lua`) and an example recipe file (`recipe.lua`) with the recipe registered under the `@all` group.
+
+```bash
+pods init [OPTIONS]
+```
+
+### Actions
+
+| Action | Description |
+| :--- | :--- |
+| `(empty)` | Creates `config.lua` and an example `recipe.lua`. (Default when omitted). |
+| `help` | Display command-line help for init mode. |
+
+### Options
+
+| Option | Description |
+| :--- | :--- |
+| `--config=<name>` | Specify an alternative configuration filename or path to generate (e.g., `--config=staging`). |
+| `--debug` | Enable verbose debug output. |
+
+### Generated Files
+
+1. **`recipe.lua`**: A ready-to-use example recipe defining a `web-service` pod:
+   ```lua
+   return {
+       name = "Example Pod",
+       description = "Example web service pod managed by PodScript.",
+       pod = {
+           name = "web-service",
+           path = "/pods",
+           registry = "docker.io",
+           publish = {
+               { 8080, 80, "TCP" },
+           },
+       },
+       containers = {
+           {
+               name = "*app",
+               detach = true,
+               image = "example:latest",
+               restart = "always",
+           },
+       },
+   }
+   ```
+2. **`config.lua`**: A configuration file setting the default pod path and defining the recipe under the `all` group:
+   ```lua
+   return {
+       pods = {
+           path = "/pods",
+       },
+       recipes = {
+           groups = {
+               all = {
+                   "recipe",
+               },
+           },
+       },
+   }
+   ```
+
+> [!NOTE]
+> If either `recipe.lua` or the target configuration file already exists, `pods init` terminates with an error to prevent overwriting existing files.
+
+### Usage
+
+```bash
+# Initialize default configuration and recipe
+pods init
+
+# Initialize with an alternative configuration name
+pods --config=staging init
+
+# Display help for init mode
+pods init help
 ```
 
 ---
@@ -335,6 +485,55 @@ pods command help
 ---
 
 ## Comprehensive Examples
+
+### Configuration File (`config.lua`)
+
+A complete configuration template demonstrating all available configuration options:
+
+```lua
+-- PodScript Configuration
+return {
+    -- The editor to use for editing files via 'config edit' or 'recipe edit'.
+    editor = "vim",
+
+    -- If true, commands will be printed but not executed (dry-run mode).
+    simulate = true,
+
+    -- Pod-specific configurations.
+    pods = {
+        -- The default root directory for all pod-related data.
+        path = "/pods",
+    },
+
+    -- Defines where to find recipe files for pod creation.
+    recipes = {
+        -- The default search path for recipe files (defaults to current directory if omitted).
+        path = ".",
+
+        -- Defines groups of recipes that can be run together.
+        -- All active recipes must belong to at least one group.
+        groups = {
+            all = {
+                "recipe",
+            },
+            database = {
+                "postgres",
+                "redis",
+            },
+            web = {
+                "api-server",
+                "frontend",
+            },
+            stack = {
+                "@database",
+                "@web",
+            },
+        },
+    },
+}
+```
+
+See [config.lua](config.lua) for the repository configuration template and [recipe.lua](recipe.lua) for the full recipe example.
 
 ### Basic Pod Lifecycle
 

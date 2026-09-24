@@ -85,5 +85,28 @@ return {
             end,
             expected = false,
         },
+        [s .. "09"] = {
+            description = "system.file_exists returns true for existing file and false for non-existent.",
+            run = function()
+                local exists_true = system.file_exists("recipe.lua")
+                local exists_false = system.file_exists("/tmp/non_existent_file_podscript.lua")
+                return exists_true == true and exists_false == false
+            end,
+            expected = true,
+        },
+        [s .. "10"] = {
+            description = "system.write_file writes content to file correctly.",
+            run = function()
+                local test_path = "/tmp/test_system_write_file.txt"
+                local content = "hello world\n"
+                local write_success = system.write_file(test_path, content)
+                local file = io.open(test_path, "r")
+                local read_content = file and file:read("*a")
+                if file then file:close() end
+                os.remove(test_path)
+                return write_success == true and read_content == content
+            end,
+            expected = true,
+        },
     }
 }

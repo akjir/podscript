@@ -30,7 +30,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "152.5e5563d"
+local BUILD <const> = "153.5b65ca6.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -427,6 +427,18 @@ global system<const> = {
         end
     end,
 
+    ---Check if a file exists.
+    ---@param full_path string
+    ---@return boolean
+    file_exists = function(full_path)
+        local file = io.open(full_path, "r")
+        if file then
+            file:close()
+            return true
+        end
+        return false
+    end,
+
     ---Loads a Lua file and returns the result.
     ---@param full_path string
     ---@return table|nil result The object returned by the file (usually a table).
@@ -469,6 +481,21 @@ global system<const> = {
         local result = handle:read("*a")
         handle:close()
         return "0" == string.trim(result)
+    end,
+
+    ---Write content to a file.
+    ---@param full_path string
+    ---@param content string
+    ---@return boolean
+    write_file = function(full_path, content)
+        local file = io.open(full_path, "w")
+        if not file then
+            log.error("Could not write to file '" .. full_path .. "'!")
+            return false
+        end
+        file:write(content)
+        file:close()
+        return true
     end,
 }
 -- ------------------------------------------------------------------------- --
@@ -1402,6 +1429,7 @@ local function mode_help__handle(registry)
     log.print("  command            execute a command defined in a recipe")
     log.print("  config             manage and inspect configuration")
     log.print("  help               display this help and exit")
+    log.print("  init               initialize default configuration and recipe")
     log.print("  recipe             inspect and edit recipes")
     log.print("  simulate           simulate all commands (default mode)\n")
     log.print("OPTIONS:")
@@ -1416,6 +1444,102 @@ local function mode_help__handle(registry)
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups defined in a config\n")
     log.print("For more: lua pods.lua [MODE] help")
+end
+-- ------------------------------------------------------------------------- --
+--
+--    SECTION Mode Init
+--
+-- ------------------------------------------------------------------------- --
+
+---Create initial recipe and config files.
+---@param registry table
+local function mode_init__create(registry)
+    local recipe_path = build_full_path(".", "recipe", ".lua")
+    local config_path = registry.config_full_path or build_full_path("config", "", ".lua")
+
+    if system.file_exists(recipe_path) then
+        log.error("File '" .. recipe_path .. "' already exists!")
+        return
+    end
+
+    if system.file_exists(config_path) then
+        log.error("File '" .. config_path .. "' already exists!")
+        return
+    end
+
+    local recipe_content = "return {\n"
+        .. "    name = \"Example Pod\",\n"
+        .. "    description = \"Example web service pod managed by PodScript.\",\n"
+        .. "    pod = {\n"
+        .. "        name = \"web-service\",\n"
+        .. "        path = \"/pods\",\n"
+        .. "        registry = \"docker.io\",\n"
+        .. "        publish = {\n"
+        .. "            { 8080, 80, \"TCP\" },\n"
+        .. "        },\n"
+        .. "    },\n"
+        .. "    containers = {\n"
+        .. "        {\n"
+        .. "            name = \"*app\",\n"
+        .. "            detach = true,\n"
+        .. "            image = \"example:latest\",\n"
+        .. "            restart = \"always\",\n"
+        .. "        },\n"
+        .. "    },\n"
+        .. "}\n"
+    local config_content = "return {\n"
+        .. "    pods = {\n"
+        .. "        path = \"/pods\",\n"
+        .. "    },\n"
+        .. "    recipes = {\n"
+        .. "        groups = {\n"
+        .. "            all = {\n"
+        .. "                \"recipe\",\n"
+        .. "            },\n"
+        .. "        },\n"
+        .. "    },\n"
+        .. "}\n"
+
+    if not system.write_file(recipe_path, recipe_content) then
+        return
+    end
+    log.info("Created '" .. recipe_path .. "'.")
+
+    if not system.write_file(config_path, config_content) then
+        return
+    end
+    log.info("Created '" .. config_path .. "'.")
+end
+
+---Print init help.
+local function mode_init__help()
+    log.print("PodScript " .. get_version_string() .. "\n")
+    log.print("Usage: pods init [OPTIONS]")
+    log.print("   or: lua pods.lua init [OPTIONS]\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output\n")
+    log.print("ACTIONS:")
+    log.print("  help               display this help and exit")
+end
+
+---Handle init mode.
+---@param registry table
+local function mode_init__handle(registry)
+    log.debug("Init mode is used.")
+    local action, _ = parse_action_and_targets_parameters(registry)
+    if action == "" then
+        mode_init__create(registry)
+        return
+    end
+
+    local actions = {
+        help = mode_init__help,
+    }
+    local execute = actions[action] or function()
+        log.error("Unknown action: " .. tostring(action))
+    end
+    execute(registry)
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -1470,6 +1594,7 @@ global function main(arguments)
         config = mode_config__handle,
         default = mode_default__handle,
         help = mode_help__handle,
+        init = mode_init__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,
     }
@@ -1531,6 +1656,14 @@ global function main(arguments)
     -- print debug message if non-default-configuration is used
     if log.debug_enabled and config_path ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
+    end
+
+    registry.config_full_path = config_full_path
+
+    -- handle init mode without loading existing configuration
+    if startup_config.mode_selected == modes.init then
+        startup_config.mode_selected(registry)
+        return
     end
 
     -- parse config

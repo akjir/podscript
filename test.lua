@@ -212,6 +212,7 @@ add_suite("suite_012_mode_recipe")
 add_suite("suite_013_mode_command")
 add_suite("suite_014_globals")
 add_suite("suite_015_varargs")
+add_suite("suite_016_mode_init")
 
 -- ------------------------------------------------------------------------- --
 --      Main

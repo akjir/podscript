@@ -30,6 +30,7 @@ require "src.mode_config"
 require "src.mode_default"
 require "src.mode_simulate"
 require "src.mode_help"
+require "src.mode_init"
 require "src.system"
 
 global<const> *
@@ -89,6 +90,7 @@ global function main(arguments)
         config = mode_config__handle,
         default = mode_default__handle,
         help = mode_help__handle,
+        init = mode_init__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,
     }
@@ -150,6 +152,14 @@ global function main(arguments)
     -- print debug message if non-default-configuration is used
     if log.debug_enabled and config_path ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
+    end
+
+    registry.config_full_path = config_full_path
+
+    -- handle init mode without loading existing configuration
+    if startup_config.mode_selected == modes.init then
+        startup_config.mode_selected(registry)
+        return
     end
 
     -- parse config

@@ -38,6 +38,7 @@ PodScript simplifies container operations by replacing complex shell scripts and
 - **Recipe Groups:** Aggregate multiple recipes into logical groups (`@group_name`) to orchestrate entire stacks in a single command.
 - **Container Maintenance Commands:** Define and execute ad-hoc maintenance tasks inside running containers by command name or numeric index.
 - **Built-in Inspection & Editing:** Quickly inspect (`print`) or modify (`edit`) configuration files and recipes via integrated CLI modes.
+- **Project Initialization:** Bootstrap default configuration and recipe files with a single command via the `init` mode.
 - **Zero External Dependencies:** Ships as a self-contained single script (`pods.lua`) requiring only Lua and Podman.
 - **Safe Execution:** Automated shell argument escaping, prerequisite validation, and privilege checks.
 
@@ -84,7 +85,7 @@ lua pods.lua
 ```
 
 > [!NOTE]
-> PodScript resolves `config.lua` and recipe files relative to its working directory. Ensure your configuration and recipe files reside in this directory, or use `--config` to specify an alternative path.
+> PodScript resolves `config.lua` and recipe files relative to its working directory. Ensure your configuration and recipe files reside in this directory, or use `--config` to specify an alternative path. You can initialize a new directory using `pods init`.
 
 ### 2. Set Up a PATH Wrapper (Recommended)
 
@@ -107,49 +108,13 @@ Replace `/path/to/podscript` with the absolute path to your PodScript directory.
 
 ## Quick Start
 
-### 1. Create a Recipe File
-
-Create a recipe file (e.g., `web-service.lua`) in your recipe search directory:
-
-```lua
-return {
-    name = "Web Service Stack",
-    pod = {
-        name = "web-service",
-        publish = {
-            { 8080, 80, "TCP" },
-        },
-    },
-    containers = {
-        {
-            name = "*db",
-            image = "docker.io/library/redis:alpine",
-            restart = "always",
-        },
-        {
-            name = "*app",
-            image = "docker.io/library/nginx:alpine",
-            restart = "always",
-        },
-    },
-}
-```
-
-### 2. Manage the Pod
+Initialize your directory with a default configuration and an example recipe file:
 
 ```bash
-# Preview the Podman commands without executing them
-pods simulate create web-service
-
-# Create and start the pod and containers
-pods create web-service
-
-# Pull updated images and recreate containers if changed
-pods update web-service
-
-# Stop and remove the pod and containers
-pods remove web-service
+pods init
 ```
+
+For the step-by-step walkthrough, recipe definitions, and container lifecycle management examples, see the [Quick Start Guide in USAGE.md](USAGE.md#quick-start).
 
 ---
 
@@ -216,6 +181,7 @@ pods [MODE] [OPTIONS] [ACTION] [TARGETS]
 | :--- | :--- |
 | `(default)` | Executes lifecycle actions (`create`, `recreate`, `remove`, `update`) on specified targets. |
 | `simulate` | Previews all generated commands without executing them. |
+| `init` | Initializes a default configuration and an example recipe file. |
 | `config` | Displays (`print`) or opens (`edit`) the active configuration file. |
 | `recipe` | Displays (`print`) or opens (`edit`) a specific recipe file. |
 | `command` | Lists (`list`) or executes maintenance commands defined in a recipe. |

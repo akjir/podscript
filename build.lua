@@ -230,6 +230,7 @@ local files = {
     "mode_default",
     "mode_simulate",
     "mode_help",
+    "mode_init",
     "main",
 }
 

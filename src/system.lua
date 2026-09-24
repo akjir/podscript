@@ -128,6 +128,18 @@ global system<const> = {
         end
     end,
 
+    ---Check if a file exists.
+    ---@param full_path string
+    ---@return boolean
+    file_exists = function(full_path)
+        local file = io.open(full_path, "r")
+        if file then
+            file:close()
+            return true
+        end
+        return false
+    end,
+
     ---Loads a Lua file and returns the result.
     ---@param full_path string
     ---@return table|nil result The object returned by the file (usually a table).
@@ -170,5 +182,20 @@ global system<const> = {
         local result = handle:read("*a")
         handle:close()
         return "0" == string.trim(result)
+    end,
+
+    ---Write content to a file.
+    ---@param full_path string
+    ---@param content string
+    ---@return boolean
+    write_file = function(full_path, content)
+        local file = io.open(full_path, "w")
+        if not file then
+            log.error("Could not write to file '" .. full_path .. "'!")
+            return false
+        end
+        file:write(content)
+        file:close()
+        return true
     end,
 }
