@@ -22,14 +22,14 @@ return {
             description = "Container options.",
             parameters = { "create", "recipe_012_container_options" },
             expectations = {
-                { 11, "podman run --name snoitpo --pod copti --unknown thing --another unknown conop.io/simple:latest;" },
+                { 11, "podman run --name snoitpo --pod copti '--unknown thing' '--another unknown' conop.io/simple:latest;" },
             },
         },
         [s .. "04"] = {
             description = "Container commands.",
             parameters = { "create", "recipe_013_container_commands" },
             expectations = {
-                { 11, "podman run --name commandos-1 --pod commandos bel.io/squad:1998 O'Hara Hancock 2 Woolridge3 Brooklyn:4 Blackwood=5 Duchamp-6;" },
+                { 11, "podman run --name commandos-1 --pod commandos bel.io/squad:1998 'O'\\''Hara' 'Hancock 2' Woolridge3 Brooklyn:4 Blackwood=5 Duchamp-6;" },
             },
         },
         [s .. "05"] = {
@@ -116,7 +116,7 @@ return {
             description = "Container with shell command.",
             parameters = { "create", "recipe_020_container_commands_2" },
             expectations = {
-                { 11, "podman run --name cmd_con --pod cmd_test registry.io/alpine:latest sh -c echo 'hello world';" },
+                { 11, "podman run --name cmd_con --pod cmd_test registry.io/alpine:latest sh -c 'echo '\\''hello world'\\''';" },
             },
         },
     },

@@ -538,7 +538,9 @@ local function container__create(container, pod, simulate)
     -- container options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(container.options) then
-        commands[#commands + 1] = table.concat(container.options, " ")
+        for i = 1, #container.options do
+            commands[#commands + 1] = string.escape_shell(container.options[i])
+        end
     end
 
     -- container image
@@ -548,7 +550,9 @@ local function container__create(container, pod, simulate)
     -- commands
     -- see: podman run --detach image:tag command
     if not table.is_nil_or_empty(container.commands) then
-        commands[#commands + 1] = table.concat(container.commands, " ")
+        for i = 1, #container.commands do
+            commands[#commands + 1] = string.escape_shell(container.commands[i])
+        end
     end
 
     -- create and execute final podman command
@@ -651,7 +655,9 @@ local function pod__create(recipe, simulate)
     -- pod options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(recipe.pod.options) then
-        commands[#commands + 1] = table.concat(recipe.pod.options, " ")
+        for i = 1, #recipe.pod.options do
+            commands[#commands + 1] = string.escape_shell(recipe.pod.options[i])
+        end
     end
 
     -- create pod
@@ -1006,9 +1012,9 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
             if not suppress_warnings then
                 log.warning("Command '" .. command .. "' has no description.")
             end
-        else
-            table.insert(valid_commands, { name = command, desc = description, table = command_table })
+            description = ""
         end
+        table.insert(valid_commands, { name = command, desc = description, table = command_table })
     end
     return valid_commands
 end
@@ -1036,7 +1042,11 @@ local function mode_command__list(registry, recipe, target)
         if #valid_commands > 9 and i < 10 then
             prefix = " " .. prefix
         end
-        log.print("  " .. prefix .. " " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
+        if string.is_nil_or_empty(valid_commands[i].desc) then
+            log.print("  " .. prefix .. " " .. valid_commands[i].name)
+        else
+            log.print("  " .. prefix .. " " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
+        end
     end
 end
 

@@ -129,9 +129,9 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
             if not suppress_warnings then
                 log.warning("Command '" .. command .. "' has no description.")
             end
-        else
-            table.insert(valid_commands, { name = command, desc = description, table = command_table })
+            description = ""
         end
+        table.insert(valid_commands, { name = command, desc = description, table = command_table })
     end
     return valid_commands
 end
@@ -159,7 +159,11 @@ local function mode_command__list(registry, recipe, target)
         if #valid_commands > 9 and i < 10 then
             prefix = " " .. prefix
         end
-        log.print("  " .. prefix .. " " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
+        if string.is_nil_or_empty(valid_commands[i].desc) then
+            log.print("  " .. prefix .. " " .. valid_commands[i].name)
+        else
+            log.print("  " .. prefix .. " " .. valid_commands[i].name .. ": " .. valid_commands[i].desc)
+        end
     end
 end
 

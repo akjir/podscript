@@ -23,6 +23,12 @@ return {
                 { 11, "WARNING: Command 'run_int_user' has no description." },
                 { 12, "Commands for recipe 'recipe_006_commands':" },
                 { 13, "  1) add_index: Adds missing database indices." },
+                { 14, "  2) missing_container" },
+                { 15, "  3) missing_execute" },
+                { 16, "  4) run_absolute" },
+                { 17, "  5) run_int_container" },
+                { 18, "  6) run_int_container_2" },
+                { 19, "  7) run_int_user" },
             },
         },
         [s .. "03"] = {
@@ -103,12 +109,14 @@ return {
             },
         },
         [s .. "12"] = {
-            description = "Print command list for recipe with only invalid commands.",
+            description = "Print command list for recipe with commands without description.",
             parameters = { "command", "recipe_021_no_description_commands", "list" },
             expectations = {
                 { 6, "WARNING: Command 'cmd1' has no description." },
                 { 7, "WARNING: Command 'cmd2' has no description." },
-                { 8, "There is no valid command in recipe 'recipe_021_no_description_commands'." },
+                { 8, "Commands for recipe 'recipe_021_no_description_commands':" },
+                { 9, "  1) cmd1" },
+                { 10, "  2) cmd2" },
             },
         },
         [s .. "13"] = {
@@ -132,6 +140,21 @@ return {
                 { 11, "WARNING: Command 'run_int_user' has no description." },
                 { 12, "Commands for recipe 'recipe_006_commands':" },
                 { 13, "  1) add_index: Adds missing database indices." },
+                { 14, "  2) missing_container" },
+                { 15, "  3) missing_execute" },
+                { 16, "  4) run_absolute" },
+                { 17, "  5) run_int_container" },
+                { 18, "  6) run_int_container_2" },
+                { 19, "  7) run_int_user" },
+            },
+        },
+        [s .. "15"] = {
+            description = "Simulate command without description using numeric index.",
+            simulate = true,
+            parameters = { "command", "recipe_006_commands", "4" },
+            expectations = {
+                { 7, "Execute command 'script.sh run-absolute' in container 'absolute_db': " },
+                { 8, "podman exec -it absolute_db script.sh run-absolute;" },
             },
         },
     }

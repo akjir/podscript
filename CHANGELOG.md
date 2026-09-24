@@ -11,10 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `string.escape_shell` for safe shell argument execution.
 - Added shell escaping for dynamic command arguments and paths.
 - Added strict global declarations using Lua 5.5 `global<const> *`.
-- Added `suite_014_globals` to test strict global declarations.
 - Added Lua 5.5 named varargs support to log wrappers and `log.format_args`.
 - Added multi-source variadic support to `table.append` and `table.merge`.
-- Added `suite_015_varargs` to test Lua 5.5 named varargs handling.
 
 ### Changed
 
@@ -23,12 +21,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated `build.lua` to localize modular functions in release builds.
 - Optimized table allocations across the codebase using `table.create`.
 - Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
-- Updated test runner to capture tab-separated variadic arguments.
 
 ### Fixed
 
 - Fixed path corruption for hidden host volume directories in container creation.
 - Fixed recipe validation scope by initializing missing commands under pod node.
+- Fixed command index table to retain undocumented commands for numeric execution.
 
 ## [1.3.0] - 2026-04-24
 

@@ -67,7 +67,9 @@ global function pod__create(recipe, simulate)
     -- pod options
     -- if not supported by pods, add them directly to the podman run command
     if not table.is_nil_or_empty(recipe.pod.options) then
-        commands[#commands + 1] = table.concat(recipe.pod.options, " ")
+        for i = 1, #recipe.pod.options do
+            commands[#commands + 1] = string.escape_shell(recipe.pod.options[i])
+        end
     end
 
     -- create pod
