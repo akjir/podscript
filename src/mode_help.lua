@@ -32,7 +32,7 @@ global<const> *
 ---Handle help mode. Prints help.
 ---@param registry table
 global function mode_help__handle(registry)
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
     log.print("MODES:")

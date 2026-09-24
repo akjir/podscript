@@ -44,7 +44,7 @@ local function mode_config__edit(registry)
 end
 ---Print config help.
 global function mode_config__help()
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods config [OPTIONS] ACTION")
     log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
     log.print("OPTIONS:")

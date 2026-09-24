@@ -72,5 +72,14 @@ return {
             end,
             expected = "list:"
         },
+        [s .. "09"] = {
+            description = "Get version string in development mode.",
+            dev_only = true,
+            run = function()
+                local ver = rawget(_G, "VERSION") or ""
+                return get_version_string() == ("v" .. ver .. "+dev")
+            end,
+            expected = true
+        },
     }
 }

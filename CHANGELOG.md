@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added strict global declarations using Lua 5.5 `global<const> *`.
 - Added Lua 5.5 named varargs support to log wrappers and `log.format_args`.
 - Added multi-source variadic support to `table.append` and `table.merge`.
+- Added dynamic Git build metadata extraction to build process.
+- Added `get_version_string` helper to format extended SemVer version strings.
+- Added `--release` flag to `build.lua` to omit `.dev` for release builds.
 
 ### Changed
 
@@ -21,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated `build.lua` to localize modular functions in release builds.
 - Optimized table allocations across the codebase using `table.create`.
 - Improved `table.remove_duplicates` with defensive `nil` and empty-table validation.
+- Updated mode help banners to display extended SemVer version strings.
 
 ### Fixed
 

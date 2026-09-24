@@ -30,6 +30,13 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.3.0"
+local BUILD <const> = "146.fe9986c.dev"
+
+---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
+---@return string
+local function get_version_string()
+    return "v" .. VERSION .. "+" .. BUILD
+end
 
 -- ------------------------------------------------------------------------- --
 --
@@ -967,12 +974,12 @@ end
 ---Print command help.
 local function mode_command__help(registry)
     if registry.flags.simulate then
-        log.print("PODSCRIPT " .. VERSION .. " - Command Mode (SIMULATED)\n")
+        log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
         log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
         log.print("   or: lua pods.lua simulate command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
     else
-        log.print("PODSCRIPT " .. VERSION .. " - Command Mode\n")
+        log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
         log.print("Execute a command defined in a recipe for a container.")
         log.print("Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]")
         log.print("   or: lua pods.lua command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
@@ -1129,7 +1136,7 @@ end
 
 ---Print config help.
 local function mode_recipe__help()
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
     log.print("OPTIONS:")
@@ -1211,7 +1218,7 @@ local function mode_config__edit(registry)
 end
 ---Print config help.
 local function mode_config__help()
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods config [OPTIONS] ACTION")
     log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
     log.print("OPTIONS:")
@@ -1336,7 +1343,7 @@ end
 ---Handle help mode. Prints help.
 ---@param registry table
 local function mode_help__handle(registry)
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
     log.print("MODES:")

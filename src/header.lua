@@ -32,3 +32,11 @@ global<const> *
 
 ---@build const:
 global VERSION<const> = "1.3.0"
+---@build const:
+global BUILD<const> = "dev"
+
+---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
+---@return string
+global function get_version_string()
+    return "v" .. VERSION .. "+" .. BUILD
+end

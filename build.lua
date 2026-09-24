@@ -17,7 +17,88 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 
-local function process_content(content, state)
+local build
+local get_git_build_string
+local get_git_commit_count
+local get_git_commit_hash
+local is_git_dirty
+local process_content
+
+build = function(output_filename, input_filenames, is_release)
+    local out_file = io.open(output_filename, "w")
+    if not out_file then
+        print("Error: Could not open output file: " .. output_filename)
+        return false
+    end
+
+    local annotation = "---@build block:"
+    local state = {
+        build_string = get_git_build_string(is_release),
+        has_emitted_global_const = false,
+    }
+
+    for _, filename in ipairs(input_filenames) do
+        local path = "src/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
+        local in_file = io.open(path, "r")
+        if not in_file then
+            print("Warning: Could not open file " .. path)
+        else
+            local content = in_file:read("*a")
+            in_file:close()
+
+            local start_idx = content:find(annotation, 1, true)
+            if start_idx then
+                local line_end_idx = content:find("\n", start_idx, true)
+                local block_content = line_end_idx and content:sub(line_end_idx + 1) or ""
+                out_file:write(process_content(block_content, state))
+            else
+                print("Warning: Build annotation not found in " .. path .. ". Skipping.")
+            end
+        end
+    end
+
+    out_file:close()
+    return true
+end
+
+get_git_build_string = function(is_release)
+    local count = get_git_commit_count()
+    local hash = get_git_commit_hash()
+    local suffix = ""
+    if not is_release and is_git_dirty() then
+        suffix = ".dev"
+    end
+    return count .. "." .. hash .. suffix
+end
+
+get_git_commit_count = function()
+    local handle = io.popen("git rev-list --count HEAD 2>/dev/null")
+    if not handle then return "0" end
+    local result = handle:read("*a")
+    local success = handle:close()
+    if not success then return "0" end
+    return result:match("^%s*(%d+)%s*$") or "0"
+end
+
+get_git_commit_hash = function()
+    local handle = io.popen("git rev-parse --short HEAD 2>/dev/null")
+    if not handle then return "unknown" end
+    local result = handle:read("*a")
+    local success = handle:close()
+    if not success then return "unknown" end
+    return result:match("^%s*(%x+)%s*$") or "unknown"
+end
+
+is_git_dirty = function()
+    local handle = io.popen("git status --porcelain 2>/dev/null")
+    if not handle then return false end
+    local result = handle:read("*a")
+    local success = handle:close()
+    if not success then return false end
+    return result:match("^%s*(.-)%s*$") ~= ""
+end
+
+process_content = function(content, state)
     local result = {}
     local is_global = false
     local is_const = false
@@ -47,7 +128,11 @@ local function process_content(content, state)
                 end
                 if name and value then
                     local leading_ws = line:match("^(%s*)")
-                    table.insert(result, leading_ws .. "local " .. name .. " <const> = " .. value .. "\n")
+                    local final_val = value
+                    if name == "BUILD" and state and state.build_string then
+                        final_val = string.format("%q", state.build_string)
+                    end
+                    table.insert(result, leading_ws .. "local " .. name .. " <const> = " .. final_val .. "\n")
                 else
                     table.insert(result, line .. "\n")
                 end
@@ -76,42 +161,6 @@ local function process_content(content, state)
         final = final:sub(1, -2)
     end
     return final
-end
-
-local function build(output_filename, input_filenames)
-    local out_file = io.open(output_filename, "w")
-    if not out_file then
-        print("Error: Could not open output file: " .. output_filename)
-        return false
-    end
-
-    local annotation = "---@build block:"
-    local state = {
-        has_emitted_global_const = false,
-    }
-
-    for _, filename in ipairs(input_filenames) do
-        local path = "src/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
-        local in_file = io.open(path, "r")
-        if not in_file then
-            print("Warning: Could not open file " .. path)
-        else
-            local content = in_file:read("*a")
-            in_file:close()
-
-            local start_idx = content:find(annotation, 1, true)
-            if start_idx then
-                local line_end_idx = content:find("\n", start_idx, true)
-                local block_content = line_end_idx and content:sub(line_end_idx + 1) or ""
-                out_file:write(process_content(block_content, state))
-            else
-                print("Warning: Build annotation not found in " .. path .. ". Skipping.")
-            end
-        end
-    end
-
-    out_file:close()
-    return true
 end
 
 local files = {
@@ -158,5 +207,17 @@ if #missing > 0 then
     print("Please add them to the 'files' table in build.lua in the correct order.\n")
 end
 
-build("pods.lua", files)
-print("Build complete.")
+local is_release = false
+for _, argument in ipairs(arg or {}) do
+    if argument == "--release" or argument == "release" then
+        is_release = true
+        break
+    end
+end
+
+build("pods.lua", files, is_release)
+if is_release then
+    print("Build complete (release).")
+else
+    print("Build complete.")
+end

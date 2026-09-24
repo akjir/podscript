@@ -54,7 +54,7 @@ end
 
 ---Print config help.
 global function mode_recipe__help()
-    log.print("PODSCRIPT " .. VERSION .. "\n")
+    log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
     log.print("OPTIONS:")

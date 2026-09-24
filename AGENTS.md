@@ -12,7 +12,7 @@
 * **Changelog:** Short, concise entries (6–15 words, past tense e.g. `Added ...`, `Changed ...`, backticks for code). Do not include test additions or changes. See dev skill.
 
 ## Architecture & Naming
-* `header.lua`: `global<const> *`, `VERSION` / `log.lua`: `log.*` (including `log.debug_enabled`) / `system.lua`: `system.*` / `utilities.lua`: global utility functions.
+* `header.lua`: `global<const> *`, `VERSION`, `BUILD`, `get_version_string` / `log.lua`: `log.*` (including `log.debug_enabled`) / `system.lua`: `system.*` / `utilities.lua`: global utility functions.
 * `utilities_{string,table}.lua`: Extends `string.*` / `table.*`.
 * `{container,pod,recipe,config}.lua`: Prefixed `container__*`, `pod__*`, `recipe__*`, `config__*`. In `src/`, modular functions are defined as `global function` (localized by `build.lua` for release).
 * `main.lua`: Prefixed `main__*`.
@@ -21,4 +21,4 @@
 * Lua 5.5 Features: `global<const> *` for strict globals, `table.create` for table preallocation, and named varargs (`... args`) for variadic functions without manual packing.
 
 ## Workflows (Building & Testing)
-For the build system (`build.lua`), testing framework (`test.lua`), and the development workflow, the agent should activate and follow the **`podscript-dev-workflow`** skill.
+For the build system (`build.lua`), testing framework (`test.lua`), and the development workflow, the agent should activate and follow the **`podscript-dev-workflow`** skill. For cutting an official release, follow the **`podscript-release`** skill.
