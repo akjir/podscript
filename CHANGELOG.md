@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed path corruption for hidden host volume directories in container creation.
 - Fixed recipe validation scope by initializing missing commands under pod node.
 - Fixed command index table to retain undocumented commands for numeric execution.
+- Fixed missing CLI modes and debug option across help outputs.
 
 ## [1.3.0] - 2026-04-24
 

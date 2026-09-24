@@ -96,6 +96,7 @@ local function mode_command__help(registry)
     end
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output\n")
     log.print("RECIPE:")
     log.print("  *                  name of the recipe")
     log.print("COMMAND|INDEX:")
