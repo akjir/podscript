@@ -55,12 +55,36 @@ PodScript simplifies container operations by replacing complex shell scripts and
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. Obtain PodScript
+
+Choose one of the following methods to install PodScript:
+
+#### Option A: Clone the Repository
+
+Clone the full repository including configuration templates and examples:
 
 ```bash
 git clone https://github.com/akjir/podscript.git
 cd podscript
 ```
+
+#### Option B: Direct Download (Standalone Script)
+
+Create a dedicated directory, download the standalone `pods.lua` script directly, and navigate into it:
+
+```bash
+mkdir -p podscript && cd podscript
+curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/pods.lua -o pods.lua
+```
+
+You can execute PodScript directly from this directory:
+
+```bash
+lua pods.lua
+```
+
+> [!NOTE]
+> PodScript resolves `config.lua` and recipe files relative to its working directory. Ensure your configuration and recipe files reside in this directory, or use `--config` to specify an alternative path.
 
 ### 2. Set Up a PATH Wrapper (Recommended)
 
