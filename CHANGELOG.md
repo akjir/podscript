@@ -8,14 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Added `string.escape_shell` for safe shell argument execution.
 - Added shell escaping for dynamic command arguments and paths.
 - Added strict global declarations using Lua 5.5 `global<const> *`.
-- Added Lua 5.5 named varargs support to log wrappers and `log.format_args`.
-- Added multi-source variadic support to `table.append` and `table.merge`.
-- Added dynamic Git build metadata extraction to build process.
-- Added `get_version_string` helper to format extended SemVer version strings.
-- Added `--release` flag to `build.lua` to omit `.dev` for release builds.
+- Added dynamic Git build numbers and metadata to version outputs.
 
 ### Changed
 
