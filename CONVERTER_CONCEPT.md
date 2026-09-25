@@ -73,11 +73,11 @@ Even with an advanced converter, the user will have to perform manual post-trans
 To maintain zero external dependencies and keep the ecosystem unified, the converter will be implemented in **Lua**, sharing utilities and paradigms with the main PodScript core. 
 
 ### A. Repository Architecture
-The repository will be split into logical components:
+The repository has been split into logical components:
 - `src/pods/`: Contains the main PodScript logic (to be compiled into `pods.lua`).
 - `src/pods-converter/`: Contains the conversion logic (to be compiled into `pods-converter.lua`).
 - `tests/pods/` & `tests/pods-converter/`: Segregated test suites.
-The build system (`build.lua`) will be updated to produce both standalone artifacts.
+The build system (`build.lua`) has been updated to produce both standalone artifacts.
 
 ### B. Execution Flow (`pods convert`)
 The `pods convert` command will be a mode within the core `pods.lua` script. When invoked:

@@ -1,40 +1,31 @@
 ---
 name: update-documentation
 description: >-
-  Use this skill to update the USAGE.md and README.md files when there are changes to the CLI syntax, features, or core functionality in the PodScript project.
+  Update USAGE.md and README.md when CLI syntax, features, or core capabilities change.
 ---
 
 # Updating Documentation
 
-When code changes introduce modifications to CLI syntax, new features, or changes to core capabilities, you MUST update `USAGE.md` and `README.md` to ensure they remain accurate, professional, and concise.
-
 ## 1. Trigger Conditions
-You must review and update the documentation when:
-* **Syntax Changes**: A new CLI mode, action, option/flag, or target pattern is added, modified, or removed.
-* **Feature Changes**: Core functionality is altered, such as new lifecycle steps, configuration file structure changes, or recipe format modifications.
-* **Requirements**: Changes to supported Podman/Lua versions or OS requirements.
+Review and update documentation on:
+* **Syntax Changes:** Added, modified, or removed CLI modes, actions, options/flags, or target patterns.
+* **Feature Changes:** Lifecycle steps, configuration file structure, or recipe format changes.
+* **Requirements:** Supported Podman, Lua, or OS version changes.
 
 ## 2. README.md Guidelines
-The `README.md` serves as the high-level entry point for the project.
-* **Scope**: Keep it brief. Focus on "What is it?" and "What can it do?".
-* **Updates**: 
-  * Add new high-level capabilities to the **Features** list.
-  * Update **Specifications** if version requirements change.
-  * Keep any code examples minimal and illustrative.
-* **Style**: Professional, objective, and compact. Do not include granular CLI usage details here (defer to `USAGE.md`).
+High-level entry point focusing on "What is it?" and "What can it do?".
+* **Features:** Add new high-level capabilities to the feature list.
+* **Specifications:** Update version requirements when changed.
+* **Style:** Professional, compact, minimal illustrative examples. Defer granular CLI options to `USAGE.md`.
 
 ## 3. USAGE.md Guidelines
-The `USAGE.md` is the comprehensive manual for CLI operations.
-* **Scope**: Detailed syntax, exhaustive option lists, and practical examples.
-* **Formatting**:
-  * **Tables**: Always use markdown tables for listing Modes, Actions, and Options. Keep columns aligned.
-  * **Code Blocks**: Enclose all CLI commands, filenames, modes, and options in backticks (`--debug`) or bash code blocks.
-  * **Hierarchy**: Maintain the existing structure (`## Mode Name`, `### Actions`, `### Options`, `### Usage`).
-* **Content**:
-  * Ensure every new action or option is documented with a clear, single-sentence description.
-  * Provide at least one concrete example under the `### Usage` or `## Examples` sections for any new syntax.
+Comprehensive manual for CLI operations.
+* **Hierarchy:** Maintain existing structure (`## Mode Name`, `### Actions`, `### Options`, `### Usage`).
+* **Tables:** Use aligned markdown tables for Modes, Actions, and Options.
+* **Content:** Clear, single-sentence description for every new action/option. Include at least one concrete example under `### Usage` or `## Examples`.
+* **Formatting:** Backtick all CLI commands, flags, modes, and options (e.g. `--debug`).
 
 ## 4. Execution Rules
-* **No Speculation**: Only document features that are fully implemented and merged.
-* **Consistency**: Match the tone and style of existing entries. Ensure English terminology is precise.
-* **Completeness**: If a feature spans multiple modes (e.g., a flag valid in both Default and Command modes), update all relevant sections in `USAGE.md`.
+* **No Speculation:** Only document verified, implemented features.
+* **Consistency:** Match tone and terminology of existing entries.
+* **Completeness:** If a feature or flag spans multiple modes, update all relevant sections.

@@ -18,9 +18,9 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.config"
-require "src.recipe"
-require "src.utilities"
+require "src.pods.config"
+require "src.pods.recipe"
+require "src.pods.utilities"
 
 global<const> *
 

@@ -27,7 +27,7 @@ local is_git_dirty
 local iterate_lines
 local process_content
 
-build = function(output_filename, input_filenames, is_release)
+build = function(output_filename, source_dir, input_filenames, is_release)
     local out_file = io.open(output_filename, "w")
     if not out_file then
         io.stderr:write("Error: Could not open output file: " .. output_filename .. "\n")
@@ -42,7 +42,7 @@ build = function(output_filename, input_filenames, is_release)
     }
 
     for _, filename in ipairs(input_filenames) do
-        local path = "src/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
+        local path = source_dir .. "/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
         local in_file = io.open(path, "r")
         if not in_file then
             io.stderr:write("Warning: Could not open file " .. path .. "\n")
@@ -213,7 +213,38 @@ process_content = function(content, state)
     return final
 end
 
-local files = {
+local function check_missing_files(source_dir, expected_files)
+    local handle = io.popen("ls " .. source_dir .. "/*.lua 2>/dev/null")
+    local src_files = ""
+    if handle then
+        src_files = handle:read("*a") or ""
+        handle:close()
+    end
+
+    local missing = {}
+    for file in src_files:gmatch(source_dir .. "/([%w_]+)%.lua") do
+        local found = false
+        for _, build_file in ipairs(expected_files) do
+            if build_file == file then
+                found = true
+                break
+            end
+        end
+        if not found then
+            table.insert(missing, file)
+        end
+    end
+
+    if #missing > 0 then
+        io.stderr:write("\nWarning: The following files in " .. source_dir .. "/ are not included in the build process:\n")
+        for _, file in ipairs(missing) do
+            io.stderr:write(" - " .. file .. "\n")
+        end
+        io.stderr:write("Please add them to the 'files' table in build.lua in the correct order.\n\n")
+    end
+end
+
+local pods_files = {
     "header",
     "log",
     "utilities_string",
@@ -234,35 +265,10 @@ local files = {
     "main",
 }
 
--- Sensible check: ensure all files in src/ are in the build list
-local handle = io.popen("ls src/*.lua 2>/dev/null")
-local src_files = ""
-if handle then
-    src_files = handle:read("*a") or ""
-    handle:close()
-end
+local pods_converter_files = {}
 
-local missing = {}
-for file in src_files:gmatch("src/([%w_]+)%.lua") do
-    local found = false
-    for _, build_file in ipairs(files) do
-        if build_file == file then
-            found = true
-            break
-        end
-    end
-    if not found then
-        table.insert(missing, file)
-    end
-end
-
-if #missing > 0 then
-    io.stderr:write("\nWarning: The following files in src/ are not included in the build process:\n")
-    for _, file in ipairs(missing) do
-        io.stderr:write(" - " .. file .. "\n")
-    end
-    io.stderr:write("Please add them to the 'files' table in build.lua in the correct order.\n\n")
-end
+check_missing_files("src/pods", pods_files)
+check_missing_files("src/pods-converter", pods_converter_files)
 
 local is_release = false
 for _, argument in ipairs(arg or {}) do
@@ -272,9 +278,16 @@ for _, argument in ipairs(arg or {}) do
     end
 end
 
-local success = build("pods.lua", files, is_release)
+local success = build("pods.lua", "src/pods", pods_files, is_release)
 if not success then
     os.exit(1)
+end
+
+if #pods_converter_files > 0 then
+    local success_conv = build("pods-converter.lua", "src/pods-converter", pods_converter_files, is_release)
+    if not success_conv then
+        os.exit(1)
+    end
 end
 
 if is_release then

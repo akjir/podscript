@@ -33,7 +33,7 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "recipe_000_unkown" },
             expectations = {
-                { 6, "ERROR: Could not open file './tests/recipes/recipe_000_unkown.lua'!" },
+                { 6, "ERROR: Could not open file './tests/pods/recipes/recipe_000_unkown.lua'!" },
             },
         },
         [s .. "05"] = {
@@ -72,7 +72,7 @@ return {
             config = "config_013_recipe_edit",
             parameters = { "recipe", "edit", "recipe_002_no_pod" },
             expectations = {
-                { 6, "DEBUG: Execute: editor ./tests/recipes/recipe_002_no_pod.lua;" },
+                { 6, "DEBUG: Execute: editor ./tests/pods/recipes/recipe_002_no_pod.lua;" },
                 { 7, "ERROR: Command exited with code '127'!" },
             },
         },

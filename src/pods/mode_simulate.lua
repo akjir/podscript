@@ -18,8 +18,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.mode_command"
-require "src.mode_default"
+require "src.pods.mode_command"
+require "src.pods.mode_default"
 
 global<const> *
 

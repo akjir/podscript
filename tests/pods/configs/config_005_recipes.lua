@@ -1,7 +1,7 @@
 return {
     simulate = false,
     recipes = {
-        path = "tests/recipes",
+        path = "tests/pods/recipes",
         groups = {
             all = {
                 "recipe_000_unkown",

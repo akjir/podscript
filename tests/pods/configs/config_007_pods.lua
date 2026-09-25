@@ -4,7 +4,7 @@ return {
         path = "/pods",
     },
     recipes = {
-        path = "tests/recipes",
+        path = "tests/pods/recipes",
         groups = {
             nona = {
                 "recipe_007_simple_pod_no_name_and_path",

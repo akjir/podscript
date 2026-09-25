@@ -18,7 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.utilities"
+require "src.pods.utilities"
 
 global<const> *
 

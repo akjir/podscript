@@ -3,7 +3,7 @@ return {
         path = "/tmp",
     },
     recipes = {
-        path = "tests/recipes",
+        path = "tests/pods/recipes",
         groups = {
             all = {
                 "recipe_006_commands",

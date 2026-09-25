@@ -10,7 +10,7 @@ return {
             parameters = { "create", "target" },
             simulate = false,
             expectations = {
-                { 3, "ERROR: No recipes defined in config './tests/configs/config_001_empty.lua'!" },
+                { 3, "ERROR: No recipes defined in config './tests/pods/configs/config_001_empty.lua'!" },
             },
         },
         [s .. "02"] = {
@@ -19,7 +19,7 @@ return {
             parameters = { "create", "target" },
             simulate = true,
             expectations = {
-                { 2, "DEBUG: Config './tests/configs/config_002_simulate_false.lua' is used." },
+                { 2, "DEBUG: Config './tests/pods/configs/config_002_simulate_false.lua' is used." },
                 { 3, "INFO: Simulate mode is active." },
             },
         },
@@ -29,7 +29,7 @@ return {
             parameters = { "create", "target" },
             simulate = false,
             expectations = {
-                { 2, "DEBUG: Config './tests/configs/config_003_simulate_true.lua' is used." },
+                { 2, "DEBUG: Config './tests/pods/configs/config_003_simulate_true.lua' is used." },
                 { 3, "INFO: Simulate mode is active." },
             },
         },
@@ -38,8 +38,8 @@ return {
             config = "config_missing",
             parameters = { "create", "target" },
             expectations = {
-                { 3, "ERROR: cannot open ./tests/configs/config_missing.lua: No such file or directory" },
-                { 4, "ERROR: Couldn't load configuration './tests/configs/config_missing.lua'!" },
+                { 3, "ERROR: cannot open ./tests/pods/configs/config_missing.lua: No such file or directory" },
+                { 4, "ERROR: Couldn't load configuration './tests/pods/configs/config_missing.lua'!" },
             },
         },
         [s .. "05"] = {

@@ -9,7 +9,7 @@ return {
             parameters = { "create", "@nona" },
             expectations = {
                 { 1,  "DEBUG: Debug mode is enabled." },
-                { 2,  "DEBUG: Config './tests/configs/config_007_pods.lua' is used." },
+                { 2,  "DEBUG: Config './tests/pods/configs/config_007_pods.lua' is used." },
                 { 3,  "INFO: Simulate mode is active." },
                 { 5,  "DEBUG: Targets   - @nona" },
                 { 6,  "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },

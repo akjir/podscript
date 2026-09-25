@@ -17,8 +17,8 @@ return {
             description = "Recipe not found. Path set.",
             parameters = { "create", "recipe_000_unkown" },
             expectations = {
-                { 6, "ERROR: cannot open ./tests/recipes/recipe_000_unkown.lua: No such file or directory" },
-                { 7, "ERROR: Couldn't load recipe './tests/recipes/recipe_000_unkown.lua'!" },
+                { 6, "ERROR: cannot open ./tests/pods/recipes/recipe_000_unkown.lua: No such file or directory" },
+                { 7, "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_000_unkown.lua'!" },
             },
         },
         [s .. "03"] = {
@@ -93,8 +93,8 @@ return {
             description = "Missing ',' in lua file.",
             parameters = { "create", "recipe_016_container_lua_error" },
             expectations = {
-                { 6, "ERROR: ./tests/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
-                { 7, "ERROR: Couldn't load recipe './tests/recipes/recipe_016_container_lua_error.lua'!" },
+                { 6, "ERROR: ./tests/pods/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
+                { 7, "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_016_container_lua_error.lua'!" },
             }
         },
         [s .. "13"] = {

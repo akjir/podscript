@@ -198,10 +198,10 @@ For complete syntax, option matrices, and detailed examples, see [USAGE.md](USAG
 
 ## Development
 
-The codebase is organized modularly under `src/` and compiled into a standalone, single-file release script (`pods.lua`).
+The codebase is organized modularly under `src/pods/` and compiled into a standalone, single-file release script (`pods.lua`).
 
 > [!IMPORTANT]
-> Never edit `pods.lua` directly. All modifications must be made within the `src/` directory.
+> Never edit `pods.lua` directly. All modifications must be made within the `src/pods/` directory.
 
 ### Building
 
@@ -221,7 +221,7 @@ PodScript includes a comprehensive test framework:
 # Run tests against the release script (pods.lua)
 lua test.lua
 
-# Run tests against development sources (src/)
+# Run tests against development sources (src/pods/)
 lua test.lua --dev
 
 # Run a specific test suite or test ID

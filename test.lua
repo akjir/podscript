@@ -24,7 +24,7 @@ global<const> *
 --   PODSCRIPT TEST
 -- ------------------------------------------------------------------------- --
 
-require "tests.test_utilities"
+require "tests.pods.test_utilities"
 
 local output_stack = {}
 local single_test_name = ""
@@ -47,7 +47,7 @@ end
 if test_release then
     require "pods"
 else
-    require "src.main"
+    require "src.pods.main"
 end
 
 ---Print function
@@ -91,11 +91,11 @@ local function execute_mode_test(default_config_name, test_code, test_table, pri
 
     if config_name == "" then
         if default_config_name ~= "" then
-            local config_argument = "--config=" .. "tests/configs/" .. default_config_name
+            local config_argument = "--config=" .. "tests/pods/configs/" .. default_config_name
             table.insert(arguments, config_argument)
         end
     else
-        local config_argument = "--config=" .. "tests/configs/" .. config_name
+        local config_argument = "--config=" .. "tests/pods/configs/" .. config_name
         table.insert(arguments, config_argument)
     end
 
@@ -193,26 +193,26 @@ end
 local test_suites = {}
 
 local function add_suite(name)
-    local suite = require("tests/" .. name)
+    local suite = require("tests." .. name)
     table.insert(test_suites, suite)
 end
 
-add_suite("suite_001_argument_options")
-add_suite("suite_002_utilities_string")
-add_suite("suite_003_utilities_table")
-add_suite("suite_004_actions")
-add_suite("suite_005_targets")
-add_suite("suite_006_recipes")
-add_suite("suite_007_pods")
-add_suite("suite_008_containers")
-add_suite("suite_009_system")
-add_suite("suite_010_utilities")
-add_suite("suite_011_mode_config")
-add_suite("suite_012_mode_recipe")
-add_suite("suite_013_mode_command")
-add_suite("suite_014_globals")
-add_suite("suite_015_varargs")
-add_suite("suite_016_mode_init")
+add_suite("pods.suite_001_argument_options")
+add_suite("pods.suite_002_utilities_string")
+add_suite("pods.suite_003_utilities_table")
+add_suite("pods.suite_004_actions")
+add_suite("pods.suite_005_targets")
+add_suite("pods.suite_006_recipes")
+add_suite("pods.suite_007_pods")
+add_suite("pods.suite_008_containers")
+add_suite("pods.suite_009_system")
+add_suite("pods.suite_010_utilities")
+add_suite("pods.suite_011_mode_config")
+add_suite("pods.suite_012_mode_recipe")
+add_suite("pods.suite_013_mode_command")
+add_suite("pods.suite_014_globals")
+add_suite("pods.suite_015_varargs")
+add_suite("pods.suite_016_mode_init")
 
 -- ------------------------------------------------------------------------- --
 --      Main

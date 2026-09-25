@@ -18,20 +18,20 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-require "src.header"
-require "src.log"
-require "src.utilities_string"
-require "src.utilities_table"
-require "src.utilities"
-require "src.config"
-require "src.mode_command"
-require "src.mode_recipe"
-require "src.mode_config"
-require "src.mode_default"
-require "src.mode_simulate"
-require "src.mode_help"
-require "src.mode_init"
-require "src.system"
+require "src.pods.header"
+require "src.pods.log"
+require "src.pods.utilities_string"
+require "src.pods.utilities_table"
+require "src.pods.utilities"
+require "src.pods.config"
+require "src.pods.mode_command"
+require "src.pods.mode_recipe"
+require "src.pods.mode_config"
+require "src.pods.mode_default"
+require "src.pods.mode_simulate"
+require "src.pods.mode_help"
+require "src.pods.mode_init"
+require "src.pods.system"
 
 global<const> *
 

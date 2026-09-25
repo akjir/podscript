@@ -38,7 +38,7 @@ return {
             config = "config_012_invalid_editor",
             parameters = { "config", "edit" },
             expectations = {
-                { 4, "DEBUG: Execute: editor ./tests/configs/config_012_invalid_editor.lua;" },
+                { 4, "DEBUG: Execute: editor ./tests/pods/configs/config_012_invalid_editor.lua;" },
                 { 5, "ERROR: Command exited with code '127'!" },
             },
         },
