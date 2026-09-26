@@ -9,10 +9,15 @@ updated: 2026-09-26
 
 # PSP-007: Log Aggregation and Tailing (`logs` mode)
 
-## 1. Summary & Motivation
-PodScript currently lacks a native way to view or tail logs for containers managed by a recipe. Users must manually construct `podman pod logs` or `podman logs` commands. Adding a dedicated `logs` mode will streamline debugging and monitoring by wrapping `podman pod logs` with PodScript's configuration and targeting awareness, automatically enforcing coloring and container names for better readability.
+## Part 1: Concept & Proposal (JEP-Style)
 
-## 2. Goals & Non-Goals
+### 1.1 Summary
+A proposal to introduce a dedicated `logs` mode to PodScript, enabling users to easily view and tail logs for containers managed by a recipe with built-in coloring and targeting awareness.
+
+### 1.2 Motivation
+PodScript currently lacks a native way to view or tail logs for containers managed by a recipe. Users must manually construct verbose `podman pod logs` or `podman logs` commands. Adding a dedicated `logs` mode streamlines debugging and monitoring by wrapping these Podman commands with PodScript's configuration and targeting logic, automatically enforcing coloring and container names for significantly better readability.
+
+### 1.3 Goals & Non-Goals
 * **Goals:**
   * Introduce a `logs` mode to fetch and tail logs for a given recipe's pod.
   * Support common logging flags: `--follow` (`-f`), `--tail`, `--since`, `--until`, and `--container` (`-c`).
@@ -23,7 +28,7 @@ PodScript currently lacks a native way to view or tail logs for containers manag
   * Formatting or parsing logs within Lua (Podman handles the output streams directly).
   * Supporting remote log aggregation (e.g., syslog, journald) directly through PodScript logic.
 
-## 3. Specification & CLI Syntax
+### 1.4 Description
 * **Syntax:** `pods logs [OPTIONS] <recipe>`
 * **Options:**
   * `-f`, `--follow`: Follow log output.
@@ -40,17 +45,27 @@ PodScript currently lacks a native way to view or tail logs for containers manag
 * **Output & Exit Codes:**
   * Exits with the exit code returned by the underlying Podman process.
 
-## 4. Technical Architecture
-* **Affected Files:**
-  * `src/pods/mode_logs.lua` (New): Implements `mode_logs__execute(config, args)`.
-  * `src/pods/main.lua`: Register the `logs` mode in the router.
-  * `USAGE.md`: Document the new `logs` mode in the Modes Overview.
-* **Implementation Details:**
-  * The CLI argument parser in `mode_logs.lua` must safely extract the supported flags (`-f`, `--tail`, etc.) and identify the target recipe.
-  * Container name resolution for the `-c` flag must replicate the logic used in `command` mode to resolve `*app` or numeric indices to absolute container names.
-  * Strict Lua 5.5 rules (`global<const> *`) and PodScript style guidelines must be followed.
+### 1.5 Alternatives
+* Requiring users to manually execute `podman pod logs` for every task (rejected due to verbosity and lack of integration with PodScript's recipe context and container resolution).
 
-## 5. Test Strategy (TDD)
+---
+
+## Part 2: Technical Design & Code Changes
+
+### 2.1 Architecture & Affected Modules
+* `src/pods/mode_logs.lua` (New): Implements `mode_logs__execute(config, args)`.
+* `src/pods/main.lua`: Register the `logs` mode in the router.
+* `USAGE.md`: Document the new `logs` mode in the Modes Overview.
+
+### 2.2 Schema & Syntax Changes
+* No changes to `config.lua` or recipe schemas; this is purely a CLI command addition that relies on the existing recipe schema.
+
+### 2.3 Implementation Details
+* The CLI argument parser in `mode_logs.lua` must safely extract the supported flags (`-f`, `--tail`, etc.) and identify the target recipe.
+* Container name resolution for the `-c` flag must replicate the logic used in `command` mode to resolve `*app` or numeric indices to absolute container names.
+* Strict Lua 5.5 rules (`global<const> *`) and PodScript style guidelines must be followed.
+
+### 2.4 Testing Strategy
 * **Test Suites:**
   * `tests/pods/mode_logs_test.lua`: Verify the command builder accurately maps PodScript flags to `podman pod logs` flags.
   * Validate container name resolution logic (e.g., `-c 1` -> `-c mypod-ctr1`, `-c *app` -> `-c mypod-app`).
@@ -61,5 +76,19 @@ PodScript currently lacks a native way to view or tail logs for containers manag
   * Providing multiple recipe targets (should either error or gracefully use only the first).
   * Providing an invalid container index or name for `-c` (should exit with clear error).
 
-## 6. Work Log & Decisions
+---
+
+## Part 3: Implementation Record & Tasks
+
+### 3.1 Task Breakdown
+- [ ] Create test stubs in `tests/pods/mode_logs_test.lua`.
+- [ ] Implement core logic in `src/pods/mode_logs.lua`.
+- [ ] Register `logs` mode in `src/pods/main.lua`.
+- [ ] Update `USAGE.md` with new CLI syntax.
+- [ ] Add entry to `CHANGELOG.md`.
+
+### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept specification created. Enforced `--color` and `--names` by default for improved UX over raw Podman defaults.
+
+### 3.3 Delivered Artifacts
+*(Filled out upon completion)*
