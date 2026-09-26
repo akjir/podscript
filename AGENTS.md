@@ -24,5 +24,6 @@
 * **Lua 5.5 & Strict Globals:** `global<const> *` enforced atop every chunk (undeclared globals trigger compile error). Use `table.create` for preallocation, named varargs (`... args`) for variadic functions without manual packing.
 
 ## Workflows
+* Proposals: Follow **`proposal-workflow`** skill for specifying and tracking proposals in `.agents/proposals/`.
 * Development & Build: Follow **`podscript-dev-workflow`** skill for `build.lua`, `test.lua`, and dev workflows.
 * Release: Follow **`podscript-release`** skill for cutting official releases.
