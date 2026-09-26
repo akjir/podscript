@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-008: Health-Aware Lifecycle Ordering
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 This feature introduces health-aware lifecycle ordering, allowing PodScript to pause and wait for a container to become `healthy` (utilizing Podman's native healthchecks) before proceeding to the next container in the recipe.

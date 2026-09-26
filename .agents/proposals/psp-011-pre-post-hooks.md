@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-011: Pre/Post Execution Hooks
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 This feature introduces a hook system allowing PodScript recipes to define shell commands or Lua callbacks tied to lifecycle events like `pre_create`, `post_create`, `pre_remove`, etc., at both the pod and container levels.
@@ -107,7 +107,7 @@ return {
 - [ ] Add entry to `CHANGELOG.md`.
 
 ### 3.2 Work Log & Decisions
-* **2026-09-26:** Initial concept created. Designed to support both Lua callbacks and shell commands for maximum flexibility without requiring external dependencies. Safe execution via `pcall` established for Lua. Refactored proposal to match the JEP-style 3-part template.
+* **2026-09-26:** Initial concept created. Designed to support both Lua callbacks and shell commands for maximum flexibility without requiring external dependencies. Safe execution via `pcall` established for Lua. Refactored proposal to match the 3-part template.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*

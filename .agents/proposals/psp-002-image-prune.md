@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-002: Orphaned & Dangling Image Cleanup
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 A built-in mechanism for PodScript to safely purge orphaned and dangling container images to reclaim disk space.

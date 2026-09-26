@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-005: Architectural Evaluation: Centralized Context vs. Parameter Passing
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 PodScript currently passes a mutable `registry` table (`config`, `flags`, `parameters`, `config_full_path`) explicitly across mode handlers, config loaders, and validators. Investigating whether a centralized singleton context (`context.lua`) simplifies function signatures and improves ergonomics without compromising test isolation.

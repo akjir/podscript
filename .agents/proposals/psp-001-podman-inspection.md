@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-001: Running Containers Display & Granular Podman Inspection
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 Providing direct inspection capabilities within PodScript for runtime state to keep workflow management self-contained.

@@ -9,7 +9,7 @@ updated: YYYY-MM-DD
 
 # PSP-XXX: Proposal Title
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 A brief, one-paragraph explanation of the proposal and what it aims to achieve.

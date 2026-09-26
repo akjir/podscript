@@ -9,17 +9,17 @@ updated: 2026-09-26
 
 # PSP-013: Systemd / Quadlet Export
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-PodScript excels at lightweight, declarative pod and container management. However, many production environments prefer native `systemd` integration for process supervision, auto-starting on boot, and robust log management. Podman provides Quadlets (`.pod`, `.container`, etc.) to declaratively generate systemd units. This proposal bridges the gap by allowing users to export their PodScript recipes directly into Podman Quadlet format.
+PodScript excels at lightweight, declarative pod and container management. However, many production environments prefer native `systemd` integration for process supervision, auto-starting on boot, and robust log management. Podman provides Quadlets (`.pod`, `.container`, etc.) to declaratively generate systemd units. This proposal bridges the gap by allowing users to export their PodScript recipes directly into Podman Quadlet format via a separate, on-demand tool/module called `pods-generate`.
 
 ### 1.2 Motivation
-Currently, users of PodScript have to manually translate their simple Lua configuration into Quadlet files if they want systemd's robust process management. By natively generating Quadlet configurations, users get the best of both worlds: PodScript's simple Lua configuration and systemd's robust process management.
+Currently, users of PodScript have to manually translate their simple Lua configuration into Quadlet files if they want systemd's robust process management. By natively generating Quadlet configurations via a supplementary tool, users get the best of both worlds: PodScript's simple Lua configuration and systemd's robust process management, without bloating the core `pods` executable.
 
 ### 1.3 Goals & Non-Goals
 * **Goals:**
-  * Introduce a new CLI command `pods generate systemd <targets>` to translate recipes into Quadlet files.
+  * Introduce a new CLI tool/module `pods-generate` (or invoked via `pods generate`) to translate recipes into Quadlet files.
   * Map PodScript directives (`publish`, `volumes`, `commands`, `options`, `restart`) to their exact Quadlet equivalents (`PublishPort`, `Volume`, `Exec`, `PodmanArgs`, `Restart`).
   * Ensure output files are safely written to `<pod.path>/systemd/`.
   * Maintain zero external dependencies and strict Lua 5.5 rules.
@@ -31,6 +31,8 @@ Currently, users of PodScript have to manually translate their simple Lua config
 * **Command Syntax:**
   ```bash
   pods generate systemd <recipe> [targets...]
+  # or directly calling the module:
+  lua pods-generate.lua systemd <recipe> [targets...]
   ```
 * **Output:**
   For a recipe named `web-service`, defining a pod `web-stack` and containers `app` and `db`, the command will generate:
@@ -47,19 +49,17 @@ Currently, users of PodScript have to manually translate their simple Lua config
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* **New Module (`src/pods-converter/quadlet.lua`):**
-  * A dedicated module responsible for transforming the `recipe` table into Quadlet `.ini` string representations.
-* **New Mode (`src/pods/mode_generate.lua`):**
-  * Handles the `generate` CLI mode.
-  * Accepts `systemd` as an action.
+* **New Tool/Module (`src/pods-generate/`):**
+  * A dedicated source directory and module responsible for handling the CLI generation logic and transforming the `recipe` table into Quadlet `.ini` string representations.
+  * Will be built into a separate `pods-generate.lua` artifact, not shipped within the normal `pods` artifact, as its use case goes beyond the direct control of Podman.
 * **Changes to `main.lua` / `USAGE.md`:**
-  * Register the `generate` mode.
+  * If invoked as `pods generate`, the main script will check for the existence of `pods-generate.lua` in its directory and delegate execution, failing gracefully if not present.
 
 ### 2.2 Schema & Syntax Changes
-No breaking schema changes. The `generate` mode is purely additive.
+No breaking schema changes. The `pods-generate` tool is purely additive.
 
 ### 2.3 Implementation Details
-* **`src/pods-converter/quadlet.lua`:**
+* **`src/pods-generate/quadlet.lua`:**
   * Implements `quadlet__generate_pod(recipe)` and `quadlet__generate_container(container, pod_name)`.
   * Follows `global<const> *` and uses string interpolation/concatenation efficiently.
 * **Mapping Rules:**
@@ -83,15 +83,15 @@ No breaking schema changes. The `generate` mode is purely additive.
     * `Restart=<container.restart>` (e.g. `always`, `on-failure`)
     * `[Install]`
     * `WantedBy=default.target`
-* **`src/pods/mode_generate.lua`:**
-  * Uses `recipe__load` and `recipe__validate`, then writes output files to `<pod.path>/systemd/`.
+* **`src/pods-generate/main.lua`:**
+  * Uses recipe loading and validation, then writes output files to `<pod.path>/systemd/`.
 
 ### 2.4 Testing Strategy
-* **Unit Tests (`tests/pods-converter/test_quadlet.lua`):**
+* **Unit Tests (`tests/pods-generate/test_quadlet.lua`):**
   * Assert mapping of all recipe combinations (with/without options, publish ports, volumes, commands).
   * Assert correct handling of empty/nil fields.
-* **Mode Tests (`tests/pods/test_mode_generate.lua`):**
-  * Assert `pods generate systemd <recipe>` correctly parses arguments.
+* **Mode Tests (`tests/pods-generate/test_main.lua`):**
+  * Assert `pods-generate systemd <recipe>` correctly parses arguments.
   * Assert files are physically written to the expected `<pod.path>/systemd/` mock directory.
 * **Edge Cases:**
   * Recipes without a `pod.path` fallback logic.
@@ -102,15 +102,16 @@ No breaking schema changes. The `generate` mode is purely additive.
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Create test stubs in `tests/pods/test_mode_generate.lua` and `tests/pods-converter/test_quadlet.lua`.
-- [ ] Implement core logic in `src/pods-converter/quadlet.lua`.
-- [ ] Implement mode logic in `src/pods/mode_generate.lua`.
-- [ ] Update `main.lua` to register `generate` mode.
-- [ ] Update `USAGE.md` with new CLI syntax.
+- [ ] Update build logic to output `pods-generate.lua`.
+- [ ] Create test stubs in `tests/pods-generate/test_main.lua` and `tests/pods-generate/test_quadlet.lua`.
+- [ ] Implement core logic in `src/pods-generate/quadlet.lua`.
+- [ ] Implement CLI handling in `src/pods-generate/main.lua`.
+- [ ] Update core `pods` to delegate `generate` commands to `pods-generate.lua`.
 - [ ] Add entry to `CHANGELOG.md`.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept and specification written. Decided against auto-installing Quadlets to maintain PodScript's role as a standalone, non-intrusive tool.
+* **2026-09-26:** Architecture updated to use a separate `pods-generate` module instead of baking generation into the core `pods` script.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*

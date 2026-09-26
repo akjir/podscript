@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-014: Command Mode Syntax Alignment
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 PodScript CLI syntax currently follows the pattern `pods [mode] <action> <target(s)>` in almost all modes. We propose restructuring the `command` mode to strictly align with this standard pattern by introducing explicit actions and updating target definitions.

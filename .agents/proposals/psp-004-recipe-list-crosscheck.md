@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-004: Recipe List Cross-Check (Config vs. Filesystem)
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 This proposal introduces a bidirectional cross-check mechanism for `pods recipe list`, designed to compare recipes declared in the configuration with actual recipe files on disk, ensuring total visibility.

@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-007: Log Aggregation and Tailing (`logs` mode)
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 A proposal to introduce a dedicated `logs` mode to PodScript, enabling users to easily view and tail logs for containers managed by a recipe with built-in coloring and targeting awareness.

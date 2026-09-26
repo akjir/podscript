@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-010: Podman Secrets Integration
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 Integrating Podman's native secret management (`podman secret`) will allow users to define secrets safely in their recipes and inject them into containers as mounts or environment variables, adhering to security best practices.

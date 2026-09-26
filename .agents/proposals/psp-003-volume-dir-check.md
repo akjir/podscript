@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-003: Volume Host Directory Verification & Automatic Creation
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 Recipes frequently define bind mounts (e.g., relative `./data` or absolute host paths). If a host directory does not exist prior to container launch, Podman may fail or automatically create the directory under root ownership. This proposal introduces pre-checking of volume directories to prevent runtime failures and ensure directories are initialized under the appropriate user permissions.

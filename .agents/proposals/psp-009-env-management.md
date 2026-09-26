@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-009: Environment Variable Management (.env Integration)
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 This proposal introduces native support for loading variables from `.env` files and injecting them into Podman containers. It separates configuration from declarative recipes, eliminating the need to hardcode sensitive values or environment-specific data.

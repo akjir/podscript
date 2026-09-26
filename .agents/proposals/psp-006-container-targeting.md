@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-006: Granular Container Targeting within Pods (`recipe/container`)
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 Enable actions (`create`, `recreate`, `update`, `remove`) targeting an individual container using the `recipe/container` syntax without recreating the entire parent pod.

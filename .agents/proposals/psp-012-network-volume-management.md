@@ -9,7 +9,7 @@ updated: 2026-09-26
 
 # PSP-012: Podman Network & Named Volume Management
 
-## Part 1: Concept & Proposal (JEP-Style)
+## Part 1: Concept & Proposal
 
 ### 1.1 Summary
 PodScript will support defining and auto-provisioning required Podman networks and named volumes directly within recipes, before a pod is started, enabling fully declarative and self-contained deployments.
