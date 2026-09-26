@@ -20,7 +20,6 @@ description: >-
 * **New files:** Add to `src/pods/` with `---@build block:`, require for dev, append to `files` table in `build.lua`.
 
 ## 3. Testing (`test.lua`)
-* **TDD Mandate:** Comprehensive tests strictly required for every new feature, converter routine, or bug fix.
 * **Locations:** `tests/pods/suite_*.lua` and `tests/pods-converter/suite_*.lua`.
 * **IDs:** Explicit 5-digit literal IDs: 3-digit suite + 2-digit test (e.g. `00401`).
 * **Types:** Mode tests (CLI output capture vs `expectations`), Code tests (`run` function vs `expected`).

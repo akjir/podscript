@@ -29,10 +29,8 @@ description: >-
 ## 4. Development & Completion Cycle
 1. **Promote to `planned`:** Align with user on architecture and syntax.
 2. **Promote to `in-progress`:** Begin implementation. Use Task Breakdown in Part 3.1.
-    * Follow **`podscript-dev-workflow`**: write tests first in `tests/pods/`, implement in `src/pods/`.
-    * Run tests: `lua test.lua --dev [testID]`.
-    * Build: `lua build.lua` and verify `lua test.lua [testID]`.
-3. **Promote to `review`:** Update `CHANGELOG.md` (Keep a Changelog, 6–15 words, past tense) and `USAGE.md` if CLI syntax changed.
+    * Follow **`podscript-dev-workflow`** for TDD implementation, testing, and building.
+3. **Promote to `review`:** Update `CHANGELOG.md` and `USAGE.md` (see `update-documentation` skill).
 4. **Promote to `completed`:** Update frontmatter `status: completed` and update `.agents/proposals/README.md`. Document delivered artifacts in Part 3.3.
 
 ## 5. Token Efficiency & Agent Guidelines
