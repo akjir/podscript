@@ -43,15 +43,14 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param registry table
+---@param context table
 ---@param arguments string[]
----@param startup_config table
 ---@param modes table
-local function main__parse_arguments(registry, arguments, startup_config, modes)
+local function main__parse_arguments(context, arguments, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        startup_config.mode_selected = modes.help
+        context.mode.selected = modes.help
         return
     end
     -- parse arguments
@@ -61,21 +60,22 @@ local function main__parse_arguments(registry, arguments, startup_config, modes)
         if string.begins_with(argument, "--") then
             if string.begins_with(argument, "--config=") then
                 local _, value = split_argument(argument)
-                startup_config.config_path = value
+                context.config.path = value
+                --TODO FOR AGENT: context.config.name = GET NAME FROM PATH (dont normalize - will happen later or isnt needed)
             elseif argument == "--debug" then
                 log.debug_enabled = true
             else
                 local parameter, value = split_argument(argument)
-                registry.flags[parameter] = value
+                context.flags[parameter] = value
             end
             -- check if argument is a mode
         else
             local is_mode = (not has_seen_positional) and modes[argument]
             has_seen_positional = true
             if is_mode then
-                startup_config.mode_selected = modes[argument]
+                context.mode.selected = modes[argument]
             else
-                table.insert(registry.parameters, argument)
+                table.insert(context.parameters, argument)
             end
         end
     end
@@ -95,15 +95,29 @@ global function main(arguments)
         simulate = mode_simulate__handle,
     }
 
-    local startup_config = {
-        config_path = "config",
-        mode_selected = modes.default,
-    }
+    local context = {
+        -- MUTABLE: Populated and mutated by config.lua loaders
+        config = {
+            name = "config", -- The provided config name
+            path = "",       -- The resolved full path to the config file
+            simulate = true, -- Default simulate value
+            editor = "",     -- Default editor
+            pods = { path = "" },
+            recipes = { path = ".", groups = {} },
+        },
 
-    local registry = {
-        config = {},
-        flags = {},
-        parameters = {},
+        -- READ-ONLY (RO): Parsed once from CLI
+        flags = {},          -- Parsed command-line flags (e.g., { ["--debug"] = true })
+        parameters = {},     -- Parsed positional command-line arguments
+
+        -- READ-ONLY (RO) after main.lua initialization
+        mode = {
+            selected = modes.default, -- The selected mode handler function
+        },
+
+        -- READ-ONLY (RO): Parsed centrally in main.lua after config load
+        action = "",         -- The single action to execute
+        targets = {},        -- The untangled list of targets
     }
 
     -- check lua version
@@ -136,44 +150,44 @@ global function main(arguments)
     end
 
     -- parse arguments
-    main__parse_arguments(registry, arguments, startup_config, modes)
+    main__parse_arguments(context, arguments, modes)
 
     log.debug("Debug mode is enabled.")
 
     -- normalize config name
-    local config_path = startup_config.config_path
-    if config_path ~= "config" and config_path ~= "" then
-        config_path = normalize_name(config_path)
+    local config_name = context.config.name
+    if config_name ~= "config" and config_name ~= "" then
+        config_name = normalize_name(config_name)
     end
 
     -- build full config path
-    local config_full_path = build_full_path(config_path, "", ".lua")
+    local config_full_path = build_full_path(context.config.path, "", ".lua")
 
     -- print debug message if non-default-configuration is used
-    if log.debug_enabled and config_path ~= "config" then
+    if log.debug_enabled and config_name ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
     end
 
-    registry.config_full_path = config_full_path
+    context.config.path = config_full_path
 
     -- handle init mode without loading existing configuration
-    if startup_config.mode_selected == modes.init then
-        startup_config.mode_selected(registry)
+    if context.mode.selected == modes.init then
+        context.mode.selected(context)
         return
     end
 
     -- parse config
-    if not config__load_and_set(registry, config_full_path) then
+    if not config__load_and_set(context) then
         return
     end
 
     -- config simulate activates simulate mode if default mode is selected
-    if registry.config.simulate and startup_config.mode_selected == modes["default"] then
-        startup_config.mode_selected = modes["simulate"]
+    if context.config.simulate and context.mode.selected == modes["default"] then
+        context.mode.selected = modes["simulate"]
     end
 
     -- handle mode
-    startup_config.mode_selected(registry)
+    context.mode.selected(context)
 end
 
 -- prevent excecution when imported from test_suite

@@ -31,50 +31,26 @@ global<const> *
 
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
----@param registry table
----@param config_full_path string
+---@param context table
 ---@return boolean
-global function config__load_and_set(registry, config_full_path)
-    local config, error, _ = system.load_lua_file(config_full_path)
+global function config__load_and_set(context)
+    local config, error, _ = system.load_lua_file(context.config.path)
     if config == nil then
         if error ~= nil then
             log.error(error)
         end
-        log.error("Couldn't load configuration '" .. config_full_path .. "'!")
+        log.error("Couldn't load configuration '" .. context.config.path .. "'!")
         return false
     end
 
-    -- config values
-    registry.config = config
-    registry.config.full_path = config_full_path
-    if registry.config.simulate == nil then
-        registry.config.simulate = true
-    end
-    if registry.config.editor == nil then
-        registry.config.editor = ""
-    end
-
-    -- pod values
-    if not registry.config.pods then
-        registry.config.pods = {}
-    end
-    if not registry.config.pods.path then
-        registry.config.pods.path = "" -- no path set, pods need to define a path
-    end
-
-    -- recipes values
-    registry.recipes = config.recipes
-    if table.is_nil_or_empty(registry.recipes) then
-        log.error("No recipes defined in config '" .. config_full_path .. "'!")
+    -- check recipe values
+    if table.is_nil_or_empty(context.config.recipes) then
+        log.error("No recipes defined in config '" .. context.config.path .. "'!")
         return false
     else
-        if table.is_nil_or_empty(registry.recipes.groups) then
-            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+        if table.is_nil_or_empty(context.config.recipes.groups) then
+            log.error("No recipes groups defined in configuration '" .. context.config.path .. "'!")
             return false
-        end
-        -- set default path for recipes or correct them
-        if string.is_nil_or_empty(registry.recipes.path) then
-            registry.recipes.path = "."
         end
     end
     return true
