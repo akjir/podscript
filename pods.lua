@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "178.8af4591.dev"
+local BUILD <const> = "179.05bcbb4.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -140,8 +140,29 @@ end
 ---@param str string
 ---@return string
 string.trim = function(str)
+    if str == nil then return nil end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
+end
+
+---Splits a string by a given separator.
+---@param str string
+---@param sep string
+---@return table
+string.split = function(str, sep)
+    if sep == nil or sep == "" then
+        return {str}
+    end
+    local result = {}
+    local last_end = 1
+    local s, e = str:find(sep, 1, true)
+    while s do
+        result[#result + 1] = str:sub(last_end, s - 1)
+        last_end = e + 1
+        s, e = str:find(sep, last_end, true)
+    end
+    result[#result + 1] = str:sub(last_end)
+    return result
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -415,6 +436,21 @@ global system <const> = {
         if not success then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
+    end,
+
+    ---Execute a command and capture its standard output as a list of lines.
+    ---@param command string
+    ---@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
+    exec_capture = function(command)
+        local handle = io.popen(command)
+        if not handle then return nil end
+
+        local lines = {}
+        for line in handle:lines() do
+            lines[#lines + 1] = line
+        end
+        handle:close()
+        return lines
     end,
 
     ---Check if a file exists.
@@ -725,6 +761,197 @@ local function pod__update(recipe, simulate)
         container__update(containers[id], recipe.pod, simulate)
     end
 end
+
+---Print status of containers.
+---@param context table
+local function pod__status(context)
+    local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
+    local lines = system.exec_capture(query_command)
+    if not lines then
+        log.error("Failed to query podman status.")
+        return
+    end
+
+    local podman_containers = {}
+    for i = 1, #lines do
+        local parts = string.split(lines[i], ";;;")
+        if #parts >= 9 then
+            podman_containers[#podman_containers + 1] = {
+                id = parts[1],
+                image = parts[2],
+                command = parts[3],
+                created = parts[4],
+                status = parts[5],
+                ports = parts[6],
+                names = parts[7],
+                pod = parts[8],
+                restarts = parts[9]
+            }
+        end
+    end
+
+    local display_containers = {}
+    local managed_expected = {}
+
+    local targets_to_resolve = {}
+    if not table.is_nil_or_empty(context.targets) then
+        for i = 1, #context.targets do
+            targets_to_resolve[#targets_to_resolve + 1] = context.targets[i]
+        end
+    elseif not context.flags.all then
+        -- resolve all known recipes
+        if context.config.recipes and context.config.recipes.groups then
+            local recipe_map = {}
+            for _, group_targets in pairs(context.config.recipes.groups) do
+                if type(group_targets) == "table" then
+                    for _, target in ipairs(group_targets) do
+                        if type(target) == "string" and not string.begins_with(target, "@") then
+                            local clean_target = string.trim(target)
+                            if clean_target ~= "" and not recipe_map[clean_target] then
+                                recipe_map[clean_target] = true
+                                targets_to_resolve[#targets_to_resolve + 1] = clean_target
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    for i = 1, #targets_to_resolve do
+        local target = targets_to_resolve[i]
+        local recipe = recipe__load(context.config.recipes.path, target, true)
+        if recipe ~= nil and recipe__validate(context, recipe, target) then
+            for id = 1, #recipe.containers do
+                local container = recipe.containers[id]
+                container__ensure_name(container, recipe.pod.name, tostring(id))
+                managed_expected[container.name] = {
+                    recipe = target,
+                    pod_name = recipe.pod.name
+                }
+            end
+        end
+    end
+
+    if not context.flags.all then
+        local found_names = {}
+        for i = 1, #podman_containers do
+            local pc = podman_containers[i]
+            if managed_expected[pc.names] then
+                display_containers[#display_containers + 1] = pc
+                found_names[pc.names] = true
+            end
+        end
+
+        for expected_name, info in pairs(managed_expected) do
+            if not found_names[expected_name] then
+                display_containers[#display_containers + 1] = {
+                    id = "-",
+                    image = "-",
+                    command = "-",
+                    created = "-",
+                    status = "Not Found",
+                    ports = "-",
+                    names = expected_name,
+                    pod = info.pod_name,
+                    restarts = "-"
+                }
+            end
+        end
+    else
+        display_containers = podman_containers
+        local found_names = {}
+        for i = 1, #podman_containers do
+            found_names[podman_containers[i].names] = true
+        end
+
+        if not table.is_nil_or_empty(context.targets) then
+            for expected_name, info in pairs(managed_expected) do
+                if not found_names[expected_name] then
+                    display_containers[#display_containers + 1] = {
+                        id = "-",
+                        image = "-",
+                        command = "-",
+                        created = "-",
+                        status = "Not Found",
+                        ports = "-",
+                        names = expected_name,
+                        pod = info.pod_name,
+                        restarts = "-"
+                    }
+                end
+            end
+        end
+    end
+
+    if #display_containers == 0 then
+        log.print("No containers found.")
+        return
+    end
+
+    table.sort(display_containers, function(a, b)
+        if a.pod == b.pod then
+            return a.names < b.names
+        end
+        return a.pod < b.pod
+    end)
+
+    local cols = {}
+    if context.flags.full then
+        cols = { "ID", "IMAGE", "COMMAND", "CREATED", "STATUS", "RESTARTS", "PORTS", "NAMES", "POD" }
+    else
+        cols = { "ID", "CREATED", "STATUS", "RESTARTS", "NAMES", "POD" }
+    end
+
+    local pad_right = function(str, len)
+        str = str or ""
+        if #str < len then
+            return str .. string.rep(" ", len - #str)
+        end
+        return str
+    end
+
+    local max_lengths = {}
+    for i = 1, #cols do
+        local col = cols[i]
+        max_lengths[col] = #col
+    end
+
+    for i = 1, #display_containers do
+        local c = display_containers[i]
+        for j = 1, #cols do
+            local col = cols[j]
+            local val = tostring(c[string.lower(col)] or "")
+            if #val > max_lengths[col] then
+                max_lengths[col] = #val
+            end
+        end
+    end
+
+    local header_line = ""
+    for i = 1, #cols do
+        local col = cols[i]
+        header_line = header_line .. pad_right(col, max_lengths[col])
+        if i < #cols then
+            header_line = header_line .. "   "
+        end
+    end
+    log.print(header_line)
+
+    for i = 1, #display_containers do
+        local c = display_containers[i]
+        local row_line = ""
+        for j = 1, #cols do
+            local col = cols[j]
+            local val = tostring(c[string.lower(col)] or "")
+            row_line = row_line .. pad_right(val, max_lengths[col])
+            if j < #cols then
+                row_line = row_line .. "   "
+            end
+        end
+        log.print(row_line)
+    end
+end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Recipe
@@ -1029,7 +1256,7 @@ local function mode_recipe__edit(context, name)
     local full_path = build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
-    system.exec(command, "", false, true)
+    system.exec(command, "", context.flags.simulate, true)
 end
 
 ---Print config help.
@@ -1177,7 +1404,7 @@ local function mode_config__edit(context)
         return
     end
     local command = editor .. " " .. string.escape_shell(context.config.path)
-    system.exec(command, "", false, true)
+    system.exec(command, "", context.flags.simulate, true)
 end
 ---Print config help.
 local function mode_config__help()
@@ -1241,14 +1468,19 @@ local function mode_default__handle(context)
         log.error("No action set.")
         return
     end
-    if not table.contains({ "create", "recreate", "remove", "update" }, action) then
+    if not table.contains({ "create", "recreate", "remove", "update", "status" }, action) then
         log.error("Unknown action '" .. action .. "'.")
         return
     end
 
     -- validate targets
-    if table.is_nil_or_empty(targets) then
+    if table.is_nil_or_empty(targets) and action ~= "status" then
         log.error("No targets set.")
+        return
+    end
+
+    if action == "status" then
+        pod__status(context)
         return
     end
 

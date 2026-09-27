@@ -163,14 +163,17 @@ Simulate mode operates identically to default mode, except commands are printed 
 | `create` | Create and start a new pod and its containers in the order defined by the recipe. |
 | `recreate` | Stop and remove an existing pod and its containers in reverse order, then recreate them anew. |
 | `remove` | Stop and remove a running pod and all associated containers in reverse order. |
+| `status` | Query and display runtime status of managed containers. Target list is optional. |
 | `update` | Pull latest container images and recreate the containers if newer versions exist. |
 
 ### Options
 
 | Option | Description |
 | :--- | :--- |
+| `--all` | Display all containers known to Podman, ignoring the managed-only filter (for `status` action). |
 | `--config=<name>` | Load a specific configuration file (e.g., `--config=staging`). |
 | `--debug` | Enable verbose debug output for troubleshooting. |
+| `--full` | Display extended container columns including Image, Command, and Ports (for `status` action). |
 
 ### Targets & Grouping
 
@@ -541,14 +544,17 @@ See [config.lua](config.lua) for the repository configuration template and [reci
 # Create a pod and its containers from recipe 'nextcloud'
 pods create nextcloud
 
-# Update container images to newest versions and restart if updated
-pods update nextcloud
+# Check the running status of the pod
+pods status nextcloud
 
 # Recreate the entire pod stack (reverse teardown, forward startup)
 pods recreate nextcloud
 
 # Stop and remove the pod and all associated containers
 pods remove nextcloud
+
+# Query the status of all managed containers across all recipes
+pods status
 ```
 
 ### Dry-Run Simulation

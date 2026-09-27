@@ -151,5 +151,12 @@ return {
             end,
             expected = "'simple'"
         },
+        [s .. "22"] = {
+            description = "string.trim - nil value",
+            run = function()
+                return string.trim(nil)
+            end,
+            expected = nil
+        },
     },
 }

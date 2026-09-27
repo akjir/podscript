@@ -128,6 +128,21 @@ global system <const> = {
         end
     end,
 
+    ---Execute a command and capture its standard output as a list of lines.
+    ---@param command string
+    ---@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
+    exec_capture = function(command)
+        local handle = io.popen(command)
+        if not handle then return nil end
+
+        local lines = {}
+        for line in handle:lines() do
+            lines[#lines + 1] = line
+        end
+        handle:close()
+        return lines
+    end,
+
     ---Check if a file exists.
     ---@param full_path string
     ---@return boolean

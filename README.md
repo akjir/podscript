@@ -37,6 +37,7 @@ PodScript simplifies container operations by replacing complex shell scripts and
 - **Dry-Run Simulation:** Preview exact Podman commands before execution using the `simulate` mode.
 - **Recipe Groups:** Aggregate multiple recipes into logical groups (`@group_name`) to orchestrate entire stacks in a single command.
 - **Container Maintenance Commands:** Define and execute ad-hoc maintenance tasks inside running containers by command name or numeric index.
+- **Runtime Inspection:** Query and display the real-time status of managed pods and containers directly through PodScript.
 - **Built-in Inspection & Editing:** Quickly inspect (`print`) or modify (`edit`) configuration files and recipes via integrated CLI modes.
 - **Project Initialization:** Bootstrap default configuration and recipe files with a single command via the `init` mode.
 - **Zero External Dependencies:** Ships as a self-contained single script (`pods.lua`) requiring only Lua and Podman.
@@ -179,7 +180,7 @@ pods [MODE] [OPTIONS] [ACTION] [TARGETS]
 
 | Mode | Description |
 | :--- | :--- |
-| `(default)` | Executes lifecycle actions (`create`, `recreate`, `remove`, `update`) on specified targets. |
+| `(default)` | Executes lifecycle actions (`create`, `recreate`, `remove`, `status`, `update`) on specified targets. |
 | `simulate` | Previews all generated commands without executing them. |
 | `init` | Initializes a default configuration and an example recipe file. |
 | `config` | Displays (`print`) or opens (`edit`) the active configuration file. |

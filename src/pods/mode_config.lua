@@ -39,7 +39,7 @@ local function mode_config__edit(context)
         return
     end
     local command = editor .. " " .. string.escape_shell(context.config.path)
-    system.exec(command, "", false, true)
+    system.exec(command, "", context.flags.simulate, true)
 end
 ---Print config help.
 global function mode_config__help()

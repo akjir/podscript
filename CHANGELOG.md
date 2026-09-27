@@ -8,8 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added `status` action to query and display runtime status of managed containers.
+- Added `--all` and `--full` flags for the `status` command.
 - Added `make` shell script to simplify the development and testing workflow.
 - Added `init` mode to initialize default configuration and recipe files.
+
+### Fixed
+
+- Fixed a crash in `string.trim` when providing a `nil` value.
+- Fixed column shifting in `status` action by using robust delimiters.
+- Fixed `simulate` flag being bypassed during `recipe` and `config` edit modes.
 
 ## [1.4.0] - 2026-09-24
 

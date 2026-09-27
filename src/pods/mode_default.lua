@@ -41,14 +41,19 @@ global function mode_default__handle(context)
         log.error("No action set.")
         return
     end
-    if not table.contains({ "create", "recreate", "remove", "update" }, action) then
+    if not table.contains({ "create", "recreate", "remove", "update", "status" }, action) then
         log.error("Unknown action '" .. action .. "'.")
         return
     end
 
     -- validate targets
-    if table.is_nil_or_empty(targets) then
+    if table.is_nil_or_empty(targets) and action ~= "status" then
         log.error("No targets set.")
+        return
+    end
+
+    if action == "status" then
+        pod__status(context)
         return
     end
 

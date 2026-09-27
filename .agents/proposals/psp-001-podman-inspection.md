@@ -1,7 +1,7 @@
 ---
 id: PSP-001
 title: Running Containers Display & Granular Podman Inspection
-status: planned
+status: review
 type: feature
 created: 2026-09-25
 updated: 2026-09-27
@@ -91,20 +91,21 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Create test stubs in `tests/pods/suite_017_action_status.lua` (covering `--full` and `--all`).
-- [ ] Implement core logic for parsing `podman ps` output and `system.exec_capture`.
-- [ ] Implement action dispatch in `src/pods/mode_default.lua`.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Create test stubs in `tests/pods/suite_017_action_status.lua` (covering `--full` and `--all`).
+- [x] Implement core logic for parsing `podman ps` output and `system.exec_capture`.
+- [x] Implement action dispatch in `src/pods/mode_default.lua`.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Update `USAGE.md` with new CLI syntax.
+- [x] Add entry to `CHANGELOG.md`.
+- [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.
 * **2026-09-26:** Migrated to `.agents/features/psp-001-podman-inspection.md`.
+* **2026-09-27:** Implemented `pod__status`, test suite, updated documentation.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*

@@ -68,6 +68,27 @@ end
 ---@param str string
 ---@return string
 string.trim = function(str)
+    if str == nil then return nil end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
+end
+
+---Splits a string by a given separator.
+---@param str string
+---@param sep string
+---@return table
+string.split = function(str, sep)
+    if sep == nil or sep == "" then
+        return {str}
+    end
+    local result = {}
+    local last_end = 1
+    local s, e = str:find(sep, 1, true)
+    while s do
+        result[#result + 1] = str:sub(last_end, s - 1)
+        last_end = e + 1
+        s, e = str:find(sep, last_end, true)
+    end
+    result[#result + 1] = str:sub(last_end)
+    return result
 end
