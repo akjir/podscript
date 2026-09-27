@@ -14,7 +14,6 @@ return {
                     "DEBUG: Targets   - @nona",
                     "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path",
                     "INFO: Simulate mode is active.",
-                    "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used.",
                     "Create pod 'Simple Pod' ('si_po'): ",
                     "podman pod create --name si_po;",
                     "Create container 'supr_app': ",

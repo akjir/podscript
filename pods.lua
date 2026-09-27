@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "181.42e9681"
+local BUILD <const> = "182.6dad9c8.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -738,7 +738,7 @@ local function recipe__validate(context, recipe, file_name)
         else
             -- if pod path not set use default path with pod name as folder name
             local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
-            log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
+            log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
     end
@@ -993,9 +993,9 @@ local function pod__status(context)
 
     local cols = {}
     if context.flags.full then
-        cols = { "ID", "IMAGE", "COMMAND", "CREATED", "STATUS", "RESTARTS", "PORTS", "NAMES", "POD" }
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE", "COMMAND", "PORTS" }
     else
-        cols = { "ID", "CREATED", "STATUS", "RESTARTS", "NAMES", "POD" }
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED" }
     end
 
     local pad_right = function(str, len)

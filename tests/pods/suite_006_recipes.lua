@@ -76,7 +76,6 @@ return {
             parameters = { "create", "recipe_005_no_path" },
             expectations = {
                 sequence = {
-                    "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used."
                 }
             },
         },

@@ -99,7 +99,7 @@ global function recipe__validate(context, recipe, file_name)
         else
             -- if pod path not set use default path with pod name as folder name
             local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
-            log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
+            log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
     end

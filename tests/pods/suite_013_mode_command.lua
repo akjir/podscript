@@ -125,7 +125,6 @@ return {
             parameters = { "command", "recipe_011_simple_container", "list" },
             expectations = {
                 sequence = {
-                    "INFO: No pod path in recipe 'recipe_011_simple_container' set. Path '/tmp/simple_container' used.",
                     "There are no commands defined in recipe 'recipe_011_simple_container'."
                 }
             },

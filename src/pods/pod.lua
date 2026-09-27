@@ -258,9 +258,9 @@ global function pod__status(context)
 
     local cols = {}
     if context.flags.full then
-        cols = { "ID", "IMAGE", "COMMAND", "CREATED", "STATUS", "RESTARTS", "PORTS", "NAMES", "POD" }
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE", "COMMAND", "PORTS" }
     else
-        cols = { "ID", "CREATED", "STATUS", "RESTARTS", "NAMES", "POD" }
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED" }
     end
 
     local pad_right = function(str, len)

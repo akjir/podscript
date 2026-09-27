@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `make` shell script to simplify the development and testing workflow.
 - Added `init` mode to initialize default configuration and recipe files.
 
+### Changed
+
+- Downgraded default pod path fallback log to debug.
+
 ### Fixed
 
 - Fixed `recipe__load` global error in `status` by correcting module build order.

@@ -22,8 +22,8 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     CREATED      STATUS      RESTARTS   NAMES    POD             ",
-                    "cid1   2026-09-25   Up 2 days   0          simple   simple_container"
+                    "ID     POD                NAMES    STATUS      RESTARTS   CREATED   ",
+                    "cid1   simple_container   simple   Up 2 days   0          2026-09-25"
                 }
             },
         },
@@ -42,8 +42,8 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     IMAGE                     COMMAND   CREATED      STATUS      RESTARTS   PORTS    NAMES    POD             ",
-                    "cid1   simple.io/simple:latest             2026-09-25   Up 2 days   0          80/tcp   simple   simple_container"
+                    "ID     POD                NAMES    STATUS      RESTARTS   CREATED      IMAGE                     COMMAND   PORTS ",
+                    "cid1   simple_container   simple   Up 2 days   0          2026-09-25   simple.io/simple:latest             80/tcp"
                 }
             },
         },
@@ -61,9 +61,9 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     CREATED      STATUS       RESTARTS   NAMES               POD     ",
-                    "-      -            Not Found    -          absolute            con_name",
-                    "cid2   2026-09-26   Exited (1)   1          con_name-relative   con_name"
+                    "ID     POD        NAMES               STATUS       RESTARTS   CREATED   ",
+                    "-      con_name   absolute            Not Found    -          -         ",
+                    "cid2   con_name   con_name-relative   Exited (1)   1          2026-09-26"
                 }
             },
         },
@@ -84,10 +84,10 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     CREATED      STATUS       RESTARTS   NAMES               POD             ",
-                    "cid2   2026-09-26   Exited (1)   1          con_name-relative   con_name        ",
-                    "cid1   2026-09-25   Up 2 days    0          simple              simple_container",
-                    "cid3   2026-09-24   Up 3 days    0          unmanaged           unmanaged-pod   "
+                    "ID     POD                NAMES               STATUS       RESTARTS   CREATED   ",
+                    "cid2   con_name           con_name-relative   Exited (1)   1          2026-09-26",
+                    "cid1   simple_container   simple              Up 2 days    0          2026-09-25",
+                    "cid3   unmanaged-pod      unmanaged           Up 3 days    0          2026-09-24"
                 }
             },
         }
