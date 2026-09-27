@@ -66,7 +66,7 @@ local context = {
 Each mode handler receives the `context` table and utilizes specific information from it:
 
 * **mode_command**: 
-  * *Constraint regarding PSP-014:* For `mode_command`, we will only perform a shallow refactoring to update `mode_command__handle` to accept the `context` parameter. We will intentionally NOT optimize its internal logic deeply in this proposal. The true refactoring and syntax alignment for this mode belong entirely to **PSP-014**. (Note: PSP-014 must, in turn, respect and build upon the `context.action` and `context.targets` architecture established here in PSP-005).
+  * *Constraint regarding PSP-014:* From the outside (e.g., in `main.lua`), we treat `mode_command` exactly as if it has already been fully converted to the new central schema (`pods MODE ACTION TARGETS`). During implementation, we will ensure that `mode_command__handle` and its subsequent internal functions continue to work correctly with the new `context` object (using shim or mapping logic if necessary). However, the deep, true architectural optimization and syntax alignment for this mode remains strictly within the scope of **PSP-014**.
 * **mode_config**:
   * `config`: Needed to output and display the currently loaded configuration.
   * `config.path`: Needed to display the path of the file being read.
