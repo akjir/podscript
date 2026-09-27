@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: duplicate-set-field
----@diagnostic disable: lowercase-global
 
 global<const> *
 
@@ -30,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "167.13040de.dev"
+local BUILD <const> = "169.f63d9d6.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -155,7 +153,7 @@ end
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
 ---@param ... table|nil
-table.append = function(target, ... sources)
+table.append = function(target, ...sources)
     if target == nil then return end
     for i = 1, sources.n do
         local source = sources[i]
@@ -167,13 +165,13 @@ end
 
 ---Test if a table contains a value. Only works with sequential tables.
 ---Returns false if table is nil or value is not found.
----@param table table|nil
+---@param target table|nil
 ---@param value any
 ---@return boolean
-table.contains = function(table, value)
-    if table == nil then return false end
-    for i = 1, #table do
-        if (table[i] == value) then return true end
+table.contains = function(target, value)
+    if target == nil then return false end
+    for i = 1, #target do
+        if (target[i] == value) then return true end
     end
     return false
 end
@@ -181,12 +179,12 @@ end
 
 ---Get value from table or default if key not found.
 ---You can use "table and table[key] or default" instead, if there is no false value in table.
----@param table table|nil
+---@param target table
 ---@param key any
 ---@param default any
-table.get_or_default = function(table, key, default)
-    if table == nil then return default end
-    local value = table[key]
+table.get_or_default = function(target, key, default)
+    if target == nil then return default end
+    local value = target[key]
     if value ~= nil then
         return value
     end
@@ -194,26 +192,26 @@ table.get_or_default = function(table, key, default)
 end
 
 ---Check if a key exists in a table.
----@param table table|nil
+---@param target table
 ---@param key any
 ---@return boolean
-table.has_key = function(table, key)
-    return table ~= nil and table[key] ~= nil
+table.has_key = function(target, key)
+    return target ~= nil and target[key] ~= nil
 end
 
 ---Test if a table is nil or empty.
----@param table table|nil
+---@param target table
 ---@return boolean
-table.is_nil_or_empty = function(table)
-    return table == nil or next(table) == nil
+table.is_nil_or_empty = function(target)
+    return target == nil or next(target) == nil
 end
 
 ---Merges two or more tables by adding key-value pairs from sources to target.
 ---If a key from a source table already exists in the target table, its value will be overwritten.
----@param target table|nil
----@param ... table|nil
----@return table|nil
-table.merge = function(target, ... sources)
+---@param target table
+---@param ... table
+---@return table
+table.merge = function(target, ...sources)
     if target == nil then return sources[1] end
     for i = 1, sources.n do
         local source = sources[i]
@@ -227,11 +225,11 @@ table.merge = function(target, ... sources)
 end
 
 ---Remove duplicates from a table. Returns a new table and don't modify the original.
----@param tbl table|nil
+---@param target table
 ---@return table
-table.remove_duplicates = function(tbl)
-    if tbl == nil then return {} end
-    local count = #tbl
+table.remove_duplicates = function(target)
+    if target == nil then return {} end
+    local count = #target
     if count == 0 then return {} end
 
     local seen = table.create(0, count) -- Keeps track of values we've already encountered
@@ -239,7 +237,7 @@ table.remove_duplicates = function(tbl)
     local index = 1                     -- Manual index tracker is faster than table.insert
 
     for i = 1, count do
-        local value = tbl[i]
+        local value = target[i]
         -- If the value hasn't been added to 'seen' yet...
         if not seen[value] then
             seen[value] = true    -- Mark it as seen
@@ -325,7 +323,7 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
-global system<const> = {
+global system <const> = {
     ---Check if the current Lua version is 5.5 or higher.
     ---@return boolean
     check_lua_version = function()
@@ -839,18 +837,9 @@ end
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
 ---@param context table
----@param test_path string|nil
 ---@return boolean
-local function config__load_and_set(context, test_path)
-    -- backward compatibility for tests
-    local config_path = test_path
-    if context.config and context.config.path then
-        config_path = context.config.path
-    end
-    if not context.config then context.config = {} end
-    if not context.config.path then context.config.path = config_path end
-    if not context.config.pods then context.config.pods = { path = "" } end
-    if not context.config.recipes then context.config.recipes = { path = ".", groups = {} } end
+local function config__load_and_set(context)
+    local config_path = context.config.path
 
     local config, error, _ = system.load_lua_file(config_path)
     if config == nil then
@@ -895,10 +884,7 @@ local function config__load_and_set(context, test_path)
             return false
         end
     end
-    
-    -- backwards compatibility for code tests that expect registry.recipes
-    context.recipes = context.config.recipes
-    
+
     return true
 end
 
@@ -908,6 +894,7 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
+
 local function config__untangle_recipes(groups, targets)
     log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}
@@ -1403,7 +1390,7 @@ local function mode_default__handle(context)
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
         if recipe ~= nil and recipe__validate(context, recipe, target) then
-            --- action is valid at this point
+            --action is valid at this point
             pod_actions[action](recipe, context.config.simulate)
         end
     end
@@ -1580,7 +1567,7 @@ local function main__parse_arguments(context, arguments, modes)
         local argument = arguments[i]
         if string.begins_with(argument, "--") then
             if string.begins_with(argument, "--config=") then
-                local _, value = split_argument(argument)
+                local value = string.sub(argument, 10)
                 context.config.path = value
                 local filename = string.match(value, "([^/]+)$") or value
                 local name = string.match(filename, "(.+)%.[^%.]+$") or filename

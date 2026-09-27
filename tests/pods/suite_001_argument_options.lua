@@ -57,5 +57,37 @@ return {
                 { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
             },
         },
+        [s .. "07"] = {
+            description = "Config extraction: absolute path with extension.",
+            config = "",
+            parameters = { "--config=/custom/path/to/my_config.lua", "create", "target" },
+            expectations = {
+                { 1, "DEBUG: Debug mode is enabled." },
+                { 2, "DEBUG: Config '/custom/path/to/my_config.lua.lua' is used." },
+                { 3, "ERROR: cannot open /custom/path/to/my_config.lua.lua: No such file or directory" },
+                { 4, "ERROR: Couldn't load configuration '/custom/path/to/my_config.lua.lua'!" },
+            },
+        },
+        [s .. "08"] = {
+            description = "Config extraction: relative path without extension.",
+            config = "",
+            parameters = { "--config=configs/my_config", "create", "target" },
+            expectations = {
+                { 1, "DEBUG: Debug mode is enabled." },
+                { 2, "DEBUG: Config './configs/my_config.lua' is used." },
+                { 3, "ERROR: cannot open ./configs/my_config.lua: No such file or directory" },
+                { 4, "ERROR: Couldn't load configuration './configs/my_config.lua'!" },
+            },
+        },
+        [s .. "09"] = {
+            description = "Config extraction: exact name 'config' does not print debug message.",
+            config = "",
+            parameters = { "--config=/custom/path/to/config.lua", "create", "target" },
+            expectations = {
+                { 1, "DEBUG: Debug mode is enabled." },
+                { 2, "ERROR: cannot open /custom/path/to/config.lua.lua: No such file or directory" },
+                { 3, "ERROR: Couldn't load configuration '/custom/path/to/config.lua.lua'!" },
+            },
+        },
     }
 }

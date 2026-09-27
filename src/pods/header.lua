@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: duplicate-set-field
----@diagnostic disable: lowercase-global
 
 global<const> *
 

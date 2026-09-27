@@ -32,10 +32,7 @@ global <const> *
 ---Returns false if fails to load a file or no recipes are defined.
 ---@param context table
 ---@return boolean
-global
-function
-config__load_and_set
-(context)
+global function config__load_and_set(context)
     local config_path = context.config.path
 
     local config, error, _ = system.load_lua_file(config_path)
@@ -91,3 +88,44 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
+
+global function config__untangle_recipes(groups, targets)
+    log.debug("Targets   - " .. table.concat(targets, " "))
+    local untangled = {}
+
+    for i = 1, #targets do
+        local target = targets[i]
+
+        -- handle group
+        if string.begins_with(target, "@") then
+            local group_recipes = groups[target:sub(2)] -- remove @ from target
+
+            if group_recipes == nil then
+                log.error("Unknown recipe group '" .. target .. "'.")
+                return nil
+            end
+
+            table.append(untangled, group_recipes)
+        else -- handle single target
+            local found = nil
+
+            for _, group_targets in pairs(groups) do
+                if table.contains(group_targets, target) then
+                    found = target
+                    break
+                end
+            end
+
+            if found == nil then
+                log.error("Recipe '" .. target .. "' not found in config.")
+                return nil
+            else
+                table.insert(untangled, found)
+            end
+        end
+    end
+
+    untangled = table.remove_duplicates(untangled)
+    log.debug("Untangled - " .. table.concat(untangled, " "))
+    return untangled
+end

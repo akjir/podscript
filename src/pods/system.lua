@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
-global<const> *
+
+global <const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -26,7 +26,7 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
-global system<const> = {
+global system <const> = {
     ---Check if the current Lua version is 5.5 or higher.
     ---@return boolean
     check_lua_version = function()

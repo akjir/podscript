@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
 
 require "src.pods.header"
 require "src.pods.log"
@@ -59,7 +58,7 @@ local function main__parse_arguments(context, arguments, modes)
         local argument = arguments[i]
         if string.begins_with(argument, "--") then
             if string.begins_with(argument, "--config=") then
-                local _, value = split_argument(argument)
+                local value = string.sub(argument, 10)
                 context.config.path = value
                 local filename = string.match(value, "([^/]+)$") or value
                 local name = string.match(filename, "(.+)%.[^%.]+$") or filename

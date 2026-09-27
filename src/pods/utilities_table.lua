@@ -47,7 +47,7 @@ end
 table.contains = function(target, value)
     if target == nil then return false end
     for i = 1, #target do
-        if (table[i] == value) then return true end
+        if (target[i] == value) then return true end
     end
     return false
 end
