@@ -203,36 +203,35 @@ The codebase is organized modularly under `src/pods/` and compiled into a standa
 > [!IMPORTANT]
 > Never edit `pods.lua` directly. All modifications must be made within the `src/pods/` directory.
 
-### Building
+### Building & Testing
 
-To bundle the modular source files into the single-file release version:
+PodScript includes a comprehensive test framework and a build system that bundles the modular source files (`src/pods/`) into a single-file release script.
+
+The provided `./make` script simplifies the development cycle:
 
 ```bash
-lua build.lua
+# Run dev tests, build pods.lua, and run release tests
+./make
+
+# Run the complete cycle for a specific test ID or suite
+./make 001
+./make 00101
+
+# Run specific tasks individually
+./make dev     # Run only development tests
+./make build   # Build pods.lua
+./make test    # Run only release tests
 ```
 
-The build script concatenates modules, handles build directives, and localizes internal functions.
-
-### Testing
-
-PodScript includes a comprehensive test framework:
+You can also execute the internal scripts directly for more advanced options:
 
 ```bash
-# Run tests against the release script (pods.lua)
-lua test.lua
+# Build a release version without the .dev suffix
+lua build.lua --release
 
-# Run tests against development sources (src/pods/)
-lua test.lua --dev
-
-# Run tests and abort immediately on the first error
+# Run tests directly to use specific flags (e.g., fail-fast or JSON output)
 lua test.lua --fail-fast
-
-# Output test results in JSON format
 lua test.lua --json
-
-# Run a specific test suite or test ID
-lua test.lua 001
-lua test.lua 00101 --dev
 ```
 
 ---

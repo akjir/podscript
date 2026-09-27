@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added `make` shell script to simplify the development and testing workflow.
 - Added `init` mode to initialize default configuration and recipe files.
 
 ## [1.4.0] - 2026-09-24

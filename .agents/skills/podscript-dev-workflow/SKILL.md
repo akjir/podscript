@@ -7,12 +7,12 @@ description: >-
 # PodScript Development Workflow
 
 ## 1. Edit-Build-Test Cycle
-1. **Baseline Test:** `lua test.lua --dev` & `lua test.lua` (verify clean initial state before editing).
-2. **Edit:** `src/pods/` modular files.
-3. **Test Dev:** `lua test.lua --dev [testID]` (always first).
-4. **Build:** `lua build.lua` (concatenates `src/pods/` into `pods.lua`; use `--release` to omit `.dev` suffix).
-5. **Test Release:** `lua test.lua [testID]` (final verification).
-6. **Docs:** Update `CHANGELOG.md`, `AGENTS.md`, and `USAGE.md` as needed.
+1. **Baseline Test:** Run `./make` to verify a clean initial state before editing.
+2. **Edit:** Modify `src/pods/` modular files.
+3. **Test & Build:** Run `./make [testID]` to automatically run dev tests, build `pods.lua`, and run release tests.
+   * *Alternative:* Use `./make dev [testID]` to only run dev tests without building.
+   * *Alternative:* Use `lua build.lua --release` for a clean release build without the `.dev` suffix.
+4. **Docs:** Update `CHANGELOG.md`, `AGENTS.md`, and `USAGE.md` as needed.
 
 ## 2. Build System Annotations (`build.lua`)
 * `---@build block:`: Starts included code block (ignores preceding dev `require`s).

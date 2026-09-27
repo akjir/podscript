@@ -623,3 +623,22 @@ pods --config=staging config print
 # Run with verbose debug logging to inspect command construction
 pods --debug update web-service
 ```
+
+---
+
+## Development
+
+If you are developing PodScript itself, a `./make` script is provided to automate the edit-build-test cycle.
+
+```bash
+# Run dev tests, build release script, and run release tests
+./make
+
+# Run specific phases
+./make dev
+./make build
+./make test
+
+# Run specific test suites or tests
+./make 00101
+```
