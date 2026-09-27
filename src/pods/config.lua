@@ -19,7 +19,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.pods.utilities"
 
-global <const> *
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -88,7 +88,6 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
-
 global function config__untangle_recipes(groups, targets)
     log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}

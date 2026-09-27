@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "169.f63d9d6.dev"
+local BUILD <const> = "170.6650693.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -894,7 +894,6 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
-
 local function config__untangle_recipes(groups, targets)
     log.debug("Targets   - " .. table.concat(targets, " "))
     local untangled = {}
