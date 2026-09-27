@@ -33,8 +33,8 @@ concept ---> planned ---> in-progress ---> review ---> completed
 
 * **`concept`:** Initial proposal, motivation, and exploratory approach.
 * **`planned`:** Concrete specification, CLI syntax, affected modules, and TDD strategy agreed upon.
-* **`in-progress`:** Actively being implemented in `src/pods/` following TDD.
-* **`review`:** Code and test suites passing; documentation and changelog entry prepared.
+* **`in-progress`:** Baseline test suites verified green; actively being implemented following TDD.
+* **`review`:** Full dev and release test suites passing post-build (`lua test.lua --dev` & `lua test.lua`); documentation and changelog entry prepared.
 * **`completed`:** Merged, tested in release mode, and released. Retained for historical rationale and traceability.
 * **`rejected`:** Decided against, with documented reasoning.
 

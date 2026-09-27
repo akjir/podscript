@@ -121,13 +121,15 @@ No user-facing syntax or schema changes. Internal variables named `registry` bec
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
+- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [ ] Refactor `main.lua`: Merge `startup_config` into the new `context` table and replace `registry` initialization.
 - [ ] Update `main__parse_arguments` to operate directly on the unified `context` object.
 - [ ] Implement `parse_action_and_targets_parameters` (or similar) in `main.lua` to populate `context.action` and untangled `context.targets` globally after config load.
 - [ ] Update function signatures across all `mode_*.lua` handlers. (For `mode_command`, perform a shallow update only).
 - [ ] Optimize internal logic of modes (except `mode_command`) to utilize `context.action` and `context.targets` directly.
 - [ ] Update `config.lua` functions to accept and mutate `context`.
-- [ ] Verify that all existing tests pass without any modifications to the `tests/` directory.
+- [ ] Build release (`lua build.lua`).
+- [ ] Verify that all existing tests pass (`lua test.lua --dev` & `lua test.lua`) without any modifications to the `tests/` directory.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial architectural analysis conducted on centralized contexts.

@@ -15,8 +15,8 @@ description: >-
 ## 2. Lifecycle Stages
 * **`concept`:** High-level idea, motivation, and JEP-style proposal (Part 1).
 * **`planned`:** Formal technical specification agreed: architecture, schema, and tests defined (Part 2).
-* **`in-progress`:** Under active development following `podscript-dev-workflow` (TDD first). Tasks checked off in Part 3.
-* **`review`:** Tests green (`test.lua --dev` & `test.lua`); changelog and docs prepared.
+* **`in-progress`:** Active development following `podscript-dev-workflow` (TDD first). Pre-requisite: baseline test suites (`lua test.lua --dev` & `lua test.lua`) verified green before making changes. Tasks tracked in Part 3.
+* **`review`:** Implementation complete. Verification: dev tests (`lua test.lua --dev`), release build (`lua build.lua`), and release tests (`lua test.lua`) 100% green; changelog and docs prepared.
 * **`completed`:** Merged and verified; retained in board as permanent architectural record. Delivered artifacts logged.
 * **`rejected`:** Dismissed or superseded; rationale documented in spec.
 
@@ -29,8 +29,11 @@ description: >-
 ## 4. Development & Completion Cycle
 1. **Promote to `planned`:** Align with user on architecture and syntax.
 2. **Promote to `in-progress`:** Begin implementation. Use Task Breakdown in Part 3.1.
-    * Follow **`podscript-dev-workflow`** for TDD implementation, testing, and building.
-3. **Promote to `review`:** Update `CHANGELOG.md` and `USAGE.md` (see `update-documentation` skill).
+    * **Pre-Verification (Before):** Run baseline test suites (`lua test.lua --dev` and `lua test.lua`) to guarantee a 100% clean starting state before editing any code.
+    * **Implementation:** Follow **`podscript-dev-workflow`** for TDD implementation, testing, and building. Check off tasks in Part 3.1.
+3. **Promote to `review`:**
+    * **Post-Verification (After):** Run `lua test.lua --dev`, execute release build (`lua build.lua`), and verify full release suite passes (`lua test.lua`).
+    * **Documentation:** Update `CHANGELOG.md` and `USAGE.md` (see `update-documentation` skill).
 4. **Promote to `completed`:** Update frontmatter `status: completed` and update `.agents/proposals/README.md`. Document delivered artifacts in Part 3.3.
 
 ## 5. Token Efficiency & Agent Guidelines

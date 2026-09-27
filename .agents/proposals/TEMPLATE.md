@@ -48,8 +48,11 @@ Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Create test stubs in `tests/pods/`.
-- [ ] Implement core logic in `src/pods/module.lua`.
+- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [ ] Create test stubs in `tests/pods/` (or `tests/pods-converter/`).
+- [ ] Implement core logic in `src/pods/` (or `src/pods-converter/`).
+- [ ] Build release (`lua build.lua`).
+- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.
 
