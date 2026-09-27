@@ -100,6 +100,8 @@ When starting multiple containers via a PodScript recipe, it is often critical t
 - [ ] Integrate wait logic in `src/pods/mode_recipe.lua` (`mode_recipe__up`).
 - [ ] Update `USAGE.md` with new `wait_condition` documentation.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept created (PSP-008). Decided to leverage `podman wait --exit-first-match` with multiple conditions (`unhealthy`, `exited`) to handle timeouts and failures natively without manual Lua timers.

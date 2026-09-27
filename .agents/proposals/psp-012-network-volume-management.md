@@ -101,6 +101,8 @@ return {
 - [ ] Create integration/mode tests for `simulate` and `create` workflows.
 - [ ] Update documentation with the new recipe schema examples.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Specification planned and drafted. Added support for both simple string names and detailed configuration tables. Chose not to auto-delete networks/volumes on removal to avoid destroying shared resources.

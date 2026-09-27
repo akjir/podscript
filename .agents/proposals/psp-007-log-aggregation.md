@@ -86,6 +86,8 @@ PodScript currently lacks a native way to view or tail logs for containers manag
 - [ ] Register `logs` mode in `src/pods/main.lua`.
 - [ ] Update `USAGE.md` with new CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept specification created. Enforced `--color` and `--names` by default for improved UX over raw Podman defaults.

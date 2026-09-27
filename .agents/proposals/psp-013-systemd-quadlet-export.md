@@ -108,6 +108,8 @@ No breaking schema changes. The `pods-generate` tool is purely additive.
 - [ ] Implement CLI handling in `src/pods-generate/main.lua`.
 - [ ] Update core `pods` to delegate `generate` commands to `pods-generate.lua`.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept and specification written. Decided against auto-installing Quadlets to maintain PodScript's role as a standalone, non-intrusive tool.

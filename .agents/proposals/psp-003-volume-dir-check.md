@@ -74,6 +74,8 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 - [ ] Add tests for directory check and creation to system suite.
 - [ ] Add tests for container creation intercept in container suite.
 - [ ] Verify `--simulate` flag interaction.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.

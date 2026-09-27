@@ -105,6 +105,8 @@ return {
 - [ ] Add lifecycle integration tests in `tests/pods/test_pod.lua` and `tests/pods/test_container.lua`.
 - [ ] Update `USAGE.md` with new CLI syntax and hook documentation.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept created. Designed to support both Lua callbacks and shell commands for maximum flexibility without requiring external dependencies. Safe execution via `pcall` established for Lua. Refactored proposal to match the 3-part template.

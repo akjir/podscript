@@ -93,6 +93,8 @@ Docker Compose is the industry standard for defining multi-container stacks. How
 - [ ] Create test suites in `tests/pods-convert/`.
 - [ ] Document in `USAGE.md`.
 - [ ] Update `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Concept adapted from `CONVERTER_CONCEPT.md`. Decided to isolate the logic into a standalone `pods-convert.lua` module as per architectural alignment.

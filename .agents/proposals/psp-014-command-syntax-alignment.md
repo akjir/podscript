@@ -79,6 +79,8 @@ No changes to `config.lua` or recipe schemas. The changes only affect CLI syntax
 - [ ] Update `src/pods/mode_simulate.lua` to support the new command mode syntax.
 - [ ] Update `USAGE.md` with new `command` mode CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept created based on CLI structural consistency review. Refactored proposal to new template format.
