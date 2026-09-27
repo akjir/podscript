@@ -22,7 +22,6 @@ require "src.pods.log"
 require "src.pods.utilities_string"
 require "src.pods.utilities_table"
 require "src.pods.utilities"
-require "src.pods.config"
 require "src.pods.mode_command"
 require "src.pods.mode_recipe"
 require "src.pods.mode_config"
@@ -40,6 +39,60 @@ global<const> *
 --    SECTION Main
 --
 -- ------------------------------------------------------------------------- --
+
+---Loads PodScript config. Sets default values if missing.
+---Returns false if fails to load a file or no recipes are defined.
+---@param context table
+---@return boolean
+global function main__config_load_and_set(context)
+    local config_path = context.config.path
+
+    local config, error, _ = system.load_lua_file(config_path)
+    if config == nil then
+        if error ~= nil then
+            log.error(error)
+        end
+        log.error("Couldn't load configuration '" .. config_path .. "'!")
+        return false
+    end
+
+    -- merge loaded config into context.config
+    if config.simulate ~= nil then context.config.simulate = config.simulate end
+    if config.editor ~= nil then context.config.editor = config.editor end
+
+    if config.pods then
+        if config.pods.path ~= nil then context.config.pods.path = config.pods.path end
+        for k, v in pairs(config.pods) do
+            if k ~= "path" then context.config.pods[k] = v end
+        end
+    end
+
+    if config.recipes then
+        if config.recipes.path ~= nil then context.config.recipes.path = config.recipes.path end
+        if config.recipes.groups ~= nil then context.config.recipes.groups = config.recipes.groups end
+        for k, v in pairs(config.recipes) do
+            if k ~= "path" and k ~= "groups" then context.config.recipes[k] = v end
+        end
+    end
+
+    -- set default path for recipes
+    if string.is_nil_or_empty(context.config.recipes.path) then
+        context.config.recipes.path = "."
+    end
+
+    -- check recipe values
+    if table.is_nil_or_empty(config.recipes) then
+        log.error("No recipes defined in config '" .. config_path .. "'!")
+        return false
+    else
+        if table.is_nil_or_empty(config.recipes.groups) then
+            log.error("No recipes groups defined in configuration '" .. config_path .. "'!")
+            return false
+        end
+    end
+
+    return true
+end
 
 ---Parse arguments and retuns true if error.
 ---@param context table
@@ -183,7 +236,7 @@ global function main(arguments)
     }
 
     local context = {
-        -- MUTABLE: Populated and mutated by config.lua loaders
+        -- MUTABLE: Populated and mutated by config loaders
         config = {
             name = "config", -- The provided config name
             path = "",       -- The resolved full path to the config file
@@ -269,7 +322,7 @@ global function main(arguments)
     end
 
     -- parse config
-    if not config__load_and_set(context) then
+    if not main__config_load_and_set(context) then
         return
     end
 

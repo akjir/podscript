@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Refactored `registry` to a formalized `context` table for improved state isolation.
 - Centralized CLI action and target parsing for mode handlers in `main.lua`.
+- Refactored config loading logic and removed standalone `config.lua`.
 
 ## [1.4.0] - 2026-09-24
 

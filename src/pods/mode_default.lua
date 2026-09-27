@@ -17,7 +17,6 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 
-require "src.pods.config"
 require "src.pods.recipe"
 require "src.pods.utilities"
 
