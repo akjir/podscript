@@ -187,7 +187,7 @@ local function main__parse_action_and_targets(context, modes)
 
             table.append(untangled, group_recipes)
         else
-            if is_command and (target == "help" or target == "") then
+            if (is_command or context.action == "status") and (target == "help" or target == "") then
                 table.insert(untangled, target)
             else
                 local found = nil

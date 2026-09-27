@@ -55,6 +55,7 @@ Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
 - [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 

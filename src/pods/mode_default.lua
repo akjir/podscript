@@ -53,7 +53,11 @@ global function mode_default__handle(context)
     end
 
     if action == "status" then
-        pod__status(context)
+        if not table.is_nil_or_empty(targets) and targets[1] == "help" then
+            pod__status_help(context)
+        else
+            pod__status(context)
+        end
         return
     end
 

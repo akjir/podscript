@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "182.6dad9c8.dev"
+local BUILD <const> = "184.d291c94.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -857,6 +857,22 @@ local function pod__update(recipe, simulate)
     end
 end
 
+---Print help for status action.
+---@param context table
+local function pod__status_help(context)
+    log.print("PodScript " .. get_version_string() .. " - Status\n")
+    log.print("Display the runtime status of pods and containers.")
+    log.print("Usage: pods status [OPTIONS] [TARGETS]")
+    log.print("   or: lua pods.lua status [OPTIONS] [TARGETS]\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --all              include all unmanaged podman containers")
+    log.print("  --full             display extended container information (image, command, ports)\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
+end
+
 ---Print status of containers.
 ---@param context table
 local function pod__status(context)
@@ -1480,7 +1496,11 @@ local function mode_default__handle(context)
     end
 
     if action == "status" then
-        pod__status(context)
+        if not table.is_nil_or_empty(targets) and targets[1] == "help" then
+            pod__status_help(context)
+        else
+            pod__status(context)
+        end
         return
     end
 
@@ -1554,6 +1574,7 @@ local function mode_help__handle(context)
     log.print("  create             create a new pod")
     log.print("  recreate           removes and then creates a new pod")
     log.print("  remove             remove a running pod")
+    log.print("  status             display status of pods and containers")
     log.print("  update             update all defined images of the pod\n")
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups defined in a config\n")
@@ -1808,7 +1829,7 @@ local function main__parse_action_and_targets(context, modes)
 
             table.append(untangled, group_recipes)
         else
-            if is_command and (target == "help" or target == "") then
+            if (is_command or context.action == "status") and (target == "help" or target == "") then
                 table.insert(untangled, target)
             else
                 local found = nil

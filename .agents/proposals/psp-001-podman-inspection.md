@@ -1,7 +1,7 @@
 ---
 id: PSP-001
 title: Running Containers Display & Granular Podman Inspection
-status: review
+status: completed
 type: feature
 created: 2026-09-25
 updated: 2026-09-27
@@ -74,10 +74,10 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
     * Full output columns: `ID`, `IMAGE`, `COMMAND`, `CREATED`, `STATUS`, `RESTARTS`, `PORTS`, `NAMES`, `POD`.
 * **Query Execution:**
     * Call the new `system.exec_capture` querying `podman ps -a` (to include stopped containers for exit codes).
-    * **Formatting:** Use Go Templates with a pipe (`|`) delimiter:
-      `podman ps -a --format "{{.ID}}|{{.Image}}|{{.Command}}|{{.CreatedAt}}|{{.Status}}|{{.Ports}}|{{.Names}}|{{.PodName}}|{{.Restarts}}"`
+    * **Formatting:** Use Go Templates with a `;;;` delimiter (to avoid issues with pipes in commands/ports):
+      `podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"`
 * **Parsing:**
-    * Iterate over the captured lines, split each line natively in Lua using `string.split(line, "|")`, mapping them to container tables. This entirely avoids JSON parser dependencies.
+    * Iterate over the captured lines, split each line natively in Lua using `string.split(line, ";;;")`, mapping them to container tables. This entirely avoids JSON parser dependencies.
 
 ### 2.4 Testing Strategy
 * Mock podman execution output in test suites.
@@ -100,7 +100,7 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 - [x] Update `USAGE.md` with new CLI syntax.
 - [x] Add entry to `CHANGELOG.md`.
 - [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [x] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.
@@ -108,4 +108,9 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 * **2026-09-27:** Implemented `pod__status`, test suite, updated documentation.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `src/pods/mode_default.lua`
+* `src/pods/pod.lua`
+* `src/pods/system.lua`
+* `tests/pods/suite_017_action_status.lua`
+* `USAGE.md`
+* `CHANGELOG.md`

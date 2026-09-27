@@ -31,9 +31,10 @@ description: >-
 2. **Promote to `in-progress`:** Begin implementation. Use Task Breakdown in Part 3.1.
     * **Pre-Verification (Before):** Run baseline test suites (`lua test.lua --dev` and `lua test.lua`) to guarantee a 100% clean starting state before editing any code.
     * **Implementation:** Follow **`podscript-dev-workflow`** for TDD implementation, testing, and building. Check off tasks in Part 3.1.
+    * **Living Document:** If implementation details, CLI syntax, or technical choices diverge from the original proposal during development (e.g., necessary corrections or better alternatives discovered during coding), the PSP document (Part 1 and Part 2) MUST be updated to accurately reflect the final, actual implementation.
 3. **Promote to `review`:**
     * **Post-Verification (After):** Run `lua test.lua --dev`, execute release build (`lua build.lua`), and verify full release suite passes (`lua test.lua`).
-    * **Documentation:** Update `CHANGELOG.md` and `USAGE.md` (see `update-documentation` skill).
+    * **Documentation:** Update `CHANGELOG.md`, `USAGE.md` (see `update-documentation` skill), and the CLI help menu if applicable.
     * **Update Status:** Set frontmatter `status: review` in the proposal spec and update `.agents/proposals/README.md`.
     * **Request Approval:** Present deliverables to the user for manual inspection and verification. Never transition to `completed` autonomously.
 4. **Promote to `completed`:**

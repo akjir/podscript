@@ -90,6 +90,19 @@ return {
                     "cid3   unmanaged-pod      unmanaged           Up 3 days    0          2026-09-24"
                 }
             },
+        },
+        [s .. "05"] = {
+            description = "Status help displays help text.",
+            dev_only = true,
+            run = function()
+                main({ "status", "help" })
+            end,
+            expectations = {
+                sequence = {
+                    "PodScript v1.4.0",
+                    "Display the runtime status of pods and containers."
+                }
+            },
         }
     }
 }

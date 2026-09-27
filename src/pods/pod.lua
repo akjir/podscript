@@ -122,6 +122,22 @@ global function pod__update(recipe, simulate)
     end
 end
 
+---Print help for status action.
+---@param context table
+global function pod__status_help(context)
+    log.print("PodScript " .. get_version_string() .. " - Status\n")
+    log.print("Display the runtime status of pods and containers.")
+    log.print("Usage: pods status [OPTIONS] [TARGETS]")
+    log.print("   or: lua pods.lua status [OPTIONS] [TARGETS]\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --all              include all unmanaged podman containers")
+    log.print("  --full             display extended container information (image, command, ports)\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
+end
+
 ---Print status of containers.
 ---@param context table
 global function pod__status(context)

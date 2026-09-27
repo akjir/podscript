@@ -8,7 +8,6 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
-| `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `planned` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `concept` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-003` | Volume Host Directory Verification & Automatic Creation | `feature` | `concept` | [psp-003-volume-dir-check.md](psp-003-volume-dir-check.md) |
 | `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `concept` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
@@ -27,6 +26,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
+| `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `completed` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
 | `PSP-016` | Resilient and Intelligent Testing Framework | `architecture` | `completed` | [psp-016-resilient-testing.md](psp-016-resilient-testing.md) |
 
