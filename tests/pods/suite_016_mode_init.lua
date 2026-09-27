@@ -84,10 +84,10 @@ return {
                 local actual_config = config_file and config_file:read("*a")
                 if config_file then config_file:close() end
 
-                local registry = { flags = {}, parameters = {} }
-                local load_success = config__load_and_set(registry, test_config)
+                local context = { config = actual_config, flags = {}, parameters = {} }
+                local load_success = config__load_and_set(context)
                 local recipe_table = recipe__load(test_dir, "recipe", true)
-                local recipe_valid = recipe_table and recipe__validate(registry, recipe_table, "recipe")
+                local recipe_valid = recipe_table and recipe__validate(context, recipe_table, "recipe")
 
                 os.execute("rm -rf " .. test_dir)
 
@@ -95,7 +95,7 @@ return {
                     and actual_config == config_content
                     and load_success == true
                     and recipe_valid == true
-                    and registry.recipes.groups.all[1] == "recipe"
+                    and context.recipes.groups.all[1] == "recipe"
             end,
             expected = true,
         },

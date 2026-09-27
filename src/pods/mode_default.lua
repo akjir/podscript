@@ -53,10 +53,6 @@ global function mode_default__handle(context)
         return
     end
 
-    -- clean up targets
-    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, targets)
-    if untangled_targets == nil then return end
-
     -- handle recipes
     local recipe_path = context.config.recipes.path
     local pod_actions = {
@@ -65,13 +61,13 @@ global function mode_default__handle(context)
         remove   = pod__remove,
         update   = pod__update,
     }
-    for i = 1, #untangled_targets do
-        local target = untangled_targets[i]
+    for i = 1, #targets do
+        local target = targets[i]
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
         if recipe ~= nil and recipe__validate(context, recipe, target) then
-            --- action is valid at this point
+            --action is valid at this point
             pod_actions[action](recipe, context.config.simulate)
         end
     end

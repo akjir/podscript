@@ -16,11 +16,10 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
 
 require "src.pods.utilities"
 
-global<const> *
+global <const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -32,18 +31,12 @@ global<const> *
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
 ---@param context table
----@param test_path string|nil
 ---@return boolean
-global function config__load_and_set(context, test_path)
-    -- backward compatibility for tests
-    local config_path = test_path
-    if context.config and context.config.path then
-        config_path = context.config.path
-    end
-    if not context.config then context.config = {} end
-    if not context.config.path then context.config.path = config_path end
-    if not context.config.pods then context.config.pods = { path = "" } end
-    if not context.config.recipes then context.config.recipes = { path = ".", groups = {} } end
+global
+function
+config__load_and_set
+(context)
+    local config_path = context.config.path
 
     local config, error, _ = system.load_lua_file(config_path)
     if config == nil then
@@ -88,10 +81,7 @@ global function config__load_and_set(context, test_path)
             return false
         end
     end
-    
-    -- backwards compatibility for code tests that expect registry.recipes
-    context.recipes = context.config.recipes
-    
+
     return true
 end
 
@@ -101,43 +91,3 @@ end
 ---@param groups table
 ---@param targets table
 ---@return table|nil
-global function config__untangle_recipes(groups, targets)
-    log.debug("Targets   - " .. table.concat(targets, " "))
-    local untangled = {}
-
-    for i = 1, #targets do
-        local target = targets[i]
-
-        -- handle group
-        if string.begins_with(target, "@") then
-            local group_recipes = groups[target:sub(2)] -- remove @ from target
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return nil
-            end
-
-            table.append(untangled, group_recipes)
-        else -- handle single target
-            local found = nil
-
-            for _, group_targets in pairs(groups) do
-                if table.contains(group_targets, target) then
-                    found = target
-                    break
-                end
-            end
-
-            if found == nil then
-                log.error("Recipe '" .. target .. "' not found in config.")
-                return nil
-            else
-                table.insert(untangled, found)
-            end
-        end
-    end
-
-    untangled = table.remove_duplicates(untangled)
-    log.debug("Untangled - " .. table.concat(untangled, " "))
-    return untangled
-end
