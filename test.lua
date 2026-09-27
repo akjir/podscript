@@ -18,7 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-global<const> *
+global <const> *
 
 -- ------------------------------------------------------------------------- --
 --   PODSCRIPT TEST
@@ -31,6 +31,11 @@ local single_test_name = ""
 local tests_count = 0
 local tests_count_failed = 0
 local test_release = true
+local use_json = false
+local fail_fast = false
+local start_time = os.clock()
+local failure_summaries = {}
+local test_report = { tests = {} }
 
 --- set mode and complete print
 if #arg ~= 0 then
@@ -38,11 +43,24 @@ if #arg ~= 0 then
         local argument = arg[i]
         if argument == "--dev" then
             test_release = false
+        elseif argument == "--json" then
+            use_json = true
+        elseif argument == "--fail-fast" then
+            fail_fast = true
         elseif single_test_name == "" then
             single_test_name = argument
         end
     end
 end
+
+-- Suppress prints when use_json is true
+local original_print = print
+local function controlled_print(...)
+    if not use_json then
+        original_print(...)
+    end
+end
+local print = controlled_print
 
 if test_release then
     require "pods"
@@ -52,16 +70,31 @@ end
 
 ---Print function
 ---@param ... any
-local function print_to_stack(... args)
+local function print_to_stack(...args)
+    local caller_info = ""
+    for i = 2, 6 do
+        local info = debug.getinfo(i, "Sl")
+        if info then
+            local short_src = info.short_src
+            if short_src and not string.find(short_src, "log.lua", 1, true) and not string.find(short_src, "test.lua", 1, true) then
+                local filename = string.match(short_src, "([^/\\]+)$") or short_src
+                caller_info = "[" .. filename .. ":" .. tostring(info.currentline) .. "] "
+                break
+            end
+        end
+    end
+
+    local line = ""
     if args.n <= 1 then
-        output_stack[#output_stack + 1] = tostring(args[1] or "")
+        line = tostring(args[1] or "")
     else
         local parts = table.create(args.n)
         for i = 1, args.n do
             parts[i] = tostring(args[i])
         end
-        output_stack[#output_stack + 1] = table.concat(parts, "\t")
+        line = table.concat(parts, "\t")
     end
+    output_stack[#output_stack + 1] = caller_info .. line
 end
 
 -- global function for capture output
@@ -81,11 +114,140 @@ local function print_full_stack(stack)
     print()
 end
 
+local function escape_json(str)
+    str = string.gsub(str, '\\', '\\\\')
+    str = string.gsub(str, '"', '\\"')
+    str = string.gsub(str, '\n', '\\n')
+    str = string.gsub(str, '\r', '\\r')
+    str = string.gsub(str, '\t', '\\t')
+    str = string.gsub(str, "[%z\1-\31]", function(c)
+        return string.format("\\u%04x", string.byte(c))
+    end)
+    return str
+end
+
+local function print_json_report()
+    local out = {}
+    table.insert(out, '{\n  "summary": {\n')
+    table.insert(out, '    "total": ' .. tests_count .. ',\n')
+    table.insert(out, '    "failed": ' .. tests_count_failed .. ',\n')
+    table.insert(out, '    "time_seconds": ' .. string.format("%.2f", os.clock() - start_time) .. '\n  },\n')
+    table.insert(out, '  "failures": {\n')
+    
+    local first = true
+    for msg, count in pairs(failure_summaries) do
+        if not first then table.insert(out, ',\n') else first = false end
+        table.insert(out, '    "' .. escape_json(msg) .. '": ' .. count)
+    end
+    if not first then table.insert(out, '\n') end
+    table.insert(out, '  },\n  "tests": [\n')
+    
+    first = true
+    for _, t in ipairs(test_report.tests) do
+        if not first then table.insert(out, ',\n') else first = false end
+        table.insert(out, '    {\n      "name": "' .. escape_json(t.name) .. '",\n')
+        table.insert(out, '      "status": "' .. t.status .. '"')
+        if t.errors and #t.errors > 0 then
+            table.insert(out, ',\n      "errors": [\n')
+            local first_err = true
+            for _, err in ipairs(t.errors) do
+                if not first_err then table.insert(out, ',\n') else first_err = false end
+                table.insert(out, '        "' .. escape_json(err) .. '"')
+            end
+            table.insert(out, '\n      ]')
+        end
+        table.insert(out, '\n    }')
+    end
+    table.insert(out, '\n  ]\n}')
+    original_print(table.concat(out))
+end
+
+local function evaluate_assertions(expectations, errors, custom_stack)
+    local stack = custom_stack or output_stack
+    if expectations.contains then
+        for _, expected in ipairs(expectations.contains) do
+            local found = false
+            for _, line in ipairs(stack) do
+                if string.find(line, expected, 1, true) then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                table.insert(errors, "Missing 'contains': " .. expected)
+            end
+        end
+    end
+
+    if expectations.sequence then
+        local current_idx = 1
+        for _, expected in ipairs(expectations.sequence) do
+            local found = false
+            for i = current_idx, #stack do
+                if string.find(stack[i], expected, 1, true) then
+                    found = true
+                    current_idx = i + 1
+                    break
+                end
+            end
+            if not found then
+                table.insert(errors, "Missing in sequence: '" .. expected .. "'")
+            end
+        end
+    end
+
+    if expectations.not_contains then
+        for _, not_expected in ipairs(expectations.not_contains) do
+            for _, line in ipairs(stack) do
+                if string.find(line, not_expected, 1, true) then
+                    table.insert(errors, "Found 'not_contains': " .. not_expected)
+                    break
+                end
+            end
+        end
+    end
+
+    if expectations.matches then
+        for _, pattern in ipairs(expectations.matches) do
+            local found = false
+            for _, line in ipairs(stack) do
+                if string.find(line, pattern, 1, false) then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                table.insert(errors, "Missing 'matches': " .. pattern)
+            end
+        end
+    end
+
+    if expectations.count then
+        for expected_str, expected_count in pairs(expectations.count) do
+            local count = 0
+            for _, line in ipairs(stack) do
+                if string.find(line, expected_str, 1, true) then
+                    count = count + 1
+                end
+            end
+            if count ~= expected_count then
+                table.insert(errors,
+                    "Count mismatch for '" .. expected_str .. "': expected " .. expected_count .. ", found " .. count)
+            end
+        end
+    end
+end
+
+_G.__TEST_FRAMEWORK = {
+    evaluate_assertions = evaluate_assertions
+}
+
 -- ------------------------------------------------------------------------- --
 --      Execute Tests
 -- ------------------------------------------------------------------------- --
 
 local function execute_mode_test(default_config_name, test_code, test_table, print_stack)
+    output_stack = {}
     local config_name = table.get_or_default(test_table, "config", "")
     local arguments = {}
 
@@ -109,63 +271,102 @@ local function execute_mode_test(default_config_name, test_code, test_table, pri
     table.append(arguments, test_table.parameters)
 
     -- execute pods or src.main with arguments
-    main(arguments)
+    local errors = {}
+    local success, err_msg = pcall(main, arguments)
+    if not success then
+        table.insert(errors, "Crash during execution: " .. tostring(err_msg))
+    end
+    local expectations = test_table.expectations or {}
 
-    local expectations = test_table.expectations
-    for _, expectation in pairs(expectations) do
-        local line = expectation[1]
-        local expected_result = expectation[2]
-        local result = output_stack[line]
+    evaluate_assertions(expectations, errors)
 
-        if result ~= expected_result then
-            local description = test_table.description
-            print("## Test '" .. test_code .. "' failed at line " .. line .. ".")
+    if #errors > 0 then
+        local description = test_table.description
+        if not use_json then
+            print("## Test '" .. test_code .. "' failed.")
             if not string.is_nil_or_empty(description) then
                 print(" Description: " .. test_table.description)
             end
             print(" Call: lua pods.lua " .. table.concat(arguments, " "))
             print()
-            print("  Result:   (" .. line .. ") '" .. tostring(result) .. "'")
-            print("  Expected: (" .. line .. ") '" .. expected_result .. "'")
+            for _, err in ipairs(errors) do
+                print("  Error: " .. err)
+            end
             if print_stack then print_full_stack(output_stack) else print() end
-            -- clear output_stack
-            output_stack = {}
-            -- test failed, return false
-            return false
         end
+        for _, err in ipairs(errors) do
+            failure_summaries[err] = (failure_summaries[err] or 0) + 1
+        end
+        table.insert(test_report.tests, { name = test_code, status = "failed", errors = errors })
+        output_stack = {}
+        return false
     end
-    -- clear output_stack
+    table.insert(test_report.tests, { name = test_code, status = "passed" })
     output_stack = {}
-    -- test successfull, retrun true
     return true
 end
 
----Executes a code test. Test has to have a run() function and an expected value.
+---Executes a unit test. Test has to have a run() function and an expected value, and optionally expectations.
 ---@param test_code string
 ---@param test_table table
-local function execute_code_test(test_code, test_table, print_stack)
-    local result = test_table.run()
-    if result ~= test_table.expected then
-        local description = test_table.description
-        print("## Test '" .. test_code .. "' failed.")
-        if not string.is_nil_or_empty(description) then
-            print(" Description: " .. test_table.description)
+local function execute_unit_test(test_code, test_table, print_stack)
+    output_stack = {}
+    local args = test_table.args or {}
+    local success, result = pcall(function()
+        if test_table.args then
+            return test_table.run(table.unpack(test_table.args))
+        else
+            return test_table.run()
         end
-        print()
-        print("  Result:   '" .. tostring(result) .. "'")
-        print("  Expected: '" .. tostring(test_table.expected) .. "'")
-        if print_stack then print_full_stack(output_stack) else print() end
+    end)
+
+    local errors = {}
+
+    if not success then
+        table.insert(errors, "Crash during execution: " .. tostring(result))
+    else
+        if test_table.expected ~= nil and result ~= test_table.expected then
+            table.insert(errors,
+                "Return value mismatch: Expected '" ..
+                tostring(test_table.expected) .. "', got '" .. tostring(result) .. "'")
+        end
+    end
+
+    local expectations = test_table.expectations or {}
+    evaluate_assertions(expectations, errors)
+
+    if #errors > 0 then
+        local description = test_table.description
+        if not use_json then
+            print("## Test '" .. test_code .. "' failed.")
+            if not string.is_nil_or_empty(description) then
+                print(" Description: " .. test_table.description)
+            end
+            print()
+            for _, err in ipairs(errors) do
+                print("  Error: " .. err)
+            end
+            if test_table.expected ~= nil then
+                print("  Result:   '" .. tostring(result) .. "'")
+                print("  Expected: '" .. tostring(test_table.expected) .. "'")
+            end
+            if print_stack then print_full_stack(output_stack) else print() end
+        end
+        for _, err in ipairs(errors) do
+            failure_summaries[err] = (failure_summaries[err] or 0) + 1
+        end
+        table.insert(test_report.tests, { name = test_code, status = "failed", errors = errors })
+        output_stack = {}
         return false
     end
-    -- clear output_stack
+    table.insert(test_report.tests, { name = test_code, status = "passed" })
     output_stack = {}
-    -- test successfull, retrun true
     return true
 end
 
 local function execute_test(default_config_name, test_code, test_table, print_stack)
     if test_table.run ~= nil then
-        if not execute_code_test(test_code, test_table, print_stack) then
+        if not execute_unit_test(test_code, test_table, print_stack) then
             tests_count_failed = tests_count_failed + 1
         end
     else
@@ -182,12 +383,15 @@ local function execute_test_suite(test_suite)
             local default_config_name = table.get_or_default(test_suite, "config", "")
             tests_count = tests_count + 1
             execute_test(default_config_name, test_code, test_table, false)
+            if fail_fast and tests_count_failed > 0 then
+                break
+            end
         end
     end
 end
 
 -- ------------------------------------------------------------------------- --
---      Test Suits
+--      Test Suites
 -- ------------------------------------------------------------------------- --
 
 local test_suites = {}
@@ -213,6 +417,7 @@ add_suite("pods.suite_013_mode_command")
 add_suite("pods.suite_014_globals")
 add_suite("pods.suite_015_varargs")
 add_suite("pods.suite_016_mode_init")
+add_suite("pods.suite_999_test_framework")
 
 -- ------------------------------------------------------------------------- --
 --      Main
@@ -229,12 +434,15 @@ if single_test_name == "" then
         print("Some tests can only be run in development mode.")
     end
     found = true
-    for _, test_suite in pairs(test_suites) do
+    for _, test_suite in ipairs(test_suites) do
         execute_test_suite(test_suite)
+        if fail_fast and tests_count_failed > 0 then
+            break
+        end
     end
 else
     local run_count = 0
-    for a, test_suite in pairs(test_suites) do
+    for _, test_suite in ipairs(test_suites) do
         -- Check if it matches a suite number
         if test_suite.suite == single_test_name then
             if test_release then
@@ -246,7 +454,13 @@ else
                     local default_config_name = table.get_or_default(test_suite, "config", "")
                     execute_test(default_config_name, test_code, test_table, true)
                     run_count = run_count + 1
+                    if fail_fast and tests_count_failed > 0 then
+                        break
+                    end
                 end
+            end
+            if fail_fast and tests_count_failed > 0 then
+                break
             end
         else
             -- Check individual tests by code
@@ -277,12 +491,24 @@ if tests_count_failed == 0 then
     if tests_count == 1 then
         print("Test passed.")
     else
-        print("All " .. tests_count .. " tests passed.")
+        print(string.format("All %d tests passed in %.2fs.", tests_count, os.clock() - start_time))
     end
 elseif found == true then
     if tests_count == 1 then
         print("Test failed.")
     else
-        print(tests_count_failed .. " of " .. tests_count .. " tests failed.")
+        print(string.format("%d of %d tests failed in %.2fs.", tests_count_failed, tests_count, os.clock() - start_time))
+        print("\nFailure Summary:")
+        for msg, count in pairs(failure_summaries) do
+            print(string.format("  %dx : %s", count, msg))
+        end
     end
+end
+
+if use_json then
+    print_json_report()
+end
+
+if tests_count_failed > 0 then
+    os.exit(1)
 end

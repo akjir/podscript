@@ -224,6 +224,12 @@ lua test.lua
 # Run tests against development sources (src/pods/)
 lua test.lua --dev
 
+# Run tests and abort immediately on the first error
+lua test.lua --fail-fast
+
+# Output test results in JSON format
+lua test.lua --json
+
 # Run a specific test suite or test ID
 lua test.lua 001
 lua test.lua 00101 --dev

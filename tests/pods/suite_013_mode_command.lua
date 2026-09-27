@@ -8,27 +8,31 @@ return {
             description = "Print command help.",
             parameters = { "command", "help" },
             expectations = {
-                { 8, "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]" },
+                sequence = {
+                    "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]"
+                }
             },
         },
         [s .. "02"] = {
             description = "Print command list.",
             parameters = { "command", "recipe_006_commands", "list" },
             expectations = {
-                { 6, "WARNING: Command 'missing_container' has no description." },
-                { 7, "WARNING: Command 'missing_execute' has no description." },
-                { 8, "WARNING: Command 'run_absolute' has no description." },
-                { 9, "WARNING: Command 'run_int_container' has no description." },
-                { 10, "WARNING: Command 'run_int_container_2' has no description." },
-                { 11, "WARNING: Command 'run_int_user' has no description." },
-                { 12, "Commands for recipe 'recipe_006_commands':" },
-                { 13, "  1) add_index: Adds missing database indices." },
-                { 14, "  2) missing_container" },
-                { 15, "  3) missing_execute" },
-                { 16, "  4) run_absolute" },
-                { 17, "  5) run_int_container" },
-                { 18, "  6) run_int_container_2" },
-                { 19, "  7) run_int_user" },
+                sequence = {
+                    "WARNING: Command 'missing_container' has no description.",
+                    "WARNING: Command 'missing_execute' has no description.",
+                    "WARNING: Command 'run_absolute' has no description.",
+                    "WARNING: Command 'run_int_container' has no description.",
+                    "WARNING: Command 'run_int_container_2' has no description.",
+                    "WARNING: Command 'run_int_user' has no description.",
+                    "Commands for recipe 'recipe_006_commands':",
+                    "  1) add_index: Adds missing database indices.",
+                    "  2) missing_container",
+                    "  3) missing_execute",
+                    "  4) run_absolute",
+                    "  5) run_int_container",
+                    "  6) run_int_container_2",
+                    "  7) run_int_user"
+                }
             },
         },
         [s .. "03"] = {
@@ -36,8 +40,10 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "add_index" },
             expectations = {
-                { 7, "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': " },
-                { 8, "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;" },
+                sequence = {
+                    "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                }
             },
         },
         [s .. "04"] = {
@@ -45,8 +51,10 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "run_absolute" },
             expectations = {
-                { 7, "Execute command 'script.sh run-absolute' in container 'absolute_db': " },
-                { 8, "podman exec -it absolute_db script.sh run-absolute;" },
+                sequence = {
+                    "Execute command 'script.sh run-absolute' in container 'absolute_db': ",
+                    "podman exec -it absolute_db script.sh run-absolute;"
+                }
             },
         },
         [s .. "05"] = {
@@ -54,8 +62,10 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "run_int_user" },
             expectations = {
-                { 7, "Execute command 'script.sh run-int-user' in container 'absolute_db': " },
-                { 8, "podman exec -it -u 1000 absolute_db script.sh run-int-user;" },
+                sequence = {
+                    "Execute command 'script.sh run-int-user' in container 'absolute_db': ",
+                    "podman exec -it -u 1000 absolute_db script.sh run-int-user;"
+                }
             },
         },
         [s .. "06"] = {
@@ -63,8 +73,10 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "run_int_container" },
             expectations = {
-                { 7, "Execute command 'script.sh run-int-container' in container 'cmd_pod-1': " },
-                { 8, "podman exec -it cmd_pod-1 script.sh run-int-container;" },
+                sequence = {
+                    "Execute command 'script.sh run-int-container' in container 'cmd_pod-1': ",
+                    "podman exec -it cmd_pod-1 script.sh run-int-container;"
+                }
             },
         },
         [s .. "07"] = {
@@ -72,7 +84,9 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "missing_container" },
             expectations = {
-                { 7, "ERROR: No container in command table set!" },
+                sequence = {
+                    "ERROR: No container in command table set!"
+                }
             },
         },
         [s .. "08"] = {
@@ -80,7 +94,9 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "missing_execute" },
             expectations = {
-                { 7, "ERROR: No command in command table set!" },
+                sequence = {
+                    "ERROR: No command in command table set!"
+                }
             },
         },
         [s .. "09"] = {
@@ -88,7 +104,9 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "unknown" },
             expectations = {
-                { 7, "ERROR: Command 'unknown' not found in recipe 'recipe_006_commands'." },
+                sequence = {
+                    "ERROR: Command 'unknown' not found in recipe 'recipe_006_commands'."
+                }
             },
         },
         [s .. "10"] = {
@@ -96,27 +114,33 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "run_int_container_2" },
             expectations = {
-                { 7, "Execute command 'script.sh run-int-container-2' in container 'cmd_pod-db': " },
-                { 8, "podman exec -it cmd_pod-db script.sh run-int-container-2;" },
+                sequence = {
+                    "Execute command 'script.sh run-int-container-2' in container 'cmd_pod-db': ",
+                    "podman exec -it cmd_pod-db script.sh run-int-container-2;"
+                }
             },
         },
         [s .. "11"] = {
             description = "Print command list for recipe without commands.",
             parameters = { "command", "recipe_011_simple_container", "list" },
             expectations = {
-                { 6, "INFO: No pod path in recipe 'recipe_011_simple_container' set. Path '/tmp/simple_container' used." },
-                { 7, "There are no commands defined in recipe 'recipe_011_simple_container'." },
+                sequence = {
+                    "INFO: No pod path in recipe 'recipe_011_simple_container' set. Path '/tmp/simple_container' used.",
+                    "There are no commands defined in recipe 'recipe_011_simple_container'."
+                }
             },
         },
         [s .. "12"] = {
             description = "Print command list for recipe with commands without description.",
             parameters = { "command", "recipe_021_no_description_commands", "list" },
             expectations = {
-                { 6, "WARNING: Command 'cmd1' has no description." },
-                { 7, "WARNING: Command 'cmd2' has no description." },
-                { 8, "Commands for recipe 'recipe_021_no_description_commands':" },
-                { 9, "  1) cmd1" },
-                { 10, "  2) cmd2" },
+                sequence = {
+                    "WARNING: Command 'cmd1' has no description.",
+                    "WARNING: Command 'cmd2' has no description.",
+                    "Commands for recipe 'recipe_021_no_description_commands':",
+                    "  1) cmd1",
+                    "  2) cmd2"
+                }
             },
         },
         [s .. "13"] = {
@@ -124,28 +148,32 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "1" },
             expectations = {
-                { 7, "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': " },
-                { 8, "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;" },
+                sequence = {
+                    "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                }
             },
         },
         [s .. "14"] = {
             description = "Default to list when no command is provided.",
             parameters = { "command", "recipe_006_commands" },
             expectations = {
-                { 6, "WARNING: Command 'missing_container' has no description." },
-                { 7, "WARNING: Command 'missing_execute' has no description." },
-                { 8, "WARNING: Command 'run_absolute' has no description." },
-                { 9, "WARNING: Command 'run_int_container' has no description." },
-                { 10, "WARNING: Command 'run_int_container_2' has no description." },
-                { 11, "WARNING: Command 'run_int_user' has no description." },
-                { 12, "Commands for recipe 'recipe_006_commands':" },
-                { 13, "  1) add_index: Adds missing database indices." },
-                { 14, "  2) missing_container" },
-                { 15, "  3) missing_execute" },
-                { 16, "  4) run_absolute" },
-                { 17, "  5) run_int_container" },
-                { 18, "  6) run_int_container_2" },
-                { 19, "  7) run_int_user" },
+                sequence = {
+                    "WARNING: Command 'missing_container' has no description.",
+                    "WARNING: Command 'missing_execute' has no description.",
+                    "WARNING: Command 'run_absolute' has no description.",
+                    "WARNING: Command 'run_int_container' has no description.",
+                    "WARNING: Command 'run_int_container_2' has no description.",
+                    "WARNING: Command 'run_int_user' has no description.",
+                    "Commands for recipe 'recipe_006_commands':",
+                    "  1) add_index: Adds missing database indices.",
+                    "  2) missing_container",
+                    "  3) missing_execute",
+                    "  4) run_absolute",
+                    "  5) run_int_container",
+                    "  6) run_int_container_2",
+                    "  7) run_int_user"
+                }
             },
         },
         [s .. "15"] = {
@@ -153,15 +181,19 @@ return {
             simulate = true,
             parameters = { "command", "recipe_006_commands", "4" },
             expectations = {
-                { 7, "Execute command 'script.sh run-absolute' in container 'absolute_db': " },
-                { 8, "podman exec -it absolute_db script.sh run-absolute;" },
+                sequence = {
+                    "Execute command 'script.sh run-absolute' in container 'absolute_db': ",
+                    "podman exec -it absolute_db script.sh run-absolute;"
+                }
             },
         },
         [s .. "16"] = {
             description = "Recipe not found in config.",
             parameters = { "command", "unknown" },
             expectations = {
-                { 4, "ERROR: Recipe 'unknown' not found in config." },
+                sequence = {
+                    "ERROR: Recipe 'unknown' not found in config."
+                }
             },
         },
     }

@@ -7,21 +7,27 @@ return {
             description = "Print init help.",
             parameters = { "init", "help" },
             expectations = {
-                { 4, "Usage: pods init [OPTIONS]" },
+                sequence = {
+                    "Usage: pods init [OPTIONS]"
+                }
             },
         },
         [s .. "02"] = {
             description = "Unknown action in init mode.",
             parameters = { "init", "unknown_action" },
             expectations = {
-                { 3, "ERROR: Unknown action: unknown_action" },
+                sequence = {
+                    "ERROR: Unknown action: unknown_action"
+                }
             },
         },
         [s .. "03"] = {
             description = "Init mode fails when recipe.lua already exists.",
             parameters = { "init" },
             expectations = {
-                { 3, "ERROR: File './recipe.lua' already exists!" },
+                sequence = {
+                    "ERROR: File './recipe.lua' already exists!"
+                }
             },
         },
         [s .. "04"] = {
@@ -103,7 +109,9 @@ return {
             description = "General help lists init mode.",
             parameters = { "help" },
             expectations = {
-                { 10, "  init               initialize default configuration and recipe" },
+                sequence = {
+                    "  init               initialize default configuration and recipe"
+                }
             },
         },
     }

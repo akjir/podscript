@@ -7,7 +7,9 @@ return {
             description = "Print config help.",
             parameters = { "config", "help" },
             expectations = {
-                { 4, "Usage: pods config [OPTIONS] ACTION" },
+                sequence = {
+                    "Usage: pods config [OPTIONS] ACTION"
+                }
             },
         },
         [s .. "02"] = {
@@ -15,14 +17,16 @@ return {
             config = "config_003_simulate_true",
             parameters = { "config", "print" },
             expectations = {
-                { 4,  "  1: return {" },
-                { 5,  "  2:     simulate = true," },
-                { 6,  "  3:     recipes = {" },
-                { 7,  "  4:         groups = {" },
-                { 8,  "  5:             all = {}" },
-                { 9,  "  6:         }," },
-                { 10, "  7:     }," },
-                { 11, "  8: }" },
+                sequence = {
+                    "  1: return {",
+                    "  2:     simulate = true,",
+                    "  3:     recipes = {",
+                    "  4:         groups = {",
+                    "  5:             all = {}",
+                    "  6:         },",
+                    "  7:     },",
+                    "  8: }"
+                }
             },
         },
         [s .. "03"] = {
@@ -30,7 +34,9 @@ return {
             config = "config_011_no_editor",
             parameters = { "config", "edit" },
             expectations = {
-                { 4, "ERROR: No editor configured." },
+                sequence = {
+                    "ERROR: No editor configured."
+                }
             },
         },
         [s .. "04"] = {
@@ -38,8 +44,10 @@ return {
             config = "config_012_invalid_editor",
             parameters = { "config", "edit" },
             expectations = {
-                { 4, "DEBUG: Execute: editor ./tests/pods/configs/config_012_invalid_editor.lua;" },
-                { 5, "ERROR: Command exited with code '127'!" },
+                sequence = {
+                    "DEBUG: Execute: editor ./tests/pods/configs/config_012_invalid_editor.lua;",
+                    "ERROR: Command exited with code '127'!"
+                }
             },
         },
         [s .. "05"] = {
@@ -47,14 +55,16 @@ return {
             config = "config_003_simulate_true",
             parameters = { "config" },
             expectations = {
-                { 4,  "  1: return {" },
-                { 5,  "  2:     simulate = true," },
-                { 6,  "  3:     recipes = {" },
-                { 7,  "  4:         groups = {" },
-                { 8,  "  5:             all = {}" },
-                { 9,  "  6:         }," },
-                { 10, "  7:     }," },
-                { 11, "  8: }" },
+                sequence = {
+                    "  1: return {",
+                    "  2:     simulate = true,",
+                    "  3:     recipes = {",
+                    "  4:         groups = {",
+                    "  5:             all = {}",
+                    "  6:         },",
+                    "  7:     },",
+                    "  8: }"
+                }
             },
         },
     }

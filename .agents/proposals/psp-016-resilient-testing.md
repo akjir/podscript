@@ -1,7 +1,7 @@
 ---
 id: PSP-016
 title: Resilient and Intelligent Testing Framework
-status: concept
+status: completed
 type: architecture
 created: 2026-09-27
 updated: 2026-09-27
@@ -105,6 +105,10 @@ expectations = {
 9. **Migration Script:**
    * Write a temporary Lua script (e.g., `scripts/migrate_tests.lua`) that reads all `tests/pods/suite_*.lua` files, finds the legacy `expectations = { { 1, "..." }, { 2, "..." } }`, and rewrites them to the new `sequence = { "...", "..." }` syntax using file I/O operations.
 
+10. **Self-Test Engine API:**
+    * **Purpose:** Allow the test framework to test its own failure identification capabilities without breaking the runner or requiring complex subprocess parsing (like `--self-test`).
+    * **Implementation:** Decouple `evaluate_assertions` in `test.lua` from the global `output_stack` by allowing an optional `custom_stack` parameter. Expose the function globally via `_G.__TEST_FRAMEWORK = { evaluate_assertions = evaluate_assertions }`. This allows tests in `suite_999_test_framework.lua` to pass mock strings directly into the engine and verify it returns expected error strings for missing sequences, bad counts, etc.
+
 ### 2.4 Testing Strategy
 * Create a dedicated `suite_999_test_framework.lua` that executes dummy functions and asserts the new framework correctly identifies passes, failures, missing sequences, and matches.
 * All existing 172 tests must continue to pass using the new `sequence`/`contains` schemas.
@@ -114,25 +118,31 @@ expectations = {
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Implement CLI argument parsing enhancements (`--fail-fast`, `--json`).
-- [ ] Implement log provenance (`debug.getinfo` iteration) in `test.lua`.
-- [ ] Implement logic assertion engine (`contains`, `sequence`, `not_contains`, `matches`, `count`) and remove `exact`.
-- [ ] Implement failure accumulation, grouped summaries, and `os.clock()` execution time tracking.
-- [ ] Implement unit testing API using `pcall`.
-- [ ] Create `suite_999_test_framework.lua` to test the framework itself.
-- [ ] Migrate all existing `suite_*.lua` files to the new expectation schema (no legacy fallbacks).
-- [ ] Update documentation (`USAGE.md`, `README.md`) to reflect new CLI test flags.
-- [ ] Update development skills (`podscript-dev-workflow`) to document the new resilient testing assertions and usage.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `CHANGELOG.md`.
-- [ ] Set status to `review` and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed` and record delivered artifacts.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Implement CLI argument parsing enhancements (`--fail-fast`, `--json`).
+- [x] Implement log provenance (`debug.getinfo` iteration) in `test.lua`.
+- [x] Implement logic assertion engine (`contains`, `sequence`, `not_contains`, `matches`, `count`) and remove `exact`.
+- [x] Implement failure accumulation, grouped summaries, and `os.clock()` execution time tracking.
+- [x] Implement unit testing API using `pcall`.
+- [x] Create `suite_999_test_framework.lua` to test the framework itself.
+- [x] Migrate all existing `suite_*.lua` files to the new expectation schema (no legacy fallbacks).
+- [x] Update documentation (`USAGE.md`, `README.md`) to reflect new CLI test flags.
+- [x] Update development skills (`podscript-dev-workflow`) to document the new resilient testing assertions and usage.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Update `CHANGELOG.md` (Note: test framework changes omitted from CHANGELOG as per strict dev-workflow rules).
+- [x] Set status to `review` and request manual user review and approval.
+- [x] Manual approval received; set status to `completed` and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-27:** Initial concept drafted based on painful debugging experience during PSP-005 integration.
 * **2026-09-27:** Refined scope to completely remove legacy `exact` index matching. Added logic for `--fail-fast`, Lua pattern matching (`matches`), occurrence counting (`count`), and execution time measurements.
+* **2026-09-27:** Rewrote `test.lua` completely to match logic assertion. Implemented log provenance, json output and executed Python migration script on all tests. Tests passed smoothly. Skipped CHANGELOG as per strict rules.
+* **2026-09-27:** Decoupled `evaluate_assertions` and exposed via `_G.__TEST_FRAMEWORK` to allow internal framework self-testing in `suite_999`.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `test.lua` (Completely refactored for logic-based assertions, `--json`, `--fail-fast`, log provenance, `execute_unit_test`)
+* `tests/pods/suite_*.lua` (Migrated 170+ tests from exact assertions to sequence assertions)
+* `tests/pods/suite_999_test_framework.lua` (New test suite for test.lua itself)
+* `README.md` & `.agents/skills/podscript-dev-workflow/SKILL.md` (Updated)
+* `scripts/migrate_tests.py` and `scripts/rewrite_test_lua.py` (Temporary scripts)

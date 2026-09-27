@@ -23,7 +23,9 @@ description: >-
 ## 3. Testing (`test.lua`)
 * **Locations:** `tests/pods/suite_*.lua` and `tests/pods-converter/suite_*.lua`.
 * **IDs:** Explicit 5-digit literal IDs: 3-digit suite + 2-digit test (e.g. `00401`). Found in comments next to test definition (e.g. `[s .. "01"] = { -- 00401`).
-* **Types:** Mode tests (CLI output capture vs `expectations`), Code tests (`run` function vs `expected`).
+* **Types:** Mode tests (CLI output capture vs `expectations`), Unit tests (`run` function vs `expected`).
+* **Expectations:** Assert log output via `contains`, `sequence` (ordered substring matching), `not_contains`, `matches` (Lua patterns), and `count`. Exact line indices are not supported. Output captures include log provenance prefixes (e.g., `[main.lua:162]`).
+* **Flags:** `--dev` (use sources), `--fail-fast` (abort on first error), `--json` (machine-readable report).
 * **Dev-Only:** `dev_only = true` skips test in release mode (for internal functions localized during build).
 * **Failures:** When a test fails, ALWAYS re-run it directly with its ID (e.g., `lua test.lua 00101 --dev`) to get the extended stack trace.
 

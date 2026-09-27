@@ -7,7 +7,9 @@ return {
             description = "Print recipe help.",
             parameters = { "recipe", "help" },
             expectations = {
-                { 4, "Usage: pods recipe [OPTIONS] ACTION NAME" },
+                sequence = {
+                    "Usage: pods recipe [OPTIONS] ACTION NAME"
+                }
             },
         },
         [s .. "02"] = {
@@ -15,9 +17,11 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "recipe_002_no_pod" },
             expectations = {
-                { 6, "  1: return {" },
-                { 7, "  2:     name = \"nopod\"," },
-                { 8, "  3: }" },
+                sequence = {
+                    "  1: return {",
+                    "  2:     name = \"nopod\",",
+                    "  3: }"
+                }
             },
         },
         [s .. "03"] = {
@@ -25,7 +29,9 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "unknown" },
             expectations = {
-                { 4, "ERROR: Recipe 'unknown' not found in config." },
+                sequence = {
+                    "ERROR: Recipe 'unknown' not found in config."
+                }
             },
         },
         [s .. "04"] = {
@@ -33,7 +39,9 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "recipe_000_unkown" },
             expectations = {
-                { 6, "ERROR: Could not open file './tests/pods/recipes/recipe_000_unkown.lua'!" },
+                sequence = {
+                    "ERROR: Could not open file './tests/pods/recipes/recipe_000_unkown.lua'!"
+                }
             },
         },
         [s .. "05"] = {
@@ -41,7 +49,9 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "unknown", "recipe_002_no_pod" },
             expectations = {
-                { 6, "ERROR: Unknown action: unknown" },
+                sequence = {
+                    "ERROR: Unknown action: unknown"
+                }
             },
         },
         [s .. "06"] = {
@@ -49,14 +59,18 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print" },
             expectations = {
-                { 4, "ERROR: No recipe name given." },
+                sequence = {
+                    "ERROR: No recipe name given."
+                }
             },
         },
         [s .. "07"] = {
             description = "Print recipe help without action.",
             parameters = { "recipe" },
             expectations = {
-                { 4, "Usage: pods recipe [OPTIONS] ACTION NAME" },
+                sequence = {
+                    "Usage: pods recipe [OPTIONS] ACTION NAME"
+                }
             },
         },
         [s .. "08"] = {
@@ -64,7 +78,9 @@ return {
             config = "config_014_recipe_edit_no_editor",
             parameters = { "recipe", "edit", "recipe_002_no_pod" },
             expectations = {
-                { 6, "ERROR: No editor configured." },
+                sequence = {
+                    "ERROR: No editor configured."
+                }
             },
         },
         [s .. "09"] = {
@@ -72,8 +88,10 @@ return {
             config = "config_013_recipe_edit",
             parameters = { "recipe", "edit", "recipe_002_no_pod" },
             expectations = {
-                { 6, "DEBUG: Execute: editor ./tests/pods/recipes/recipe_002_no_pod.lua;" },
-                { 7, "ERROR: Command exited with code '127'!" },
+                sequence = {
+                    "DEBUG: Execute: editor ./tests/pods/recipes/recipe_002_no_pod.lua;",
+                    "ERROR: Command exited with code '127'!"
+                }
             },
         },
         [s .. "10"] = {
@@ -81,7 +99,9 @@ return {
             config = "config_013_recipe_edit",
             parameters = { "recipe", "edit" },
             expectations = {
-                { 4, "ERROR: No recipe name given." },
+                sequence = {
+                    "ERROR: No recipe name given."
+                }
             },
         },
         [s .. "11"] = {
@@ -89,9 +109,11 @@ return {
             config = "config_016_recipe_list",
             parameters = { "recipe", "list" },
             expectations = {
-                { 4, "Recipes:" },
-                { 5, "  1) recipe_011_simple_container (Simple Container)" },
-                { 6, "  2) recipe_022_description (Super Pod): Super Pod is great" },
+                sequence = {
+                    "Recipes:",
+                    "  1) recipe_011_simple_container (Simple Container)",
+                    "  2) recipe_022_description (Super Pod): Super Pod is great"
+                }
             },
         },
         [s .. "12"] = {
@@ -99,7 +121,9 @@ return {
             config = "config_003_simulate_true",
             parameters = { "recipe", "list" },
             expectations = {
-                { 4, "There are no recipes defined in config." },
+                sequence = {
+                    "There are no recipes defined in config."
+                }
             },
         },
     }

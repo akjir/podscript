@@ -9,51 +9,65 @@ return {
             config = "config_004_targets",
             parameters = { "create", "target" },
             expectations = {
-                { 6, "ERROR: cannot open ./target.lua: No such file or directory" },
-                { 7, "ERROR: Couldn't load recipe './target.lua'!" },
+                sequence = {
+                    "ERROR: cannot open ./target.lua: No such file or directory",
+                    "ERROR: Couldn't load recipe './target.lua'!"
+                }
             },
         },
         [s .. "02"] = {
             description = "Recipe not found. Path set.",
             parameters = { "create", "recipe_000_unkown" },
             expectations = {
-                { 6, "ERROR: cannot open ./tests/pods/recipes/recipe_000_unkown.lua: No such file or directory" },
-                { 7, "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_000_unkown.lua'!" },
+                sequence = {
+                    "ERROR: cannot open ./tests/pods/recipes/recipe_000_unkown.lua: No such file or directory",
+                    "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_000_unkown.lua'!"
+                }
             },
         },
         [s .. "03"] = {
             description = "Recipe is empty. No name set.",
             parameters = { "create", "recipe_001_empty" },
             expectations = {
-                { 6, "ERROR: No recipe name in recipe 'recipe_001_empty' set!" },
+                sequence = {
+                    "ERROR: No recipe name in recipe 'recipe_001_empty' set!"
+                }
             },
         },
         [s .. "04"] = {
             description = "Pod section is missing.",
             parameters = { "create", "recipe_002_no_pod" },
             expectations = {
-                { 6, "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty" },
+                sequence = {
+                    "ERROR: Pod section in recipe 'recipe_002_no_pod' not defined! or empty"
+                }
             },
         },
         [s .. "05"] = {
             description = "Pod section is empty.",
             parameters = { "create", "recipe_003_empty_pod" },
             expectations = {
-                { 6, "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty" },
+                sequence = {
+                    "ERROR: Pod section in recipe 'recipe_003_empty_pod' not defined! or empty"
+                }
             },
         },
         [s .. "06"] = {
             description = "No default registry set in pod section.",
             parameters = { "create", "recipe_004_no_registry" },
             expectations = {
-                { 6, "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!" },
+                sequence = {
+                    "ERROR: No default registry in recipe 'recipe_004_no_registry' set or empty!"
+                }
             },
         },
         [s .. "07"] = {
             description = "No default path and pod path set in pod section.",
             parameters = { "create", "recipe_005_no_path" },
             expectations = {
-                { 6, "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!" },
+                sequence = {
+                    "ERROR: No default pod path and pod path in recipe 'recipe_005_no_path' set or empty!"
+                }
             },
         },
         [s .. "08"] = {
@@ -61,7 +75,9 @@ return {
             config = "config_006_recipes_with_pod_path",
             parameters = { "create", "recipe_005_no_path" },
             expectations = {
-                { 6, "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used." },
+                sequence = {
+                    "INFO: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used."
+                }
             },
         },
         [s .. "09"] = {
@@ -69,7 +85,9 @@ return {
             config = "config_006_recipes_with_pod_path",
             parameters = { "create", "recipe_006_no_containers" },
             expectations = {
-                { 7, "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!" },
+                sequence = {
+                    "ERROR: Container section in recipe 'recipe_006_no_containers' not defined or empty!"
+                }
             },
         },
         [s .. "10"] = {
@@ -77,7 +95,9 @@ return {
             config = "config_006_recipes_with_pod_path",
             parameters = { "create", "recipe_005_no_path" },
             expectations = {
-                { 7, "ERROR: A container in pod 'nopathpod' is empty!" },
+                sequence = {
+                    "ERROR: A container in pod 'nopathpod' is empty!"
+                }
             },
         },
         [s .. "11"] = {
@@ -85,18 +105,22 @@ return {
             config = "config_009_same_directory",
             parameters = { "create", "target" },
             expectations = {
-                { 7, "ERROR: cannot open ./target.lua: No such file or directory" },
-                { 8, "ERROR: Couldn't load recipe './target.lua'!" },
-            }
-        },
+                sequence = {
+                    "ERROR: cannot open ./target.lua: No such file or directory",
+                    "ERROR: Couldn't load recipe './target.lua'!"
+                }
+                }
+            },
         [s .. "12"] = {
             description = "Missing ',' in lua file.",
             parameters = { "create", "recipe_016_container_lua_error" },
             expectations = {
-                { 6, "ERROR: ./tests/pods/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'" },
-                { 7, "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_016_container_lua_error.lua'!" },
-            }
-        },
+                sequence = {
+                    "ERROR: ./tests/pods/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'",
+                    "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_016_container_lua_error.lua'!"
+                }
+                }
+            },
         [s .. "13"] = {
             description = "Initialize recipe.pod.commands as empty table if missing.",
             dev_only = true,

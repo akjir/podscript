@@ -10,7 +10,9 @@ return {
             parameters = { "create" },
             simulate = false,
             expectations = {
-                { 3, "ERROR: No recipes defined in config './tests/pods/configs/config_001_empty.lua'!" },
+                sequence = {
+                    "ERROR: No recipes defined in config './tests/pods/configs/config_001_empty.lua'!"
+                }
             },
         },
         [s .. "02"] = {
@@ -19,8 +21,10 @@ return {
             parameters = { "create" },
             simulate = true,
             expectations = {
-                { 2, "DEBUG: Config './tests/pods/configs/config_002_simulate_false.lua' is used." },
-                { 3, "INFO: Simulate mode is active." },
+                sequence = {
+                    "DEBUG: Config './tests/pods/configs/config_002_simulate_false.lua' is used.",
+                    "INFO: Simulate mode is active."
+                }
             },
         },
         [s .. "03"] = {
@@ -29,8 +33,10 @@ return {
             parameters = { "create" },
             simulate = false,
             expectations = {
-                { 2, "DEBUG: Config './tests/pods/configs/config_003_simulate_true.lua' is used." },
-                { 3, "INFO: Simulate mode is active." },
+                sequence = {
+                    "DEBUG: Config './tests/pods/configs/config_003_simulate_true.lua' is used.",
+                    "INFO: Simulate mode is active."
+                }
             },
         },
         [s .. "04"] = {
@@ -38,14 +44,18 @@ return {
             config = "config_missing",
             parameters = { "create" },
             expectations = {
-                { 3, "ERROR: cannot open ./tests/pods/configs/config_missing.lua: No such file or directory" },
-                { 4, "ERROR: Couldn't load configuration './tests/pods/configs/config_missing.lua'!" },
+                sequence = {
+                    "ERROR: cannot open ./tests/pods/configs/config_missing.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration './tests/pods/configs/config_missing.lua'!"
+                }
             },
         },
         [s .. "05"] = {
             description = "No arguments at all. Print help.",
             expectations = {
-                { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
+                sequence = {
+                    "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]"
+                }
             },
         },
         [s .. "06"] = {
@@ -54,7 +64,9 @@ return {
             parameters = {},
             help = true,
             expectations = {
-                { 3, "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]" },
+                sequence = {
+                    "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]"
+                }
             },
         },
         [s .. "07"] = {
@@ -62,10 +74,12 @@ return {
             config = "",
             parameters = { "--config=/custom/path/to/my_config.lua", "create", "target" },
             expectations = {
-                { 1, "DEBUG: Debug mode is enabled." },
-                { 2, "DEBUG: Config '/custom/path/to/my_config.lua.lua' is used." },
-                { 3, "ERROR: cannot open /custom/path/to/my_config.lua.lua: No such file or directory" },
-                { 4, "ERROR: Couldn't load configuration '/custom/path/to/my_config.lua.lua'!" },
+                sequence = {
+                    "DEBUG: Debug mode is enabled.",
+                    "DEBUG: Config '/custom/path/to/my_config.lua.lua' is used.",
+                    "ERROR: cannot open /custom/path/to/my_config.lua.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration '/custom/path/to/my_config.lua.lua'!"
+                }
             },
         },
         [s .. "08"] = {
@@ -73,10 +87,12 @@ return {
             config = "",
             parameters = { "--config=configs/my_config", "create", "target" },
             expectations = {
-                { 1, "DEBUG: Debug mode is enabled." },
-                { 2, "DEBUG: Config './configs/my_config.lua' is used." },
-                { 3, "ERROR: cannot open ./configs/my_config.lua: No such file or directory" },
-                { 4, "ERROR: Couldn't load configuration './configs/my_config.lua'!" },
+                sequence = {
+                    "DEBUG: Debug mode is enabled.",
+                    "DEBUG: Config './configs/my_config.lua' is used.",
+                    "ERROR: cannot open ./configs/my_config.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration './configs/my_config.lua'!"
+                }
             },
         },
         [s .. "09"] = {
@@ -84,9 +100,11 @@ return {
             config = "",
             parameters = { "--config=/custom/path/to/config.lua", "create", "target" },
             expectations = {
-                { 1, "DEBUG: Debug mode is enabled." },
-                { 2, "ERROR: cannot open /custom/path/to/config.lua.lua: No such file or directory" },
-                { 3, "ERROR: Couldn't load configuration '/custom/path/to/config.lua.lua'!" },
+                sequence = {
+                    "DEBUG: Debug mode is enabled.",
+                    "ERROR: cannot open /custom/path/to/config.lua.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration '/custom/path/to/config.lua.lua'!"
+                }
             },
         },
     }

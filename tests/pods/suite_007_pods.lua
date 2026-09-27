@@ -8,59 +8,71 @@ return {
             description = "Create simple pod. Names are mixed case and have spaces and there is no pod path.",
             parameters = { "create", "@nona" },
             expectations = {
-                { 1,  "DEBUG: Debug mode is enabled." },
-                { 2,  "DEBUG: Config './tests/pods/configs/config_007_pods.lua' is used." },
-                { 5,  "INFO: Simulate mode is active." },
-                { 3,  "DEBUG: Targets   - @nona" },
-                { 4,  "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
-                { 7,  "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used." },
-                { 8,  "Create pod 'Simple Pod' ('si_po'): " },
-                { 9,  "podman pod create --name si_po;" },
-                { 10, "Create container 'supr_app': " },
-                { 11, "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;" },
+                sequence = {
+                    "DEBUG: Debug mode is enabled.",
+                    "DEBUG: Config './tests/pods/configs/config_007_pods.lua' is used.",
+                    "DEBUG: Targets   - @nona",
+                    "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path",
+                    "INFO: Simulate mode is active.",
+                    "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used.",
+                    "Create pod 'Simple Pod' ('si_po'): ",
+                    "podman pod create --name si_po;",
+                    "Create container 'supr_app': ",
+                    "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;"
+                }
             },
         },
         [s .. "02"] = {
             description = "Remove simple pod. Names are mixed case and have spaces and there is no pod path.",
             parameters = { "remove", "@nona" },
             expectations = {
-                { 8,  "Stop container 'supr_app': " },
-                { 9,  "podman stop supr_app;" },
-                { 10, "Remove container 'supr_app': " },
-                { 11, "podman rm supr_app;" },
-                { 12, "Remove pod 'Simple Pod' ('si_po'): " },
-                { 13, "podman pod rm si_po;" },
+                sequence = {
+                    "Stop container 'supr_app': ",
+                    "podman stop supr_app;",
+                    "Remove container 'supr_app': ",
+                    "podman rm supr_app;",
+                    "Remove pod 'Simple Pod' ('si_po'): ",
+                    "podman pod rm si_po;"
+                }
             },
         },
         [s .. "03"] = {
             description = "Update simple pod. Names are mixed case and have spaces and there is no pod path.",
             parameters = { "update", "@nona" },
             expectations = {
-                { 8,  "Update pod 'Simple Pod' ('si_po') ..." },
-                { 9,  "Update container 'supr_app' ..." },
-                { 10, "podman pull registry.io/alpine:latest;" },
+                sequence = {
+                    "Update pod 'Simple Pod' ('si_po') ...",
+                    "Update container 'supr_app' ...",
+                    "podman pull registry.io/alpine:latest;"
+                }
             },
         },
         [s .. "04"] = {
             description = "Recreate simple pod. Names are mixed case and have spaces and there is no pod path.",
             parameters = { "recreate", "@nona" },
             expectations = {
-                { 12, "Remove pod 'Simple Pod' ('si_po'): " },
-                { 14, "Create pod 'Simple Pod' ('si_po'): " },
+                sequence = {
+                    "Remove pod 'Simple Pod' ('si_po'): ",
+                    "Create pod 'Simple Pod' ('si_po'): "
+                }
             },
         },
         [s .. "05"] = {
             description = "Test for publish.",
             parameters = { "create", "recipe_008_publish" },
             expectations = {
-                { 9, "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;" },
+                sequence = {
+                    "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;"
+                }
             },
         },
         [s .. "06"] = {
             description = "Test for options.",
             parameters = { "create", "recipe_010_pod_options" },
             expectations = {
-                { 9, "podman pod create --name options --network slirp4netns:port_handler=slirp4netns --some thing --another thing;" },
+                sequence = {
+                    "podman pod create --name options --network slirp4netns:port_handler=slirp4netns --some thing --another thing;"
+                }
             },
         },
     },
