@@ -1,10 +1,10 @@
 ---
 id: PSP-001
 title: Running Containers Display & Granular Podman Inspection
-status: concept
+status: planned
 type: feature
 created: 2026-09-25
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 # PSP-001: Running Containers Display & Granular Podman Inspection
@@ -22,17 +22,24 @@ PodScript manages recipes, pods, and container lifecycles declaratively, but ins
     * Query and display running containers and pod associations directly through PodScript.
     * Parse and present container statuses cleanly without external dependencies.
     * Support optional filtering by pod name or listing all PodScript-managed containers.
+    * Support listing unmanaged/external containers alongside managed ones via an `--all` flag.
+    * Provide critical container health metrics: Health Check status, Exit Codes, and Restart Counts.
+    * Visually group or map containers back to their respective PodScript recipes/pods.
 * **Non-Goals:**
     * Building a full-blown interactive TUI or process monitoring tool.
     * Managing non-Podman container runtimes (Docker, nerdctl).
 
 ### 1.4 Description
 * **CLI Command:**
-    * `pods status [TARGETS]`
+    * `pods status [TARGETS] [--full] [--all]`
     * Because `status` is implemented as an action in the `default` mode, the command structure adheres to the required `pods [MODE] [ACTION] [TARGETS]` format (where the `default` mode can be omitted).
-    * If `status` is invoked without any targets, the status of *all* managed containers will be displayed.
+    * If `status` is invoked without any targets, the status of *all* managed containers will be displayed (whether running or not).
+    * If targets are provided (e.g., `pods status pod1 @stack`), their status is checked. If the targets are not running, the output will explicitly list those individual containers as not running.
+    * If the `--all` flag is passed, the output will include all containers known to Podman, acting as a PodScript-templated version of `podman ps`.
 * **Output:**
-    * Dependency-free structured table on stdout (Pod, Container Name, Status/Health, Ports, Uptime).
+    * Dependency-free structured table on stdout.
+    * **Default Output:** Container ID, Created, Status (including Health & Exit Code), Restart Count, Names, and Pod Association.
+    * **`--full` Output:** Includes all default fields plus Image, Command, and Ports.
 
 ### 1.5 Alternatives
 *(None documented yet. Sticking with direct `podman` command execution and standard parsing.)*
@@ -43,24 +50,40 @@ PodScript manages recipes, pods, and container lifecycles declaratively, but ins
 
 ### 2.1 Architecture & Affected Modules
 * **Affected Files:**
-    * `src/pods/main.lua` (if parsing needs adjusting, though likely unchanged for default mode actions)
-    * `src/pods/mode_default.lua` (new action dispatch for `status`)
-    * `src/pods/system.lua`
+    * `src/pods/mode_default.lua`:
+        * Add `"status"` to allowed actions validation.
+        * Allow empty targets strictly when `action == "status"`.
+        * Intercept the `"status"` action to bypass the per-recipe loop and call `pod__status(context)` once.
+    * `src/pods/pod.lua`:
+        * Implement `pod__status(context)` to execute the query, filter requested targets, and format output based on the `--full` flag.
+    * `src/pods/system.lua`:
+        * Implement `system.exec_capture(command)` to use `io.popen` and `handle:lines()` for returning the STDOUT string lines as a table.
 
 ### 2.2 Schema & Syntax Changes
 No changes to `config.lua` or recipe schemas are required, as this primarily queries runtime state rather than configuration.
 
 ### 2.3 Implementation Details
+* **Target Filtering:**
+    * If `context.targets` is empty and `--all` is not passed, resolve all known managed recipes by iterating over `context.config.recipes.groups`.
+    * Cross-reference the parsed `podman` output against the requested (or resolved) recipes' containers (`recipe.containers`). Only display containers that match these managed recipes.
+    * Explicitly print an entry for any target container that is *not* found in the podman output (meaning it's not running or doesn't exist).
+    * **If `--all` is passed (`context.flags.all`):** Bypass the managed-only filter and display all containers returned by Podman (alongside explicitly requested targets, if any).
+* **Output Formatting (`--full` vs default):**
+    * Check `context.flags.full`.
+    * Default output columns: `ID`, `CREATED`, `STATUS`, `RESTARTS`, `NAMES`, `POD`.
+    * Full output columns: `ID`, `IMAGE`, `COMMAND`, `CREATED`, `STATUS`, `RESTARTS`, `PORTS`, `NAMES`, `POD`.
 * **Query Execution:**
-    * Use `system.exec` or `io.popen` querying `podman ps --format "{{json .}}"` or `podman pod ps --format "{{json .}}"`.
-* **Parsing & Formatting:**
-    * Pure Lua parser in `src/pods/utilities.lua` or dedicated `src/pods/system.lua` helper.
-    * Adhere to zero-dependency rule: no external JSON libraries; parse standard line format or key fields.
+    * Call the new `system.exec_capture` querying `podman ps -a` (to include stopped containers for exit codes).
+    * **Formatting:** Use Go Templates with a pipe (`|`) delimiter:
+      `podman ps -a --format "{{.ID}}|{{.Image}}|{{.Command}}|{{.CreatedAt}}|{{.Status}}|{{.Ports}}|{{.Names}}|{{.PodName}}|{{.Restarts}}"`
+* **Parsing:**
+    * Iterate over the captured lines, split each line natively in Lua using `string.split(line, "|")`, mapping them to container tables. This entirely avoids JSON parser dependencies.
 
 ### 2.4 Testing Strategy
 * Mock podman execution output in test suites.
 * Verify empty list, running containers, unhealthy containers, stopped containers.
-* Verify correct behavior when no targets are specified (should list all).
+* Verify correct behavior when no targets are specified (should list all managed containers).
+* Verify correct behavior when `--all` is specified (should list unmanaged containers too).
 * Test suite in `tests/pods/suite_017_action_status.lua` (or similar).
 
 ---
@@ -69,8 +92,8 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Create test stubs in `tests/pods/suite_017_action_status.lua`.
-- [ ] Implement core logic for parsing `podman ps` output.
+- [ ] Create test stubs in `tests/pods/suite_017_action_status.lua` (covering `--full` and `--all`).
+- [ ] Implement core logic for parsing `podman ps` output and `system.exec_capture`.
 - [ ] Implement action dispatch in `src/pods/mode_default.lua`.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.

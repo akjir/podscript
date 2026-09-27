@@ -6,7 +6,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
-| `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `concept` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
+| `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `planned` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `concept` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-003` | Volume Host Directory Verification & Automatic Creation | `feature` | `concept` | [psp-003-volume-dir-check.md](psp-003-volume-dir-check.md) |
 | `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `concept` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
