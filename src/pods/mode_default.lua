@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
 
 require "src.pods.config"
 require "src.pods.recipe"
@@ -32,10 +31,11 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Handle default mode.
----@param registry table
-global function mode_default__handle(registry)
+---@param context table
+global function mode_default__handle(context)
     log.debug("Default mode is used.")
-    local action, targets = parse_action_and_targets_parameters(registry)
+    local action = context.action
+    local targets = context.targets
 
     -- validate action
     if action == "" then
@@ -54,11 +54,11 @@ global function mode_default__handle(registry)
     end
 
     -- clean up targets
-    local untangled_targets = config__untangle_recipes(registry.recipes.groups, targets)
+    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, targets)
     if untangled_targets == nil then return end
 
     -- handle recipes
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local pod_actions = {
         create   = pod__create,
         recreate = pod__recreate,
@@ -70,9 +70,9 @@ global function mode_default__handle(registry)
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
-        if recipe ~= nil and recipe__validate(registry, recipe, target) then
+        if recipe ~= nil and recipe__validate(context, recipe, target) then
             --- action is valid at this point
-            pod_actions[action](recipe, registry.flags.simulate)
+            pod_actions[action](recipe, context.config.simulate)
         end
     end
 end

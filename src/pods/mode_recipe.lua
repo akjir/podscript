@@ -33,20 +33,20 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Edit recipe.
----@param registry table
+---@param context table
 ---@param name string
-local function mode_recipe__edit(registry, name)
-    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
+local function mode_recipe__edit(context, name)
+    local found = config__untangle_recipes(context.config.recipes.groups, { name })
     -- config__untangle_recipes already logs the error
     if found == nil then return end
 
-    local editor = registry.config.editor
+    local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
         return
     end
 
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
@@ -71,9 +71,9 @@ global function mode_recipe__help()
 end
 
 ---List recipes defined in config.
----@param registry table
-local function mode_recipe__list(registry)
-    if table.is_nil_or_empty(registry.recipes) or table.is_nil_or_empty(registry.recipes.groups) then
+---@param context table
+local function mode_recipe__list(context)
+    if table.is_nil_or_empty(context.config.recipes) or table.is_nil_or_empty(context.config.recipes.groups) then
         log.print("There are no recipes defined in config.")
         return
     end
@@ -81,7 +81,7 @@ local function mode_recipe__list(registry)
     local recipe_map = {}
     local recipe_list = {}
 
-    for _, group_targets in pairs(registry.recipes.groups) do
+    for _, group_targets in pairs(context.config.recipes.groups) do
         if type(group_targets) == "table" then
             for _, target in ipairs(group_targets) do
                 if type(target) == "string" and not string.begins_with(target, "@") then
@@ -110,7 +110,7 @@ local function mode_recipe__list(registry)
             prefix = " " .. prefix
         end
 
-        local recipe = recipe__load(registry.recipes.path, target, true)
+        local recipe = recipe__load(context.config.recipes.path, target, true)
         local recipe_name = ""
         local description = ""
 
@@ -136,14 +136,14 @@ local function mode_recipe__list(registry)
 end
 
 ---Print recipe content.
----@param registry table
+---@param context table
 ---@param name string
-local function mode_recipe__print(registry, name)
-    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
+local function mode_recipe__print(context, name)
+    local found = config__untangle_recipes(context.config.recipes.groups, { name })
     -- config__untangle_recipes already logs the error
     if found == nil then return end
 
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
     local lines = system.read_file_content_by_line(full_path)
@@ -156,19 +156,19 @@ local function mode_recipe__print(registry, name)
 end
 
 ---Handle recipe mode.
----@param registry table
-global function mode_recipe__handle(registry)
+---@param context table
+global function mode_recipe__handle(context)
     log.debug("Recipe mode is used.")
-    local action = registry.parameters[1]
+    local action = context.action
     if string.is_nil_or_empty(action) or action == "help" then
         mode_recipe__help()
         return
     end
     if action == "list" then
-        mode_recipe__list(registry)
+        mode_recipe__list(context)
         return
     end
-    local name = registry.parameters[2]
+    local name = context.parameters[2]
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
         return
@@ -182,5 +182,5 @@ global function mode_recipe__handle(registry)
     local execute = actions[action] or function(_, _)
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry, name)
+    execute(context, name)
 end

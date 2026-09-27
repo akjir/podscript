@@ -1,7 +1,7 @@
 ---
 id: PSP-005
 title: Architectural Refactoring: Explicit Context Table
-status: completed
+status: review
 type: architecture
 created: 2026-09-25
 updated: 2026-09-27
@@ -123,14 +123,14 @@ No user-facing syntax or schema changes. Internal variables named `registry` bec
 ### 3.1 Task Breakdown
 - [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [x] Refactor `main.lua`: Merge `startup_config` into the new `context` table and replace `registry` initialization.
-- [ ] Update `main__parse_arguments` to operate directly on the unified `context` object.
-- [ ] Implement `parse_action_and_targets_parameters` (or similar) in `main.lua` to populate `context.action` and untangled `context.targets` globally after config load. Rename it to `main__parse_action_and_targets`.
-- [ ] Update function signatures across all `mode_*.lua` handlers. (For `mode_command`, perform a shallow update only).
-- [ ] Optimize internal logic of modes (except `mode_command`) to utilize `context.action` and `context.targets` directly.
-- [ ] Update `config.lua` functions to accept and mutate `context`.
-- [ ] Build release (`lua build.lua`).
-- [ ] Verify that all existing tests pass (`lua test.lua --dev` & `lua test.lua`) without any modifications to the `tests/` directory.
-- [ ] Set status to `review` and request manual user review and approval.
+- [x] Update `main__parse_arguments` to operate directly on the unified `context` object.
+- [x] Implement `parse_action_and_targets_parameters` (or similar) in `main.lua` to populate `context.action` and untangled `context.targets` globally after config load. Rename it to `main__parse_action_and_targets`.
+- [x] Update function signatures across all `mode_*.lua` handlers. (For `mode_command`, perform a shallow update only).
+- [x] Optimize internal logic of modes (except `mode_command`) to utilize `context.action` and `context.targets` directly.
+- [x] Update `config.lua` functions to accept and mutate `context`.
+- [x] Build release (`lua build.lua`).
+- [x] Verify that all existing tests pass (`lua test.lua --dev` & `lua test.lua`) without any modifications to the `tests/` directory.
+- [x] Set status to `review` and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed` and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions

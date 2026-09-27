@@ -33,10 +33,10 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Create initial recipe and config files.
----@param registry table
-local function mode_init__create(registry)
+---@param context table
+local function mode_init__create(context)
     local recipe_path = build_full_path(".", "recipe", ".lua")
-    local config_path = registry.config_full_path or build_full_path("config", "", ".lua")
+    local config_path = context.config.path or build_full_path("config", "", ".lua")
 
     if system.file_exists(recipe_path) then
         log.error("File '" .. recipe_path .. "' already exists!")
@@ -105,12 +105,12 @@ global function mode_init__help()
 end
 
 ---Handle init mode.
----@param registry table
-global function mode_init__handle(registry)
+---@param context table
+global function mode_init__handle(context)
     log.debug("Init mode is used.")
-    local action, _ = parse_action_and_targets_parameters(registry)
+    local action = context.parameters[1] or ""
     if action == "" then
-        mode_init__create(registry)
+        mode_init__create(context)
         return
     end
 

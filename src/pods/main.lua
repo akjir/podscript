@@ -61,7 +61,9 @@ local function main__parse_arguments(context, arguments, modes)
             if string.begins_with(argument, "--config=") then
                 local _, value = split_argument(argument)
                 context.config.path = value
-                --TODO FOR AGENT: context.config.name = GET NAME FROM PATH (dont normalize - will happen later or isnt needed)
+                local filename = string.match(value, "([^/]+)$") or value
+                local name = string.match(filename, "(.+)%.[^%.]+$") or filename
+                context.config.name = name
             elseif argument == "--debug" then
                 log.debug_enabled = true
             else
@@ -79,6 +81,14 @@ local function main__parse_arguments(context, arguments, modes)
             end
         end
     end
+end
+
+---Parse the action and targets parameters from the context.
+---@param context table
+local function main__parse_action_and_targets(context)
+    local parameters = context.parameters
+    context.action = parameters[1] or ""
+    context.targets = table.move(parameters, 2, #parameters, 1, {})
 end
 
 ---Main function.
@@ -161,7 +171,12 @@ global function main(arguments)
     end
 
     -- build full config path
-    local config_full_path = build_full_path(context.config.path, "", ".lua")
+    local config_full_path = context.config.path
+    if config_full_path == "" then
+        config_full_path = build_full_path(config_name, "", ".lua")
+    else
+        config_full_path = build_full_path(context.config.path, "", ".lua")
+    end
 
     -- print debug message if non-default-configuration is used
     if log.debug_enabled and config_name ~= "config" then
@@ -170,8 +185,8 @@ global function main(arguments)
 
     context.config.path = config_full_path
 
-    -- handle init mode without loading existing configuration
-    if context.mode.selected == modes.init then
+    -- handle modes that do not require configuration
+    if context.mode.selected == modes.init or context.mode.selected == modes.help then
         context.mode.selected(context)
         return
     end
@@ -180,6 +195,8 @@ global function main(arguments)
     if not config__load_and_set(context) then
         return
     end
+
+    main__parse_action_and_targets(context)
 
     -- config simulate activates simulate mode if default mode is selected
     if context.config.simulate and context.mode.selected == modes["default"] then

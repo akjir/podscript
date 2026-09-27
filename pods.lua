@@ -30,7 +30,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "156.6b7bb19"
+local BUILD <const> = "167.13040de.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -838,52 +838,67 @@ end
 
 ---Loads PodScript config. Sets default values if missing.
 ---Returns false if fails to load a file or no recipes are defined.
----@param registry table
----@param config_full_path string
+---@param context table
+---@param test_path string|nil
 ---@return boolean
-local function config__load_and_set(registry, config_full_path)
-    local config, error, _ = system.load_lua_file(config_full_path)
+local function config__load_and_set(context, test_path)
+    -- backward compatibility for tests
+    local config_path = test_path
+    if context.config and context.config.path then
+        config_path = context.config.path
+    end
+    if not context.config then context.config = {} end
+    if not context.config.path then context.config.path = config_path end
+    if not context.config.pods then context.config.pods = { path = "" } end
+    if not context.config.recipes then context.config.recipes = { path = ".", groups = {} } end
+
+    local config, error, _ = system.load_lua_file(config_path)
     if config == nil then
         if error ~= nil then
             log.error(error)
         end
-        log.error("Couldn't load configuration '" .. config_full_path .. "'!")
+        log.error("Couldn't load configuration '" .. config_path .. "'!")
         return false
     end
 
-    -- config values
-    registry.config = config
-    registry.config.full_path = config_full_path
-    if registry.config.simulate == nil then
-        registry.config.simulate = true
-    end
-    if registry.config.editor == nil then
-        registry.config.editor = ""
+    -- merge loaded config into context.config
+    if config.simulate ~= nil then context.config.simulate = config.simulate end
+    if config.editor ~= nil then context.config.editor = config.editor end
+
+    if config.pods then
+        if config.pods.path ~= nil then context.config.pods.path = config.pods.path end
+        for k, v in pairs(config.pods) do
+            if k ~= "path" then context.config.pods[k] = v end
+        end
     end
 
-    -- pod values
-    if not registry.config.pods then
-        registry.config.pods = {}
-    end
-    if not registry.config.pods.path then
-        registry.config.pods.path = "" -- no path set, pods need to define a path
+    if config.recipes then
+        if config.recipes.path ~= nil then context.config.recipes.path = config.recipes.path end
+        if config.recipes.groups ~= nil then context.config.recipes.groups = config.recipes.groups end
+        for k, v in pairs(config.recipes) do
+            if k ~= "path" and k ~= "groups" then context.config.recipes[k] = v end
+        end
     end
 
-    -- recipes values
-    registry.recipes = config.recipes
-    if table.is_nil_or_empty(registry.recipes) then
-        log.error("No recipes defined in config '" .. config_full_path .. "'!")
+    -- set default path for recipes
+    if string.is_nil_or_empty(context.config.recipes.path) then
+        context.config.recipes.path = "."
+    end
+
+    -- check recipe values
+    if table.is_nil_or_empty(config.recipes) then
+        log.error("No recipes defined in config '" .. config_path .. "'!")
         return false
     else
-        if table.is_nil_or_empty(registry.recipes.groups) then
-            log.error("No recipes groups defined in configuration '" .. config_full_path .. "'!")
+        if table.is_nil_or_empty(config.recipes.groups) then
+            log.error("No recipes groups defined in configuration '" .. config_path .. "'!")
             return false
         end
-        -- set default path for recipes or correct them
-        if string.is_nil_or_empty(registry.recipes.path) then
-            registry.recipes.path = "."
-        end
     end
+    
+    -- backwards compatibility for code tests that expect registry.recipes
+    context.recipes = context.config.recipes
+    
     return true
 end
 
@@ -954,10 +969,10 @@ local function mode_command__validate(command_table, recipe)
 end
 
 ---Build and execute command.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param command_table table
-local function mode_command__execute(registry, recipe, command_table)
+local function mode_command__execute(context, recipe, command_table)
     local commands = table.create(8)
     commands[1] = "podman exec -it"
 
@@ -984,12 +999,12 @@ local function mode_command__execute(registry, recipe, command_table)
 
     system.exec(table.concat(commands, " "),
         "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
-        registry.flags.simulate, false)
+        context.flags.simulate, false)
 end
 
 ---Print command help.
-local function mode_command__help(registry)
-    if registry.flags.simulate then
+local function mode_command__help(context)
+    if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
         log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
@@ -1044,10 +1059,10 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
 end
 
 ---List all commands for a recipe.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param target string
-local function mode_command__list(registry, recipe, target)
+local function mode_command__list(context, recipe, target)
     if table.is_nil_or_empty(recipe.pod.commands) then
         log.print("There are no commands defined in recipe '" .. target .. "'.")
         return
@@ -1075,14 +1090,14 @@ local function mode_command__list(registry, recipe, target)
 end
 
 ---Handle recipe mode.
----@param registry table
-local function mode_command__handle(registry)
+---@param context table
+local function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = registry.parameters[1]
-    local command = registry.parameters[2]
+    local name = context.parameters[1]
+    local command = context.parameters[2]
 
     if string.is_nil_or_empty(name) or name == "help" then
-        mode_command__help(registry)
+        mode_command__help(context)
         return
     end
 
@@ -1091,13 +1106,13 @@ local function mode_command__handle(registry)
     end
 
     name = normalize_name(name)
-    local untangled_targets = config__untangle_recipes(registry.config.recipes.groups, { name })
+    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, { name })
     if untangled_targets == nil then return end
     local target = untangled_targets[1]
-    local recipe = recipe__load(registry.config.recipes.path, target)
-    if recipe ~= nil and recipe__validate(registry, recipe, target) then
+    local recipe = recipe__load(context.config.recipes.path, target)
+    if recipe ~= nil and recipe__validate(context, recipe, target) then
         if command == "list" then
-            mode_command__list(registry, recipe, target)
+            mode_command__list(context, recipe, target)
         else
             local command_table = nil
             local command_num = tonumber(command)
@@ -1117,7 +1132,7 @@ local function mode_command__handle(registry)
                 return
             end
             if mode_command__validate(command_table) then
-                mode_command__execute(registry, recipe, command_table)
+                mode_command__execute(context, recipe, command_table)
             end
         end
     end
@@ -1129,20 +1144,20 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Edit recipe.
----@param registry table
+---@param context table
 ---@param name string
-local function mode_recipe__edit(registry, name)
-    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
+local function mode_recipe__edit(context, name)
+    local found = config__untangle_recipes(context.config.recipes.groups, { name })
     -- config__untangle_recipes already logs the error
     if found == nil then return end
 
-    local editor = registry.config.editor
+    local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
         return
     end
 
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
@@ -1167,9 +1182,9 @@ local function mode_recipe__help()
 end
 
 ---List recipes defined in config.
----@param registry table
-local function mode_recipe__list(registry)
-    if table.is_nil_or_empty(registry.recipes) or table.is_nil_or_empty(registry.recipes.groups) then
+---@param context table
+local function mode_recipe__list(context)
+    if table.is_nil_or_empty(context.config.recipes) or table.is_nil_or_empty(context.config.recipes.groups) then
         log.print("There are no recipes defined in config.")
         return
     end
@@ -1177,7 +1192,7 @@ local function mode_recipe__list(registry)
     local recipe_map = {}
     local recipe_list = {}
 
-    for _, group_targets in pairs(registry.recipes.groups) do
+    for _, group_targets in pairs(context.config.recipes.groups) do
         if type(group_targets) == "table" then
             for _, target in ipairs(group_targets) do
                 if type(target) == "string" and not string.begins_with(target, "@") then
@@ -1206,7 +1221,7 @@ local function mode_recipe__list(registry)
             prefix = " " .. prefix
         end
 
-        local recipe = recipe__load(registry.recipes.path, target, true)
+        local recipe = recipe__load(context.config.recipes.path, target, true)
         local recipe_name = ""
         local description = ""
 
@@ -1232,14 +1247,14 @@ local function mode_recipe__list(registry)
 end
 
 ---Print recipe content.
----@param registry table
+---@param context table
 ---@param name string
-local function mode_recipe__print(registry, name)
-    local found = config__untangle_recipes(registry.config.recipes.groups, { name })
+local function mode_recipe__print(context, name)
+    local found = config__untangle_recipes(context.config.recipes.groups, { name })
     -- config__untangle_recipes already logs the error
     if found == nil then return end
 
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local full_path = build_full_path(recipe_path, name, ".lua")
 
     local lines = system.read_file_content_by_line(full_path)
@@ -1252,19 +1267,19 @@ local function mode_recipe__print(registry, name)
 end
 
 ---Handle recipe mode.
----@param registry table
-local function mode_recipe__handle(registry)
+---@param context table
+local function mode_recipe__handle(context)
     log.debug("Recipe mode is used.")
-    local action = registry.parameters[1]
+    local action = context.action
     if string.is_nil_or_empty(action) or action == "help" then
         mode_recipe__help()
         return
     end
     if action == "list" then
-        mode_recipe__list(registry)
+        mode_recipe__list(context)
         return
     end
-    local name = registry.parameters[2]
+    local name = context.parameters[2]
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
         return
@@ -1278,7 +1293,7 @@ local function mode_recipe__handle(registry)
     local execute = actions[action] or function(_, _)
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry, name)
+    execute(context, name)
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -1287,14 +1302,14 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Edit config.
----@param registry table
-local function mode_config__edit(registry)
-    local editor = registry.config.editor
+---@param context table
+local function mode_config__edit(context)
+    local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
         return
     end
-    local command = editor .. " " .. string.escape_shell(registry.config.full_path)
+    local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, "", false, true)
 end
 ---Print config help.
@@ -1312,9 +1327,9 @@ local function mode_config__help()
 end
 
 ---Print config.
----@param registry table
-local function mode_config__print(registry)
-    local lines = system.read_file_content_by_line(registry.config.full_path)
+---@param context table
+local function mode_config__print(context)
+    local lines = system.read_file_content_by_line(context.config.path)
     if not lines then return end
 
     for i = 1, #lines do
@@ -1324,10 +1339,10 @@ local function mode_config__print(registry)
 end
 
 ---Handle config mode.
----@param registry table
-local function mode_config__handle(registry)
+---@param context table
+local function mode_config__handle(context)
     log.debug("Config mode is used.")
-    local action, _ = parse_action_and_targets_parameters(registry)
+    local action = context.action
     if action == "" then
         action = "print"
     end
@@ -1339,7 +1354,7 @@ local function mode_config__handle(registry)
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry)
+    execute(context)
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -1348,10 +1363,11 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Handle default mode.
----@param registry table
-local function mode_default__handle(registry)
+---@param context table
+local function mode_default__handle(context)
     log.debug("Default mode is used.")
-    local action, targets = parse_action_and_targets_parameters(registry)
+    local action = context.action
+    local targets = context.targets
 
     -- validate action
     if action == "" then
@@ -1370,11 +1386,11 @@ local function mode_default__handle(registry)
     end
 
     -- clean up targets
-    local untangled_targets = config__untangle_recipes(registry.recipes.groups, targets)
+    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, targets)
     if untangled_targets == nil then return end
 
     -- handle recipes
-    local recipe_path = registry.recipes.path
+    local recipe_path = context.config.recipes.path
     local pod_actions = {
         create   = pod__create,
         recreate = pod__recreate,
@@ -1386,9 +1402,9 @@ local function mode_default__handle(registry)
         -- load recipe
         local recipe = recipe__load(recipe_path, target)
         -- handle recipe
-        if recipe ~= nil and recipe__validate(registry, recipe, target) then
+        if recipe ~= nil and recipe__validate(context, recipe, target) then
             --- action is valid at this point
-            pod_actions[action](recipe, registry.flags.simulate)
+            pod_actions[action](recipe, context.config.simulate)
         end
     end
 end
@@ -1399,17 +1415,17 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Handle simulate mode.
----@param registry table
-local function mode_simulate__handle(registry)
+---@param context table
+local function mode_simulate__handle(context)
     log.info("Simulate mode is active.")
-    registry.flags.simulate = true
-    local parameters = registry.parameters
+    context.flags.simulate = true
+    local parameters = context.parameters
     if parameters[1] == "command" then
         -- remove "command" from parameters
-        registry.parameters = table.move(parameters, 2, #parameters, 1, {})
-        mode_command__handle(registry)
+        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_command__handle(context)
     else
-        mode_default__handle(registry)
+        mode_default__handle(context)
     end
 end
 -- ------------------------------------------------------------------------- --
@@ -1419,8 +1435,8 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Handle help mode. Prints help.
----@param registry table
-local function mode_help__handle(registry)
+---@param context table
+local function mode_help__handle(context)
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
@@ -1452,10 +1468,10 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Create initial recipe and config files.
----@param registry table
-local function mode_init__create(registry)
+---@param context table
+local function mode_init__create(context)
     local recipe_path = build_full_path(".", "recipe", ".lua")
-    local config_path = registry.config_full_path or build_full_path("config", "", ".lua")
+    local config_path = context.config.path or build_full_path("config", "", ".lua")
 
     if system.file_exists(recipe_path) then
         log.error("File '" .. recipe_path .. "' already exists!")
@@ -1524,12 +1540,12 @@ local function mode_init__help()
 end
 
 ---Handle init mode.
----@param registry table
-local function mode_init__handle(registry)
+---@param context table
+local function mode_init__handle(context)
     log.debug("Init mode is used.")
-    local action, _ = parse_action_and_targets_parameters(registry)
+    local action = context.parameters[1] or ""
     if action == "" then
-        mode_init__create(registry)
+        mode_init__create(context)
         return
     end
 
@@ -1548,15 +1564,14 @@ end
 -- ------------------------------------------------------------------------- --
 
 ---Parse arguments and retuns true if error.
----@param registry table
+---@param context table
 ---@param arguments string[]
----@param startup_config table
 ---@param modes table
-local function main__parse_arguments(registry, arguments, startup_config, modes)
+local function main__parse_arguments(context, arguments, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        startup_config.mode_selected = modes.help
+        context.mode.selected = modes.help
         return
     end
     -- parse arguments
@@ -1566,24 +1581,35 @@ local function main__parse_arguments(registry, arguments, startup_config, modes)
         if string.begins_with(argument, "--") then
             if string.begins_with(argument, "--config=") then
                 local _, value = split_argument(argument)
-                startup_config.config_path = value
+                context.config.path = value
+                local filename = string.match(value, "([^/]+)$") or value
+                local name = string.match(filename, "(.+)%.[^%.]+$") or filename
+                context.config.name = name
             elseif argument == "--debug" then
                 log.debug_enabled = true
             else
                 local parameter, value = split_argument(argument)
-                registry.flags[parameter] = value
+                context.flags[parameter] = value
             end
             -- check if argument is a mode
         else
             local is_mode = (not has_seen_positional) and modes[argument]
             has_seen_positional = true
             if is_mode then
-                startup_config.mode_selected = modes[argument]
+                context.mode.selected = modes[argument]
             else
-                table.insert(registry.parameters, argument)
+                table.insert(context.parameters, argument)
             end
         end
     end
+end
+
+---Parse the action and targets parameters from the context.
+---@param context table
+local function main__parse_action_and_targets(context)
+    local parameters = context.parameters
+    context.action = parameters[1] or ""
+    context.targets = table.move(parameters, 2, #parameters, 1, {})
 end
 
 ---Main function.
@@ -1599,15 +1625,29 @@ global function main(arguments)
         simulate = mode_simulate__handle,
     }
 
-    local startup_config = {
-        config_path = "config",
-        mode_selected = modes.default,
-    }
+    local context = {
+        -- MUTABLE: Populated and mutated by config.lua loaders
+        config = {
+            name = "config", -- The provided config name
+            path = "",       -- The resolved full path to the config file
+            simulate = true, -- Default simulate value
+            editor = "",     -- Default editor
+            pods = { path = "" },
+            recipes = { path = ".", groups = {} },
+        },
 
-    local registry = {
-        config = {},
-        flags = {},
-        parameters = {},
+        -- READ-ONLY (RO): Parsed once from CLI
+        flags = {},          -- Parsed command-line flags (e.g., { ["--debug"] = true })
+        parameters = {},     -- Parsed positional command-line arguments
+
+        -- READ-ONLY (RO) after main.lua initialization
+        mode = {
+            selected = modes.default, -- The selected mode handler function
+        },
+
+        -- READ-ONLY (RO): Parsed centrally in main.lua after config load
+        action = "",         -- The single action to execute
+        targets = {},        -- The untangled list of targets
     }
 
     -- check lua version
@@ -1640,44 +1680,51 @@ global function main(arguments)
     end
 
     -- parse arguments
-    main__parse_arguments(registry, arguments, startup_config, modes)
+    main__parse_arguments(context, arguments, modes)
 
     log.debug("Debug mode is enabled.")
 
     -- normalize config name
-    local config_path = startup_config.config_path
-    if config_path ~= "config" and config_path ~= "" then
-        config_path = normalize_name(config_path)
+    local config_name = context.config.name
+    if config_name ~= "config" and config_name ~= "" then
+        config_name = normalize_name(config_name)
     end
 
     -- build full config path
-    local config_full_path = build_full_path(config_path, "", ".lua")
+    local config_full_path = context.config.path
+    if config_full_path == "" then
+        config_full_path = build_full_path(config_name, "", ".lua")
+    else
+        config_full_path = build_full_path(context.config.path, "", ".lua")
+    end
 
     -- print debug message if non-default-configuration is used
-    if log.debug_enabled and config_path ~= "config" then
+    if log.debug_enabled and config_name ~= "config" then
         log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
     end
 
-    registry.config_full_path = config_full_path
+    context.config.path = config_full_path
 
-    -- handle init mode without loading existing configuration
-    if startup_config.mode_selected == modes.init then
-        startup_config.mode_selected(registry)
+    -- handle modes that do not require configuration
+    if context.mode.selected == modes.init or context.mode.selected == modes.help then
+        context.mode.selected(context)
         return
     end
 
     -- parse config
-    if not config__load_and_set(registry, config_full_path) then
+    if not config__load_and_set(context) then
         return
     end
 
+    main__parse_action_and_targets(context)
+
     -- config simulate activates simulate mode if default mode is selected
-    if registry.config.simulate and startup_config.mode_selected == modes["default"] then
-        startup_config.mode_selected = modes["simulate"]
+    if context.config.simulate and context.mode.selected == modes["default"] then
+        context.mode.selected = modes["simulate"]
     end
 
     -- handle mode
-    startup_config.mode_selected(registry)
+    context.mode.selected(context)
 end
 
 -- prevent excecution when imported from test_suite

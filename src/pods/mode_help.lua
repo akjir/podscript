@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
 
 require "src.pods.header"
 
@@ -30,8 +29,8 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Handle help mode. Prints help.
----@param registry table
-global function mode_help__handle(registry)
+---@param context table
+global function mode_help__handle(context)
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")

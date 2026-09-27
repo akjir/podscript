@@ -48,10 +48,10 @@ local function mode_command__validate(command_table, recipe)
 end
 
 ---Build and execute command.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param command_table table
-local function mode_command__execute(registry, recipe, command_table)
+local function mode_command__execute(context, recipe, command_table)
     local commands = table.create(8)
     commands[1] = "podman exec -it"
 
@@ -78,12 +78,12 @@ local function mode_command__execute(registry, recipe, command_table)
 
     system.exec(table.concat(commands, " "),
         "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
-        registry.flags.simulate, false)
+        context.flags.simulate, false)
 end
 
 ---Print command help.
-local function mode_command__help(registry)
-    if registry.flags.simulate then
+local function mode_command__help(context)
+    if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
         log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
@@ -138,10 +138,10 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
 end
 
 ---List all commands for a recipe.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param target string
-local function mode_command__list(registry, recipe, target)
+local function mode_command__list(context, recipe, target)
     if table.is_nil_or_empty(recipe.pod.commands) then
         log.print("There are no commands defined in recipe '" .. target .. "'.")
         return
@@ -169,14 +169,14 @@ local function mode_command__list(registry, recipe, target)
 end
 
 ---Handle recipe mode.
----@param registry table
-global function mode_command__handle(registry)
+---@param context table
+global function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = registry.parameters[1]
-    local command = registry.parameters[2]
+    local name = context.parameters[1]
+    local command = context.parameters[2]
 
     if string.is_nil_or_empty(name) or name == "help" then
-        mode_command__help(registry)
+        mode_command__help(context)
         return
     end
 
@@ -185,13 +185,13 @@ global function mode_command__handle(registry)
     end
 
     name = normalize_name(name)
-    local untangled_targets = config__untangle_recipes(registry.config.recipes.groups, { name })
+    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, { name })
     if untangled_targets == nil then return end
     local target = untangled_targets[1]
-    local recipe = recipe__load(registry.config.recipes.path, target)
-    if recipe ~= nil and recipe__validate(registry, recipe, target) then
+    local recipe = recipe__load(context.config.recipes.path, target)
+    if recipe ~= nil and recipe__validate(context, recipe, target) then
         if command == "list" then
-            mode_command__list(registry, recipe, target)
+            mode_command__list(context, recipe, target)
         else
             local command_table = nil
             local command_num = tonumber(command)
@@ -211,7 +211,7 @@ global function mode_command__handle(registry)
                 return
             end
             if mode_command__validate(command_table) then
-                mode_command__execute(registry, recipe, command_table)
+                mode_command__execute(context, recipe, command_table)
             end
         end
     end

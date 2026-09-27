@@ -31,16 +31,16 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Handle simulate mode.
----@param registry table
-global function mode_simulate__handle(registry)
+---@param context table
+global function mode_simulate__handle(context)
     log.info("Simulate mode is active.")
-    registry.flags.simulate = true
-    local parameters = registry.parameters
+    context.flags.simulate = true
+    local parameters = context.parameters
     if parameters[1] == "command" then
         -- remove "command" from parameters
-        registry.parameters = table.move(parameters, 2, #parameters, 1, {})
-        mode_command__handle(registry)
+        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_command__handle(context)
     else
-        mode_default__handle(registry)
+        mode_default__handle(context)
     end
 end

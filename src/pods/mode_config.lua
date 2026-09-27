@@ -32,14 +32,14 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---Edit config.
----@param registry table
-local function mode_config__edit(registry)
-    local editor = registry.config.editor
+---@param context table
+local function mode_config__edit(context)
+    local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
         return
     end
-    local command = editor .. " " .. string.escape_shell(registry.config.full_path)
+    local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, "", false, true)
 end
 ---Print config help.
@@ -57,9 +57,9 @@ global function mode_config__help()
 end
 
 ---Print config.
----@param registry table
-local function mode_config__print(registry)
-    local lines = system.read_file_content_by_line(registry.config.full_path)
+---@param context table
+local function mode_config__print(context)
+    local lines = system.read_file_content_by_line(context.config.path)
     if not lines then return end
 
     for i = 1, #lines do
@@ -69,10 +69,10 @@ local function mode_config__print(registry)
 end
 
 ---Handle config mode.
----@param registry table
-global function mode_config__handle(registry)
+---@param context table
+global function mode_config__handle(context)
     log.debug("Config mode is used.")
-    local action, _ = parse_action_and_targets_parameters(registry)
+    local action = context.action
     if action == "" then
         action = "print"
     end
@@ -84,5 +84,5 @@ global function mode_config__handle(registry)
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
     end
-    execute(registry)
+    execute(context)
 end
