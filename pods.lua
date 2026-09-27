@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "170.6650693.dev"
+local BUILD <const> = "171.55f71b1.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -297,14 +297,6 @@ local function normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
----Parse the action and targets parameters from a registry.
----@param registry table The registry to parse.
----@return string, table # The action and targets.
-local function parse_action_and_targets_parameters(registry)
-    local parameters = registry.parameters
-    local targets = table.move(parameters, 2, #parameters, 1, {})
-    return parameters[1] or "", targets
-end
 
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
@@ -761,11 +753,11 @@ local function recipe__load(recipe_path, recipe_name, suppress_errors)
 end
 
 ---Validate recipe.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param file_name string
 ---@return boolean
-local function recipe__validate(registry, recipe, file_name)
+local function recipe__validate(context, recipe, file_name)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -802,12 +794,12 @@ local function recipe__validate(registry, recipe, file_name)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(registry.config.pods.path) then
+        if string.is_nil_or_empty(context.config.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(registry.config.pods.path, recipe.pod.name, "")
+            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -1265,7 +1257,7 @@ local function mode_recipe__handle(context)
         mode_recipe__list(context)
         return
     end
-    local name = context.parameters[2]
+    local name = context.targets[1]
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
         return

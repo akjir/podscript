@@ -52,11 +52,11 @@ global function recipe__load(recipe_path, recipe_name, suppress_errors)
 end
 
 ---Validate recipe.
----@param registry table
+---@param context table
 ---@param recipe table
 ---@param file_name string
 ---@return boolean
-global function recipe__validate(registry, recipe, file_name)
+global function recipe__validate(context, recipe, file_name)
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -93,12 +93,12 @@ global function recipe__validate(registry, recipe, file_name)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(registry.config.pods.path) then
+        if string.is_nil_or_empty(context.config.pods.path) then
             log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(registry.config.pods.path, recipe.pod.name, "")
+            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
             log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end

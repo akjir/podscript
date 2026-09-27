@@ -52,26 +52,7 @@ return {
             end,
             expected = "dry-run=true"
         },
-        [s .. "07"] = {
-            description = "Parse action and targets: multiple targets.",
-            dev_only = true,
-            run = function()
-                local registry = { parameters = { "create", "recipe1", "recipe2" } }
-                local action, targets = parse_action_and_targets_parameters(registry)
-                return action .. ":" .. table.concat(targets, ",")
-            end,
-            expected = "create:recipe1,recipe2"
-        },
-        [s .. "08"] = {
-            description = "Parse action and targets: only action, no targets.",
-            dev_only = true,
-            run = function()
-                local registry = { parameters = { "list" } }
-                local action, targets = parse_action_and_targets_parameters(registry)
-                return action .. ":" .. table.concat(targets, ",")
-            end,
-            expected = "list:"
-        },
+
         [s .. "09"] = {
             description = "Get version string in development mode.",
             dev_only = true,

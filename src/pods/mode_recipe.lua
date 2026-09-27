@@ -168,7 +168,7 @@ global function mode_recipe__handle(context)
         mode_recipe__list(context)
         return
     end
-    local name = context.parameters[2]
+    local name = context.targets[1]
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
         return

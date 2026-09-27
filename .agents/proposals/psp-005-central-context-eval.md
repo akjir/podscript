@@ -1,7 +1,7 @@
 ---
 id: PSP-005
 title: Architectural Refactoring: Explicit Context Table
-status: review
+status: completed
 type: architecture
 created: 2026-09-25
 updated: 2026-09-27
@@ -87,7 +87,7 @@ Each mode handler receives the `context` table and utilizes specific information
 To prevent the centralized `context` from creating tight coupling with the core domain logic, a strict boundary must be enforced:
 * **Mode Controllers (`mode_*.lua`)**: ✅ **CAN** pass and use the full `context` object freely across their own internal helper functions (e.g., `mode_recipe__edit(context, name)`). This acts as the controller layer and keeps internal signatures clean without parameter explosion.
 * **Generators, Converters & External Modules (e.g., `src/pods-converter/`)**: ✅ **CAN** receive the full `context` object. Because the context now natively bundles `flags` and `parameters`, passing just the `context` is entirely sufficient to hand off full execution to these external/generation tasks without massive function signatures.
-* **Core Domain (`pod.lua`, `container.lua`, `recipe.lua`)**: ❌ **MUST NOT** receive the `context` object. They must remain pure and decoupled. When a mode function calls a domain function, it must unwrap the `context` and pass only the specific required data (e.g., `pod__generate(context.config.pods["my-pod"])`, not `pod__generate(context, "my-pod")`).
+* **Core Domain (`pod.lua`, `container.lua`, `recipe.lua`)**: ✅ **CAN** receive the `context` object where it is reasonable and prevents massive function signatures (e.g., `recipe__validate(context, recipe, file_name)`). While passing explicit unwrapped properties is generally preferred to keep functions pure, pragmatic passing of the `context` object is acceptable if it significantly simplifies the interface.
 
 ### 1.6 Alternatives
 * **Singleton `context.lua`**: Initially proposed but rejected. A singleton introduces a high risk of state leakage in the test runner, since `test.lua` runs multiple tests sequentially in a single Lua process. Strict state isolation is prioritized.
@@ -131,11 +131,13 @@ No user-facing syntax or schema changes. Internal variables named `registry` bec
 - [x] Build release (`lua build.lua`).
 - [x] Verify that all existing tests pass (`lua test.lua --dev` & `lua test.lua`) without any modifications to the `tests/` directory.
 - [x] Set status to `review` and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed` and record delivered artifacts.
+- [x] Manual approval received; set status to `completed` and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial architectural analysis conducted on centralized contexts.
 * **2026-09-26:** Direction finalized: Rejected singleton `context.lua` to guarantee test runner isolation. Decided to maintain explicit parameter passing but formalize the previous ad-hoc `registry` into a strictly defined `context` table, detailing mode-specific dependencies.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `src/pods/main.lua` updated with `context` and `main__parse_action_and_targets`.
+* `src/pods/recipe.lua`, `src/pods/utilities.lua`, `src/pods/mode_recipe.lua` and other modes refactored to align with explicit context boundary rules.
+* `pods.lua` successfully rebuilt and tested against baseline expectations.

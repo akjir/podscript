@@ -10,7 +10,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `concept` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-003` | Volume Host Directory Verification & Automatic Creation | `feature` | `concept` | [psp-003-volume-dir-check.md](psp-003-volume-dir-check.md) |
 | `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `concept` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
-| `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `review` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
+| `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
 | `PSP-006` | Granular Container Targeting within Pods (`recipe/container`) | `feature` | `concept` | [psp-006-container-targeting.md](psp-006-container-targeting.md) |
 | `PSP-007` | Log Aggregation and Tailing (`logs` mode) | `feature` | `concept` | [psp-007-log-aggregation.md](psp-007-log-aggregation.md) |
 | `PSP-008` | Health-Aware Lifecycle Ordering | `feature` | `concept` | [psp-008-health-aware-lifecycle.md](psp-008-health-aware-lifecycle.md) |
