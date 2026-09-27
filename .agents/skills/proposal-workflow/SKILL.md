@@ -16,8 +16,8 @@ description: >-
 * **`concept`:** High-level idea, motivation, and JEP-style proposal (Part 1).
 * **`planned`:** Formal technical specification agreed: architecture, schema, and tests defined (Part 2).
 * **`in-progress`:** Active development following `podscript-dev-workflow` (TDD first). Pre-requisite: baseline test suites (`lua test.lua --dev` & `lua test.lua`) verified green before making changes. Tasks tracked in Part 3.
-* **`review`:** Implementation complete. Verification: dev tests (`lua test.lua --dev`), release build (`lua build.lua`), and release tests (`lua test.lua`) 100% green; changelog and docs prepared.
-* **`completed`:** Merged and verified; retained in board as permanent architectural record. Delivered artifacts logged.
+* **`review`:** Implementation complete. Verification: dev tests (`lua test.lua --dev`), release build (`lua build.lua`), and release tests (`lua test.lua`) 100% green; changelog and docs prepared. Awaits manual user review and approval.
+* **`completed`:** Manually reviewed and approved by user; merged and verified; retained in board as permanent architectural record. Delivered artifacts logged.
 * **`rejected`:** Dismissed or superseded; rationale documented in spec.
 
 ## 3. Creating a Proposal
@@ -34,7 +34,11 @@ description: >-
 3. **Promote to `review`:**
     * **Post-Verification (After):** Run `lua test.lua --dev`, execute release build (`lua build.lua`), and verify full release suite passes (`lua test.lua`).
     * **Documentation:** Update `CHANGELOG.md` and `USAGE.md` (see `update-documentation` skill).
-4. **Promote to `completed`:** Update frontmatter `status: completed` and update `.agents/proposals/README.md`. Document delivered artifacts in Part 3.3.
+    * **Update Status:** Set frontmatter `status: review` in the proposal spec and update `.agents/proposals/README.md`.
+    * **Request Approval:** Present deliverables to the user for manual inspection and verification. Never transition to `completed` autonomously.
+4. **Promote to `completed`:**
+    * **User Approval Required:** Advance to `completed` only after explicit manual approval from the user.
+    * **Finalize:** Update frontmatter `status: completed` and update `.agents/proposals/README.md`. Document delivered artifacts in Part 3.3.
 
 ## 5. Token Efficiency & Agent Guidelines
 * Always read `.agents/proposals/README.md` first to inspect existing proposal statuses.

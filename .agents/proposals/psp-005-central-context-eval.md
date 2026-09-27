@@ -130,6 +130,8 @@ No user-facing syntax or schema changes. Internal variables named `registry` bec
 - [ ] Update `config.lua` functions to accept and mutate `context`.
 - [ ] Build release (`lua build.lua`).
 - [ ] Verify that all existing tests pass (`lua test.lua --dev` & `lua test.lua`) without any modifications to the `tests/` directory.
+- [ ] Set status to `review` and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed` and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial architectural analysis conducted on centralized contexts.
