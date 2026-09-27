@@ -171,8 +171,8 @@ end
 ---@param context table
 global function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = context.parameters[1]
-    local command = context.parameters[2]
+    local name = context.action
+    local command = context.targets[1]
 
     if string.is_nil_or_empty(name) or name == "help" then
         mode_command__help(context)
@@ -183,10 +183,7 @@ global function mode_command__handle(context)
         command = "list"
     end
 
-    name = normalize_name(name)
-    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, { name })
-    if untangled_targets == nil then return end
-    local target = untangled_targets[1]
+    local target = name
     local recipe = recipe__load(context.config.recipes.path, target)
     if recipe ~= nil and recipe__validate(context, recipe, target) then
         if command == "list" then

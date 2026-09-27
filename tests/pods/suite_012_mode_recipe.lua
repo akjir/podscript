@@ -25,7 +25,7 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "print", "unknown" },
             expectations = {
-                { 5, "ERROR: Recipe 'unknown' not found in config." },
+                { 4, "ERROR: Recipe 'unknown' not found in config." },
             },
         },
         [s .. "04"] = {
@@ -41,7 +41,7 @@ return {
             config = "config_005_recipes",
             parameters = { "recipe", "unknown", "recipe_002_no_pod" },
             expectations = {
-                { 4, "ERROR: Unknown action: unknown" },
+                { 6, "ERROR: Unknown action: unknown" },
             },
         },
         [s .. "06"] = {

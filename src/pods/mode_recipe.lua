@@ -36,8 +36,7 @@ global<const> *
 ---@param context table
 ---@param name string
 local function mode_recipe__edit(context, name)
-    local found = config__untangle_recipes(context.config.recipes.groups, { name })
-    -- config__untangle_recipes already logs the error
+    local found = name
     if found == nil then return end
 
     local editor = context.config.editor
@@ -139,8 +138,7 @@ end
 ---@param context table
 ---@param name string
 local function mode_recipe__print(context, name)
-    local found = config__untangle_recipes(context.config.recipes.groups, { name })
-    -- config__untangle_recipes already logs the error
+    local found = name
     if found == nil then return end
 
     local recipe_path = context.config.recipes.path

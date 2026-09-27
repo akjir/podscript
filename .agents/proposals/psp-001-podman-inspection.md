@@ -28,7 +28,9 @@ PodScript manages recipes, pods, and container lifecycles declaratively, but ins
 
 ### 1.4 Description
 * **CLI Command:**
-    * `pods status [NAME]` or `pods ps [NAME]`
+    * `pods status [TARGETS]`
+    * Because `status` is implemented as an action in the `default` mode, the command structure adheres to the required `pods [MODE] [ACTION] [TARGETS]` format (where the `default` mode can be omitted).
+    * If `status` is invoked without any targets, the status of *all* managed containers will be displayed.
 * **Output:**
     * Dependency-free structured table on stdout (Pod, Container Name, Status/Health, Ports, Uptime).
 
@@ -41,8 +43,8 @@ PodScript manages recipes, pods, and container lifecycles declaratively, but ins
 
 ### 2.1 Architecture & Affected Modules
 * **Affected Files:**
-    * `src/pods/main.lua` (new mode/subcommand dispatch)
-    * `src/pods/mode_status.lua` or `src/pods/mode_command.lua`
+    * `src/pods/main.lua` (if parsing needs adjusting, though likely unchanged for default mode actions)
+    * `src/pods/mode_default.lua` (new action dispatch for `status`)
     * `src/pods/system.lua`
 
 ### 2.2 Schema & Syntax Changes
@@ -58,18 +60,24 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 ### 2.4 Testing Strategy
 * Mock podman execution output in test suites.
 * Verify empty list, running containers, unhealthy containers, stopped containers.
-* Test suite in `tests/pods/suite_017_mode_status.lua`.
+* Verify correct behavior when no targets are specified (should list all).
+* Test suite in `tests/pods/suite_017_action_status.lua` (or similar).
 
 ---
 
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Create test stubs in `tests/pods/suite_017_mode_status.lua`.
+- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [ ] Create test stubs in `tests/pods/suite_017_action_status.lua`.
 - [ ] Implement core logic for parsing `podman ps` output.
-- [ ] Implement command dispatch in `src/pods/main.lua` and `src/pods/mode_status.lua`.
+- [ ] Implement action dispatch in `src/pods/mode_default.lua`.
+- [ ] Build release (`lua build.lua`).
+- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.
+- [ ] Set status to `review` and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed` and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.

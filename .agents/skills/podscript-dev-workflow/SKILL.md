@@ -22,9 +22,10 @@ description: >-
 
 ## 3. Testing (`test.lua`)
 * **Locations:** `tests/pods/suite_*.lua` and `tests/pods-converter/suite_*.lua`.
-* **IDs:** Explicit 5-digit literal IDs: 3-digit suite + 2-digit test (e.g. `00401`).
+* **IDs:** Explicit 5-digit literal IDs: 3-digit suite + 2-digit test (e.g. `00401`). Found in comments next to test definition (e.g. `[s .. "01"] = { -- 00401`).
 * **Types:** Mode tests (CLI output capture vs `expectations`), Code tests (`run` function vs `expected`).
 * **Dev-Only:** `dev_only = true` skips test in release mode (for internal functions localized during build).
+* **Failures:** When a test fails, ALWAYS re-run it directly with its ID (e.g., `lua test.lua 00101 --dev`) to get the extended stack trace.
 
 ## 4. Changelog Rules (`CHANGELOG.md`)
 * **Format:** [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) sections (`Added`, `Changed`, `Fixed`, `Removed`).

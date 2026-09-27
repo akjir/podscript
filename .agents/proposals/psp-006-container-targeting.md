@@ -31,6 +31,8 @@ In multi-container pods (e.g. `web` + `redis` + `db`), updating or restarting a 
 ### 1.4 Description
 Users will be able to target specific containers within a pod using the `recipe/container` syntax for CLI actions. The following actions will be supported: `pods create mypod/app`, `pods update mypod/app`, `pods remove mypod/app`, `pods recreate mypod/app`.
 
+* **Note on Groups:** Container targeting cannot be used in combination with recipe groups (e.g., `@group/container` or `@group:container` is strictly forbidden). Group expansion applies exclusively to the base recipe targets.
+
 Lifecycle Rules:
 * **`create` / `recreate`:**
     * Pre-check: `podman pod exists <pod_name>`.

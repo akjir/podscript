@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "171.55f71b1.dev"
+local BUILD <const> = "172.1ad52fb.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -880,52 +880,6 @@ local function config__load_and_set(context)
     return true
 end
 
----Untangles recipe groups. Respects target order.
----First appearance of target stays, duplicates will be removed.
----Returns nil if a group or a recipe is not found.
----@param groups table
----@param targets table
----@return table|nil
-local function config__untangle_recipes(groups, targets)
-    log.debug("Targets   - " .. table.concat(targets, " "))
-    local untangled = {}
-
-    for i = 1, #targets do
-        local target = targets[i]
-
-        -- handle group
-        if string.begins_with(target, "@") then
-            local group_recipes = groups[target:sub(2)] -- remove @ from target
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return nil
-            end
-
-            table.append(untangled, group_recipes)
-        else -- handle single target
-            local found = nil
-
-            for _, group_targets in pairs(groups) do
-                if table.contains(group_targets, target) then
-                    found = target
-                    break
-                end
-            end
-
-            if found == nil then
-                log.error("Recipe '" .. target .. "' not found in config.")
-                return nil
-            else
-                table.insert(untangled, found)
-            end
-        end
-    end
-
-    untangled = table.remove_duplicates(untangled)
-    log.debug("Untangled - " .. table.concat(untangled, " "))
-    return untangled
-end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Command
@@ -1071,8 +1025,8 @@ end
 ---@param context table
 local function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = context.parameters[1]
-    local command = context.parameters[2]
+    local name = context.action
+    local command = context.targets[1]
 
     if string.is_nil_or_empty(name) or name == "help" then
         mode_command__help(context)
@@ -1083,10 +1037,7 @@ local function mode_command__handle(context)
         command = "list"
     end
 
-    name = normalize_name(name)
-    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, { name })
-    if untangled_targets == nil then return end
-    local target = untangled_targets[1]
+    local target = name
     local recipe = recipe__load(context.config.recipes.path, target)
     if recipe ~= nil and recipe__validate(context, recipe, target) then
         if command == "list" then
@@ -1125,8 +1076,7 @@ end
 ---@param context table
 ---@param name string
 local function mode_recipe__edit(context, name)
-    local found = config__untangle_recipes(context.config.recipes.groups, { name })
-    -- config__untangle_recipes already logs the error
+    local found = name
     if found == nil then return end
 
     local editor = context.config.editor
@@ -1228,8 +1178,7 @@ end
 ---@param context table
 ---@param name string
 local function mode_recipe__print(context, name)
-    local found = config__untangle_recipes(context.config.recipes.groups, { name })
-    -- config__untangle_recipes already logs the error
+    local found = name
     if found == nil then return end
 
     local recipe_path = context.config.recipes.path
@@ -1363,9 +1312,8 @@ local function mode_default__handle(context)
         return
     end
 
-    -- clean up targets
-    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, targets)
-    if untangled_targets == nil then return end
+    -- targets are already untangled
+    local untangled_targets = targets
 
     -- handle recipes
     local recipe_path = context.config.recipes.path
@@ -1584,10 +1532,88 @@ end
 
 ---Parse the action and targets parameters from the context.
 ---@param context table
-local function main__parse_action_and_targets(context)
+local function main__parse_action_and_targets(context, modes)
     local parameters = context.parameters
-    context.action = parameters[1] or ""
-    context.targets = table.move(parameters, 2, #parameters, 1, {})
+    
+    local is_command = context.mode.selected == modes.command
+    local param_offset = 0
+    
+    if context.mode.selected == modes.simulate and parameters[1] == "command" then
+        is_command = true
+        param_offset = 1
+    end
+
+    local raw_targets = {}
+    if is_command then
+        local target = parameters[1 + param_offset]
+        if target then table.insert(raw_targets, target) end
+        context.targets = { parameters[2 + param_offset] }
+    else
+        context.action = parameters[1] or ""
+        raw_targets = table.move(parameters, 2, #parameters, 1, {})
+    end
+
+    if log.debug_enabled and not table.is_nil_or_empty(raw_targets) then
+        log.debug("Targets   - " .. table.concat(raw_targets, " "))
+    end
+
+    local untangled = {}
+
+    local groups = {}
+    if context.config and context.config.recipes and context.config.recipes.groups then
+        groups = context.config.recipes.groups
+    end
+
+    for i = 1, #raw_targets do
+        local target = raw_targets[i]
+
+        if string.begins_with(target, "@") then
+            if string.find(target, "/") or string.find(target, ":") then
+                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+                return false
+            end
+            local group_name = string.sub(target, 2)
+            local group_recipes = groups[group_name]
+
+            if group_recipes == nil then
+                log.error("Unknown recipe group '" .. target .. "'.")
+                return false
+            end
+
+            table.append(untangled, group_recipes)
+        else
+            if is_command and (target == "help" or target == "") then
+                table.insert(untangled, target)
+            else
+                local found = nil
+                for _, group_targets in pairs(groups) do
+                    if table.contains(group_targets, target) then
+                        found = target
+                        break
+                    end
+                end
+
+                if found == nil then
+                    log.error("Recipe '" .. target .. "' not found in config.")
+                    return false
+                else
+                    table.insert(untangled, found)
+                end
+            end
+        end
+    end
+
+    local final_untangled = table.remove_duplicates(untangled)
+    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
+        log.debug("Untangled - " .. table.concat(final_untangled, " "))
+    end
+
+    if is_command then
+        context.action = final_untangled[1] or ""
+    else
+        context.targets = final_untangled
+    end
+    return true
 end
 
 ---Main function.
@@ -1694,7 +1720,9 @@ global function main(arguments)
         return
     end
 
-    main__parse_action_and_targets(context)
+    if not main__parse_action_and_targets(context, modes) then
+        return
+    end
 
     -- config simulate activates simulate mode if default mode is selected
     if context.config.simulate and context.mode.selected == modes["default"] then

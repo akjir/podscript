@@ -10,9 +10,9 @@ return {
             expectations = {
                 { 1,  "DEBUG: Debug mode is enabled." },
                 { 2,  "DEBUG: Config './tests/pods/configs/config_007_pods.lua' is used." },
-                { 3,  "INFO: Simulate mode is active." },
-                { 5,  "DEBUG: Targets   - @nona" },
-                { 6,  "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
+                { 5,  "INFO: Simulate mode is active." },
+                { 3,  "DEBUG: Targets   - @nona" },
+                { 4,  "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path" },
                 { 7,  "INFO: No pod path in recipe 'recipe_007_simple_pod_no_name_and_path' set. Path '/pods/si_po' used." },
                 { 8,  "Create pod 'Simple Pod' ('si_po'): " },
                 { 9,  "podman pod create --name si_po;" },

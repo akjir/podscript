@@ -53,9 +53,8 @@ global function mode_default__handle(context)
         return
     end
 
-    -- clean up targets
-    local untangled_targets = config__untangle_recipes(context.config.recipes.groups, targets)
-    if untangled_targets == nil then return end
+    -- targets are already untangled
+    local untangled_targets = targets
 
     -- handle recipes
     local recipe_path = context.config.recipes.path

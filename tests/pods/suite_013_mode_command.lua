@@ -8,7 +8,7 @@ return {
             description = "Print command help.",
             parameters = { "command", "help" },
             expectations = {
-                { 6, "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]" },
+                { 8, "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]" },
             },
         },
         [s .. "02"] = {
@@ -161,7 +161,7 @@ return {
             description = "Recipe not found in config.",
             parameters = { "command", "unknown" },
             expectations = {
-                { 5, "ERROR: Recipe 'unknown' not found in config." },
+                { 4, "ERROR: Recipe 'unknown' not found in config." },
             },
         },
     }
