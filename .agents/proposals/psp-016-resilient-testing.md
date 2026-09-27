@@ -12,7 +12,7 @@ updated: 2026-09-27
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-A comprehensive redesign of the `test.lua` testing framework to decouple test expectations from exact runtime line indices and execution side-effects, while drastically improving developer and AI agent experience via log provenance, fuzzy matching, smart diffing, and unit test isolation.
+A comprehensive redesign of the `test.lua` testing framework to decouple test expectations from exact runtime line indices and execution side-effects, while drastically improving developer and AI agent experience via log provenance, fuzzy matching, smart diffing, and unit test isolation. 
 
 ### 1.2 Motivation
 Currently, the testing framework asserts that specific log outputs appear at exact line indices in an `output_stack`. Any structural change in verbosity, execution timing, or order of debug logs shifts these indices, causing cascading false-positive failures across the entire test suite. For instance, the PSP-005 refactoring shifted logs by two lines, which caused 172 tests to fail despite the business logic remaining perfectly intact. 
@@ -21,19 +21,22 @@ Furthermore, when tests fail, the output lacks context (where did a log originat
 
 ### 1.3 Goals & Non-Goals
 * **Goals:**
-  * Eliminate strict line index assertions in favor of logic-based expectations (`contains`, `sequence`).
+  * Eliminate strict line index assertions entirely in favor of logic-based expectations (`contains`, `sequence`, `not_contains`, `matches`, `count`).
   * Embed log provenance (file and line number) into output stack traces.
   * Prevent premature test bailout (capture all expectation failures per test).
   * Introduce JSON output reporting and grouped failure summaries to optimize AI context.
+  * Add developer ergonomics: `--fail-fast` flag and execution time measurement.
   * Support isolated unit tests without invoking the full E2E `main()` CLI lifecycle.
 * **Non-Goals:**
   * Replacing the custom Lua test framework with an external testing library (violates the zero external dependency rule).
   * Modifying existing business logic inside `src/pods/` (this proposal is strictly test infrastructure).
+  * Maintaining legacy fallback support for exact indices.
 
 ### 1.4 Description
-The test execution framework (`test.lua`) will be refactored. Test definitions in `suite_*.lua` files will shift from array-index based expectations (`{ index, "string" }`) to logic-based assertions (`contains`, `matches`, `not_contains`, `sequence`). 
+The test execution framework (`test.lua`) will be refactored. Test definitions in `suite_*.lua` files will shift from array-index based expectations to logic-based assertions (`contains`, `sequence`, `not_contains`, `matches`, `count`).
+The legacy `exact` matching will be completely removed to force robust testing. 
 The `print_to_stack` override will utilize `debug.getinfo()` to automatically prefix captured logs with their origin file and line number. 
-A new CLI flag `--json` will format the test output into structured JSON for automated consumption. The runner will capture all expectation failures for a given test before aborting, presenting a complete diff and grouped failure summaries at the end. Finally, a new `execute_unit_test` API will be provided to invoke specific internal functions with mocked `context` objects for true unit testing.
+New CLI flags (`--json`, `--fail-fast`) will be added to the existing CLI structure without breaking current execution modes. The runner will capture all expectation failures for a given test before aborting, presenting a grouped failure summary at the end. Finally, execution time tracking and a new `execute_unit_test` API will be provided.
 
 ### 1.5 Alternatives
 * **Keep Exact Index Matching but build migration scripts:** We could build a script that auto-updates indices when code changes. However, this still breaks tests on trivial changes and treats symptoms rather than the root architectural issue.
@@ -43,34 +46,68 @@ A new CLI flag `--json` will format the test output into structured JSON for aut
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `test.lua`: Refactored core execution loop (`execute_mode_test`), log capture (`print_to_stack`), and output reporting.
+* `test.lua`: Refactored core execution loop (`execute_mode_test`), log capture (`print_to_stack`), argument parsing, and output reporting.
 * `tests/pods/suite_*.lua`: Refactored expectation definitions.
+* `USAGE.md` & `README.md`: Documentation for new CLI test flags (`--json`, `--fail-fast`).
+* `.agents/skills/podscript-dev-workflow/SKILL.md`: Update test workflow documentation regarding the new resilient testing schema and usage.
 
 ### 2.2 Schema & Syntax Changes
-Test cases will adopt a new structure for expectations:
+Test cases will adopt a new structure for expectations. The legacy `exact` schema is removed.
 ```lua
 expectations = {
     contains = { "ERROR: Recipe 'invalid' not found in config." },
     sequence = { "DEBUG: Targets", "DEBUG: Untangled", "DEBUG: Default mode is used." },
     not_contains = { "WARNING: Command has no description." },
-    exact = { [5] = "INFO: Simulate mode is active." } -- Legacy fallback support
+    matches = { "^%[.*%] INFO:.*" }, -- Lua patterns / Regex support
+    count = { ["DEBUG: Step executed"] = 3 } -- Ensures exact occurrence count
 }
 ```
 
 ### 2.3 Implementation Details
-1. **Log Provenance:** Update `print_to_stack` in `test.lua` to call `debug.getinfo(3)` and track callers (e.g., `[main.lua:148] DEBUG: ...`).
-2. **Assertion Engine:** Modify `execute_mode_test` to process the new expectation tables.
-   * `contains`: Checks if a string exists anywhere in `output_stack`.
-   * `sequence`: Checks relative order of a list of strings, verifying they appear sequentially (though not necessarily adjacently).
-   * `exact`: Retains legacy exact index matching.
-3. **Failure Accumulation:** Run all assertions for a test. If failures occur, print a unified diff with visual indicators (e.g., `Hint: Expected string missing at line 5, found at line 4`).
-4. **Grouped Summaries:** Maintain a table of failure reasons. At the end of execution, print summaries like `12 tests failed missing string: 'Simulate mode'`.
-5. **Unit Testing API:** Provide `execute_unit_test(func, ...)` in `test.lua` that suppresses global side-effects and tests function return values directly.
-6. **Migration:** Write a Lua migration script to convert existing tests from `{ index, "string" }` to `sequence = { ... }`.
+
+1. **CLI Argument Parsing & State Management:**
+   * Extend the `arg` loop to detect `--json` (sets global `use_json = true`) and `--fail-fast` (sets global `fail_fast = true`).
+   * Retain the logic where any argument not starting with `--` is treated as `single_test_name` (handling groups like `001` or single tests `00101`).
+
+2. **JSON Output Reporting (`--json`):**
+   * **Purpose:** Plain text console output is hard for CI pipelines and AI agents to parse. JSON provides a structured, predictable data format.
+   * **Behavior:** When `--json` is active, standard interactive `print()` calls during test execution are suppressed.
+   * **Implementation:** Test results (name, status, execution time, specific assertion errors, and the output stack for failed tests) are pushed into a global Lua table `test_report`. At the very end of `test.lua`, a lightweight, custom Lua-to-JSON serializer function (added directly to `test.lua` to maintain zero external dependencies) converts this table into a JSON string and prints it to `stdout` once.
+
+3. **Log Provenance:**
+   * **Purpose:** Instantly identify exactly which file and line produced a specific log output.
+   * **Implementation:** Update `print_to_stack` to dynamically locate the caller. It loops through `debug.getinfo(level, "Sl")` starting from `level = 2` up to `6`. It skips any `short_src` that contains `log.lua` or `test.lua`. Once the real caller is found, it extracts the base filename via pattern matching (e.g., `([^/\\]+)$`) and prepends `[filename.lua:line] ` to the captured log string in `output_stack`.
+
+4. **Assertion Engine:**
+   Modify `execute_mode_test` to process the new expectation tables. It evaluates all keys present:
+   * `contains`: Loops over `output_stack` using `string.find(line, expected, 1, true)`.
+   * `sequence`: Maintains a `current_idx`. Finds the first string, updates `current_idx` to the found line, then searches for the next string starting from `current_idx`. Fails if the sequence is broken.
+   * `not_contains`: Fails if `string.find(line, not_expected, 1, true)` is found anywhere in the stack.
+   * `matches`: Uses `string.find(line, pattern, 1, false)` to evaluate Lua patterns (Regex equivalent).
+   * `count`: Loops over `output_stack`, increments a counter for every match, and asserts it equals the expected integer.
+
+5. **Failure Accumulation:**
+   * **Purpose:** Show all reasons a test failed, rather than aborting on the first mismatch.
+   * **Implementation:** Instead of returning `false` on the first error, `execute_mode_test` collects error descriptions into a `local errors = {}` table. After evaluating all assertions, if `#errors > 0`, it prints all collected errors for that test along with the `output_stack`, then returns false.
+
+6. **Grouped Summaries & Timings:**
+   * **Summaries:** A global table `failure_summaries = {}` tracks reasons. In the main loop, if a test fails, we increment `failure_summaries[error_string]`. At the end of execution, print a grouped summary (e.g., `12x : Missing in sequence: 'DEBUG: Targets'`).
+   * **Timings:** Add `local start_time = os.clock()` at the beginning of `test.lua` and print the elapsed time at the end (e.g., `All tests passed in 0.45s`).
+
+7. **Fail Fast (`--fail-fast`):**
+   * **Purpose:** Save time and context window space when developing by aborting immediately upon the first error.
+   * **Implementation:** In the test suite execution loops, immediately after `execute_test` returns, evaluate `if fail_fast and tests_count_failed > 0 then break end` to halt the runner.
+
+8. **Unit Testing API (`execute_unit_test`):**
+   * **Purpose:** Test isolated functions without the heavy side-effects of invoking `main(args)`.
+   * **Implementation:** A new function `execute_unit_test(test_code, test_table)`. It clears `output_stack`, uses `pcall` to safely invoke `test_table.run(unpack(test_table.args))` (catching crashes), evaluates the return value against `test_table.expected`, and finally runs the logic assertion engine against the `output_stack`.
+
+9. **Migration Script:**
+   * Write a temporary Lua script (e.g., `scripts/migrate_tests.lua`) that reads all `tests/pods/suite_*.lua` files, finds the legacy `expectations = { { 1, "..." }, { 2, "..." } }`, and rewrites them to the new `sequence = { "...", "..." }` syntax using file I/O operations.
 
 ### 2.4 Testing Strategy
-* Create a dedicated `suite_999_test_framework.lua` that executes dummy functions and asserts the new framework correctly identifies passes, failures, missing sequences, and exact line mismatches.
-* All existing 172 tests must continue to pass using the new `sequence` schema.
+* Create a dedicated `suite_999_test_framework.lua` that executes dummy functions and asserts the new framework correctly identifies passes, failures, missing sequences, and matches.
+* All existing 172 tests must continue to pass using the new `sequence`/`contains` schemas.
 
 ---
 
@@ -78,12 +115,15 @@ expectations = {
 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Implement log provenance (`debug.getinfo`) in `test.lua`.
-- [ ] Implement `contains`, `sequence`, and `exact` assertion engines in `execute_mode_test`.
-- [ ] Implement failure accumulation, diffing, and grouped summaries.
-- [ ] Implement `--json` flag and unit testing API.
+- [ ] Implement CLI argument parsing enhancements (`--fail-fast`, `--json`).
+- [ ] Implement log provenance (`debug.getinfo` iteration) in `test.lua`.
+- [ ] Implement logic assertion engine (`contains`, `sequence`, `not_contains`, `matches`, `count`) and remove `exact`.
+- [ ] Implement failure accumulation, grouped summaries, and `os.clock()` execution time tracking.
+- [ ] Implement unit testing API using `pcall`.
 - [ ] Create `suite_999_test_framework.lua` to test the framework itself.
-- [ ] Migrate all existing `suite_*.lua` files to the new `sequence` expectation schema.
+- [ ] Migrate all existing `suite_*.lua` files to the new expectation schema (no legacy fallbacks).
+- [ ] Update documentation (`USAGE.md`, `README.md`) to reflect new CLI test flags.
+- [ ] Update development skills (`podscript-dev-workflow`) to document the new resilient testing assertions and usage.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `CHANGELOG.md`.
@@ -92,6 +132,7 @@ expectations = {
 
 ### 3.2 Work Log & Decisions
 * **2026-09-27:** Initial concept drafted based on painful debugging experience during PSP-005 integration.
+* **2026-09-27:** Refined scope to completely remove legacy `exact` index matching. Added logic for `--fail-fast`, Lua pattern matching (`matches`), occurrence counting (`count`), and execution time measurements.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*
