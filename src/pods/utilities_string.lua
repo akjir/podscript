@@ -65,8 +65,8 @@ string.is_nil_or_empty = function(str)
 end
 
 ---Removes leading and trailing whitespaces.
----@param str string
----@return string
+---@param str string|nil
+---@return string|nil
 string.trim = function(str)
     if str == nil then return nil end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")

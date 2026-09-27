@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "179.05bcbb4.dev"
+local BUILD <const> = "181.42e9681"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -137,8 +137,8 @@ string.is_nil_or_empty = function(str)
 end
 
 ---Removes leading and trailing whitespaces.
----@param str string
----@return string
+---@param str string|nil
+---@return string|nil
 string.trim = function(str)
     if str == nil then return nil end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
@@ -665,6 +665,101 @@ local function container__update(container, pod, simulate)
 end
 -- ------------------------------------------------------------------------- --
 --
+--    SECTION Recipe
+--
+-- ------------------------------------------------------------------------- --
+
+---Load PodScript recipe.
+---@param recipe_path string
+---@param recipe_name string
+---@param suppress_errors boolean|nil
+---@return table|nil
+local function recipe__load(recipe_path, recipe_name, suppress_errors)
+    local full_path = build_full_path(recipe_path, recipe_name, ".lua")
+    local recipe, error, _ = system.load_lua_file(full_path)
+    if recipe == nil then
+        if not suppress_errors then
+            if error ~= nil then
+                log.error(error)
+            end
+            log.error("Couldn't load recipe '" .. full_path .. "'!")
+        end
+        return nil
+    else
+        return recipe
+    end
+end
+
+---Validate recipe.
+---@param context table
+---@param recipe table
+---@param file_name string
+---@return boolean
+local function recipe__validate(context, recipe, file_name)
+    -- test for pod config name
+    if string.is_nil_or_empty(recipe.name) then
+        log.error("No recipe name in recipe '" .. file_name .. "' set!")
+        return false
+    else
+        recipe.name = string.trim(recipe.name)
+    end
+
+    -- test for pod section
+    if table.is_nil_or_empty(recipe.pod) then
+        log.error("Pod section in recipe '" .. file_name .. "' not defined! or empty")
+        return false
+    end
+
+    -- test for pod name
+    -- pod name is optional
+    if string.is_nil_or_empty(recipe.pod.name) then
+        recipe.pod.name = normalize_name(recipe.name)
+    else
+        recipe.pod.name = normalize_name(recipe.pod.name)
+    end
+
+    -- test for commands
+    if table.is_nil_or_empty(recipe.pod.commands) then
+        recipe.pod.commands = {}
+    end
+
+    -- test for pod registry
+    if string.is_nil_or_empty(recipe.pod.registry) then
+        log.error("No default registry in recipe '" .. file_name .. "' set or empty!")
+        return false
+    end
+
+    -- test for valid pod path
+    if string.is_nil_or_empty(recipe.pod.path) then
+        -- if no pod path set in recipe use default path from config
+        if string.is_nil_or_empty(context.config.pods.path) then
+            log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
+            return false
+        else
+            -- if pod path not set use default path with pod name as folder name
+            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
+            log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
+            recipe.pod.path = path
+        end
+    end
+
+    -- test for container section
+    if table.is_nil_or_empty(recipe.containers) then
+        log.error("Container section in recipe '" .. file_name .. "' not defined or empty!")
+        return false
+    end
+
+    -- test if containers are valid
+    local pod_name = recipe.pod.name
+    for id = 1, #recipe.containers do
+        if not container__is_valid(recipe.containers[id], pod_name) then
+            return false
+        end
+    end
+    return true
+end
+-- ------------------------------------------------------------------------- --
+--
 --    SECTION Pod
 --
 -- ------------------------------------------------------------------------- --
@@ -951,101 +1046,6 @@ local function pod__status(context)
         end
         log.print(row_line)
     end
-end
--- ------------------------------------------------------------------------- --
---
---    SECTION Recipe
---
--- ------------------------------------------------------------------------- --
-
----Load PodScript recipe.
----@param recipe_path string
----@param recipe_name string
----@param suppress_errors boolean|nil
----@return table|nil
-local function recipe__load(recipe_path, recipe_name, suppress_errors)
-    local full_path = build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, error, _ = system.load_lua_file(full_path)
-    if recipe == nil then
-        if not suppress_errors then
-            if error ~= nil then
-                log.error(error)
-            end
-            log.error("Couldn't load recipe '" .. full_path .. "'!")
-        end
-        return nil
-    else
-        return recipe
-    end
-end
-
----Validate recipe.
----@param context table
----@param recipe table
----@param file_name string
----@return boolean
-local function recipe__validate(context, recipe, file_name)
-    -- test for pod config name
-    if string.is_nil_or_empty(recipe.name) then
-        log.error("No recipe name in recipe '" .. file_name .. "' set!")
-        return false
-    else
-        recipe.name = string.trim(recipe.name)
-    end
-
-    -- test for pod section
-    if table.is_nil_or_empty(recipe.pod) then
-        log.error("Pod section in recipe '" .. file_name .. "' not defined! or empty")
-        return false
-    end
-
-    -- test for pod name
-    -- pod name is optional
-    if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = normalize_name(recipe.name)
-    else
-        recipe.pod.name = normalize_name(recipe.pod.name)
-    end
-
-    -- test for commands
-    if table.is_nil_or_empty(recipe.pod.commands) then
-        recipe.pod.commands = {}
-    end
-
-    -- test for pod registry
-    if string.is_nil_or_empty(recipe.pod.registry) then
-        log.error("No default registry in recipe '" .. file_name .. "' set or empty!")
-        return false
-    end
-
-    -- test for valid pod path
-    if string.is_nil_or_empty(recipe.pod.path) then
-        -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(context.config.pods.path) then
-            log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
-            return false
-        else
-            -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
-            log.info("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
-            recipe.pod.path = path
-        end
-    end
-
-    -- test for container section
-    if table.is_nil_or_empty(recipe.containers) then
-        log.error("Container section in recipe '" .. file_name .. "' not defined or empty!")
-        return false
-    end
-
-    -- test if containers are valid
-    local pod_name = recipe.pod.name
-    for id = 1, #recipe.containers do
-        if not container__is_valid(recipe.containers[id], pod_name) then
-            return false
-        end
-    end
-    return true
 end
 -- ------------------------------------------------------------------------- --
 --
