@@ -1,0 +1,53 @@
+#!/bin/sh
+set -e
+
+ACTION=${1:-verify}
+
+# Handle 'verify' (or 'check' as an alias)
+if [ "$ACTION" = "verify" ] || [ "$ACTION" = "check" ]; then
+    if [ "$1" = "verify" ] || [ "$1" = "check" ]; then shift; fi
+    echo "=> [VERIFY] Running dev tests..."
+    lua test.lua --dev "$@"
+    echo "=> [VERIFY] Building..."
+    lua build.lua
+    echo "=> [VERIFY] Running release tests..."
+    lua test.lua "$@"
+    echo "=> All tasks completed successfully!"
+    exit 0
+fi
+
+case "$ACTION" in
+    test)
+        shift
+        if [ "$1" = "dev" ]; then
+            shift
+            echo "=> Running dev tests..."
+            lua test.lua --dev "$@"
+        elif [ "$1" = "release" ]; then
+            shift
+            echo "=> Running release tests..."
+            lua test.lua "$@"
+        else
+            # Run both dev and release tests without building
+            echo "=> Running dev tests..."
+            lua test.lua --dev "$@"
+            echo "=> Running release tests..."
+            lua test.lua "$@"
+        fi
+        ;;
+    build)
+        shift
+        echo "=> Building..."
+        lua build.lua "$@"
+        ;;
+    *)
+        # Default behavior for standalone IDs (e.g. `./task 01001`)
+        echo "=> [VERIFY] Running dev tests..."
+        lua test.lua --dev "$@"
+        echo "=> [VERIFY] Building..."
+        lua build.lua
+        echo "=> [VERIFY] Running release tests..."
+        lua test.lua "$@"
+        echo "=> All tasks completed successfully!"
+        ;;
+esac

@@ -10,7 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added `status` action to query and display runtime status of managed containers.
 - Added `--all` and `--full` flags for the `status` command.
-- Added `make` shell script to simplify the development and testing workflow.
+- Added `task` shell script to simplify the development and testing workflow.
+- Added `.task-completion.bash` to enable terminal tab-completion for the `task` script.
 - Added `init` mode to initialize default configuration and recipe files.
 
 ### Changed

@@ -15,7 +15,7 @@ Use whenever instructed to cut a release (e.g. "Release version 1.4.0"). Strictl
 2. **Branch Check:** `git branch --show-current` must be `main` (or designated release branch).
 3. **SemVer & Monotonicity:** Strip leading `v` (e.g. `v1.4.0` -> `1.4.0`). Must match SemVer regex `^%d+%.%d+%.%d+$` and be strictly greater than `VERSION` in `src/pods/header.lua`.
 4. **Tag Non-Existence:** `git rev-parse -q --verify "refs/tags/v<VERSION>"`. Abort if tag exists.
-5. **Dev Tests:** `./make dev` must pass with 0 errors.
+5. **Dev Tests:** `./task test dev` must pass with 0 errors.
 
 ---
 
@@ -30,13 +30,13 @@ Use whenever instructed to cut a release (e.g. "Release version 1.4.0"). Strictl
 * **Do NOT create an empty `## [Unreleased]` section** above it.
 
 ### Step 3: Compile Release Build
-1. Build release script: `lua build.lua --release`
+1. Build release script: `./task build --release`
 2. Verify `pods.lua` (lines 30–35):
    * `local VERSION <const> = "<VERSION>"` present.
    * `local BUILD <const> = "<count>.<hash>"` does **not** contain `.dev`.
 
 ### Step 4: Execute Full Test Suites
-Run both test suites: `./make dev && ./make test` (must pass with 0 errors).
+Run both test suites: `./task test` (must pass with 0 errors).
 
 ### Step 5: Smoke Test Release Banner
 Verify CLI banner: `lua pods.lua help | head -n 1`

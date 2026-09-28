@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "184.d291c94.dev"
+local BUILD <const> = "188.c17da35.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -138,9 +138,9 @@ end
 
 ---Removes leading and trailing whitespaces.
 ---@param str string|nil
----@return string|nil
+---@return string
 string.trim = function(str)
-    if str == nil then return nil end
+    if str == nil then return "" end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end

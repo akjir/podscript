@@ -634,17 +634,20 @@ pods --debug update web-service
 
 ## Development
 
-If you are developing PodScript itself, a `./make` script is provided to automate the edit-build-test cycle.
+If you are developing PodScript itself, a `./task` script is provided to automate the edit-build-test cycle.
 
 ```bash
-# Run dev tests, build release script, and run release tests
-./make
+# Verify (complete cycle: dev tests -> build -> release tests)
+./task verify
+./task verify 01001 --fail-fast
 
-# Run specific phases
-./make dev
-./make build
-./make test
+# Testing phases (without building)
+./task test            # Run both dev and release tests
+./task test dev        # Run only dev tests
+./task test release    # Run only release tests
 
-# Run specific test suites or tests
-./make 00101
+# Building
+./task build
 ```
+
+> **Note:** To enable terminal autocompletion for the `./task` script (e.g. typing `./task ver` + `Tab`), run `source .task-completion.bash` in your terminal. You can add this command to your `~/.bashrc` to make it permanent.

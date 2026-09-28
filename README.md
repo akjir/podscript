@@ -208,20 +208,26 @@ The codebase is organized modularly under `src/pods/` and compiled into a standa
 
 PodScript includes a comprehensive test framework and a build system that bundles the modular source files (`src/pods/`) into a single-file release script.
 
-The provided `./make` script simplifies the development cycle:
+The provided `./task` script simplifies the development cycle:
 
 ```bash
-# Run dev tests, build pods.lua, and run release tests
-./make
+# Verify (complete cycle: dev tests -> build -> release tests)
+./task verify
 
-# Run the complete cycle for a specific test ID or suite
-./make 001
-./make 00101
+# Verify for a specific test ID (works with flags like --fail-fast)
+./task verify 01001
+./task verify 01001 --fail-fast
 
-# Run specific tasks individually
-./make dev     # Run only development tests
-./make build   # Build pods.lua
-./make test    # Run only release tests
+# Test specific environments (without building)
+./task test            # Run both dev and release tests
+./task test dev        # Run only dev tests
+./task test release    # Run only release tests
+
+# You can always pass test IDs and flags
+./task test dev 01001 --fail-fast
+
+# Build
+./task build           # Build pods.lua
 ```
 
 You can also execute the internal scripts directly for more advanced options:
