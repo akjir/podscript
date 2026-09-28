@@ -137,29 +137,32 @@ local function main__parse_arguments(context, arguments, modes)
 end
 
 ---Parse the action and targets parameters from the context.
----@param context table
+---@param context table The runtime context containing parameters and configuration.
+---@param modes table The available execution modes.
+---@return boolean success True if parsing was successful, false otherwise.
 local function main__parse_action_and_targets(context, modes)
     local parameters = context.parameters
-    
-    local is_command = context.mode.selected == modes.command
     local param_offset = 0
-    
-    if context.mode.selected == modes.simulate and parameters[1] == "command" then
-        is_command = true
-        param_offset = 1
-    end
-    
-    local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and parameters[1] == "logs")
-    if context.mode.selected == modes.simulate and parameters[1] == "logs" then
+
+    local is_simulate = context.mode.selected == modes.simulate
+    if is_simulate and (parameters[1] == "command" or parameters[1] == "logs") then
         param_offset = 1
     end
 
+    local is_command = context.mode.selected == modes.command or (is_simulate and parameters[1] == "command")
+    local is_logs = context.mode.selected == modes.logs or (is_simulate and parameters[1] == "logs")
+
     local raw_targets = {}
+
     if is_command then
-        local target = parameters[1 + param_offset]
-        if target then table.insert(raw_targets, target) end
+        -- Syntax for command mode: podscript command <recipe> <command_to_execute>
+        local recipe_target = parameters[1 + param_offset]
+        if recipe_target then
+            table.insert(raw_targets, recipe_target)
+        end
         context.targets = { parameters[2 + param_offset] }
     else
+        -- Syntax for default mode: podscript <action> <target1> <target2> ...
         context.action = parameters[1 + param_offset] or ""
         raw_targets = table.move(parameters, 2 + param_offset, #parameters, 1, {})
     end
@@ -168,21 +171,23 @@ local function main__parse_action_and_targets(context, modes)
         log.debug("Targets   - " .. table.concat(raw_targets, " "))
     end
 
-    local untangled = {}
-
     local groups = {}
     if context.config and context.config.recipes and context.config.recipes.groups then
         groups = context.config.recipes.groups
     end
 
+    local untangled = {}
+
     for i = 1, #raw_targets do
         local target = raw_targets[i]
 
+        -- 1. Handle group targeting (e.g., @group_name)
         if string.begins_with(target, "@") then
             if string.find(target, "/") or string.find(target, ":") then
                 log.error("Container targeting is not supported for groups: '" .. target .. "'.")
                 return false
             end
+
             local group_name = string.sub(target, 2)
             local group_recipes = groups[group_name]
 
@@ -192,47 +197,54 @@ local function main__parse_action_and_targets(context, modes)
             end
 
             table.append(untangled, group_recipes)
+
+        -- 2. Handle specific edge cases (help or empty string)
+        elseif (is_command or context.action == "status") and (target == "help" or target == "") then
+            table.insert(untangled, target)
+
+        -- 3. Handle individual recipe targeting
         else
-            if (is_command or context.action == "status") and (target == "help" or target == "") then
-                table.insert(untangled, target)
-            else
-                local target_recipe = target
-                local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and context.parameters[1] == "logs")
-                if is_logs then
-                    local slash_pos = string.find(target, "/")
-                    if slash_pos then
-                        target_recipe = string.sub(target, 1, slash_pos - 1)
-                    end
-                end
+            local target_recipe = target
 
-                local found = nil
-                for _, group_targets in pairs(groups) do
-                    if table.contains(group_targets, target_recipe) then
-                        found = target
-                        break
-                    end
-                end
-
-                if found == nil then
-                    log.error("Recipe '" .. target_recipe .. "' not found in config.")
-                    return false
-                else
-                    table.insert(untangled, found)
+            -- Logs mode allows optional container paths (e.g., recipe/container)
+            if is_logs then
+                local slash_pos = string.find(target, "/")
+                if slash_pos then
+                    target_recipe = string.sub(target, 1, slash_pos - 1)
                 end
             end
+
+            -- Verify that the target recipe exists in the configuration groups
+            local is_valid_recipe = false
+            for _, group_targets in pairs(groups) do
+                if table.contains(group_targets, target_recipe) then
+                    is_valid_recipe = true
+                    break
+                end
+            end
+
+            if not is_valid_recipe then
+                log.error("Recipe '" .. target_recipe .. "' not found in config.")
+                return false
+            end
+
+            table.insert(untangled, target)
         end
     end
 
     local final_untangled = table.remove_duplicates(untangled)
+
     if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
         log.debug("Untangled - " .. table.concat(final_untangled, " "))
     end
 
+    -- Assign final processed values to context variables
     if is_command then
         context.action = final_untangled[1] or ""
     else
         context.targets = final_untangled
     end
+
     return true
 end
 
