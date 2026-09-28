@@ -119,3 +119,46 @@ global function recipe__validate(context, recipe, file_name)
     end
     return true
 end
+
+---Resolve a container name from a user specification (index, name, *relative).
+---@param recipe table
+---@param container_spec string|number
+---@return string|nil name
+global function recipe__resolve_container_name(recipe, container_spec)
+    if type(container_spec) == "number" or tonumber(container_spec) then
+        local container_index = tonumber(container_spec)
+        if container_index and recipe.containers[container_index] then
+            local container = recipe.containers[container_index]
+            container__ensure_name(container, recipe.pod.name, tostring(container_index))
+            return container.name
+        end
+    end
+
+    local spec_str = tostring(container_spec)
+    local container_name = normalize_name(spec_str)
+    local alternate_container_name
+
+    if string.begins_with(container_name, "*") then
+        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    else
+        alternate_container_name = recipe.pod.name .. "-" .. container_name
+    end
+
+    for i, container in ipairs(recipe.containers) do
+        container__ensure_name(container, recipe.pod.name, tostring(i))
+        if container.name == container_name then
+            return container.name
+        end
+    end
+
+    if alternate_container_name then
+        for i, container in ipairs(recipe.containers) do
+            container__ensure_name(container, recipe.pod.name, tostring(i))
+            if container.name == alternate_container_name then
+                return container.name
+            end
+        end
+    end
+
+    return nil
+end

@@ -80,6 +80,17 @@ return {
             },
         },
         [s .. "08"] = {
+            description = "Simulate logs for specific container (relative without asterisk).",
+            simulate = true,
+            parameters = { "logs", "recipe_006_commands/db" },
+            expectations = {
+                sequence = {
+                    "Execute log command: ",
+                    "podman pod logs -n --color -c cmd_pod-db cmd_pod;"
+                }
+            },
+        },
+        [s .. "08b"] = {
             description = "Simulate logs for specific container (absolute).",
             simulate = true,
             parameters = { "logs", "recipe_006_commands/cmd_pod-db" },

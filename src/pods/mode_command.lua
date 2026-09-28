@@ -59,17 +59,10 @@ local function mode_command__execute(context, recipe, command_table)
         commands[#commands + 1] = string.escape_shell(tostring(command_table.user))
     end
 
-    local container_name
-    if type(command_table.container) == "number" and recipe.containers[command_table.container] then
-        local container = recipe.containers[command_table.container]
-        container__ensure_name(container, recipe.pod.name, tostring(command_table.container))
-        container_name = container.name
-    else
-        container_name = tostring(command_table.container)
-        container_name = normalize_name(container_name)
-        if string.begins_with(container_name, "*") then
-            container_name = recipe.pod.name .. "-" .. container_name:sub(2)
-        end
+    local container_name = recipe__resolve_container_name(recipe, command_table.container)
+    if not container_name then
+        log.error("Container '" .. tostring(command_table.container) .. "' not found in recipe '" .. recipe.name .. "'.")
+        return false
     end
 
     commands[#commands + 1] = string.escape_shell(container_name)

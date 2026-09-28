@@ -332,7 +332,7 @@ pods logs follow recipe_name
 pods logs follow recipe_name/1
 
 # Show last 50 lines for a specific container by alternate name
-pods logs --tail=50 recipe_name/*app
+pods logs --tail=50 recipe_name/app
 ```
 
 ---
@@ -386,7 +386,7 @@ pod = {
 }
 ```
 
-- `container`: The target container. Can be an absolute name (`"db"`), a relative name prefixed with `*` (`"*db"` resolves to `<pod_name>-db`), or a 1-based numeric index into the recipe's `containers` array.
+- `container`: The target container. Can be an absolute name (`"pod_name-db"`), a relative name (`"db"`, previously denoted as `"*db"` in documentation), or a 1-based numeric index into the recipe's `containers` array. The prefix `*` can still be used to explicitly declare a relative name.
 - `execute`: The exact command string to execute inside the container.
 - `user`: (Optional) User ID or username to execute the command as (`-u`).
 - `description`: (Optional) Human-readable explanation shown in command listings.

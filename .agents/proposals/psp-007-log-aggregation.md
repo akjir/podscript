@@ -36,7 +36,7 @@ PodScript currently lacks a native way to view or tail logs for containers manag
   * `help`: Display command-line help for logs mode (Default when no arguments are provided).
 * **Target:**
   * `<recipe>`: Show logs for all containers in the recipe's pod.
-  * `<recipe>/<container>`: Filter logs to a specific container defined in the recipe. The `<container>` part can be a numeric index (e.g., `1` for the first container), a relative name (e.g., `*app` resolves to `<pod_name>-app`), or an exact name.
+  * `<recipe>/<container>`: Filter logs to a specific container defined in the recipe. The `<container>` part can be a numeric index (e.g., `1` for the first container), a relative name (e.g., `app` resolves to `<pod_name>-app`), or an exact absolute name.
 * **Options:**
   * `--tail <n>`: Output the specified number of lines at the end of the logs.
   * `--since <timestamp>`: Show logs since timestamp.
@@ -98,7 +98,7 @@ PodScript currently lacks a native way to view or tail logs for containers manag
 * **Test Suites:**
   * `tests/pods/suite_019_mode_logs.lua`: Verify the command builder accurately maps PodScript flags to `podman pod logs` flags.
   * **Mocking:** `os.execute` MUST be mocked or stubbed during unit tests to ensure the test suite does not hang indefinitely when testing `follow` commands.
-  * Validate container name resolution logic (e.g., `mypod/1` -> `-c mypod-ctr1`, `mypod/*app` -> `-c mypod-app`).
+  * Validate container name resolution logic (e.g., `mypod/1` -> `-c mypod-ctr1`, `mypod/app` -> `-c mypod-app`).
   * Verify edge case option parsing (e.g., `--since=1h`) and verify shell-escaping of timestamp values.
   * Validate simulation mode output format.
 * **Edge Cases & Failure Modes:**

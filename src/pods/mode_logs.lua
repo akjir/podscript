@@ -57,7 +57,7 @@ local function mode_logs__help(context)
     log.print("  --debug            enable debug output\n")
     log.print("TARGET:")
     log.print("  <recipe>             show logs for all containers in the recipe's pod")
-    log.print("  <recipe>/<container> filter logs to a specific container (index, *relative, absolute)")
+    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
 local function mode_logs__execute(context, action, target)
@@ -112,30 +112,10 @@ local function mode_logs__execute(context, action, target)
     end
 
     if container_spec and container_spec ~= "" then
-        local container_name
-        local container_index = tonumber(container_spec)
-        if container_index and loaded_recipe.containers[container_index] then
-            local container = loaded_recipe.containers[container_index]
-            container__ensure_name(container, loaded_recipe.pod.name, tostring(container_index))
-            container_name = container.name
-        else
-            container_name = normalize_name(container_spec)
-            if string.begins_with(container_name, "*") then
-                container_name = loaded_recipe.pod.name .. "-" .. container_name:sub(2)
-            end
-            -- check if container exists in recipe
-            local found = false
-            for i, container in ipairs(loaded_recipe.containers) do
-                container__ensure_name(container, loaded_recipe.pod.name, tostring(i))
-                if container.name == container_name then
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                log.error("Container '" .. container_spec .. "' not found in recipe '" .. recipe_name .. "'.")
-                return false
-            end
+        local container_name = recipe__resolve_container_name(loaded_recipe, container_spec)
+        if not container_name then
+            log.error("Container '" .. container_spec .. "' not found in recipe '" .. recipe_name .. "'.")
+            return false
         end
         commands[#commands + 1] = "-c"
         commands[#commands + 1] = string.escape_shell(container_name)

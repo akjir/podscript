@@ -44,5 +44,9 @@ return {
             name = "*db",
             image = "test:latest",
         },
+        {
+            name = "absolute_db",
+            image = "test:latest",
+        },
     },
 }

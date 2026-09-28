@@ -54,7 +54,8 @@ return {
             description = "No arguments at all. Print help.",
             expectations = {
                 sequence = {
-                    "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]"
+                    "Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]",
+                    "logs               show or follow logs for a pod or container"
                 }
             },
         },

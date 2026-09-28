@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "192.7f6c508.dev"
+local BUILD <const> = "193.69d203e.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -758,6 +758,49 @@ local function recipe__validate(context, recipe, file_name)
     end
     return true
 end
+
+---Resolve a container name from a user specification (index, name, *relative).
+---@param recipe table
+---@param container_spec string|number
+---@return string|nil name
+local function recipe__resolve_container_name(recipe, container_spec)
+    if type(container_spec) == "number" or tonumber(container_spec) then
+        local container_index = tonumber(container_spec)
+        if container_index and recipe.containers[container_index] then
+            local container = recipe.containers[container_index]
+            container__ensure_name(container, recipe.pod.name, tostring(container_index))
+            return container.name
+        end
+    end
+
+    local spec_str = tostring(container_spec)
+    local container_name = normalize_name(spec_str)
+    local alternate_container_name
+
+    if string.begins_with(container_name, "*") then
+        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    else
+        alternate_container_name = recipe.pod.name .. "-" .. container_name
+    end
+
+    for i, container in ipairs(recipe.containers) do
+        container__ensure_name(container, recipe.pod.name, tostring(i))
+        if container.name == container_name then
+            return container.name
+        end
+    end
+
+    if alternate_container_name then
+        for i, container in ipairs(recipe.containers) do
+            container__ensure_name(container, recipe.pod.name, tostring(i))
+            if container.name == alternate_container_name then
+                return container.name
+            end
+        end
+    end
+
+    return nil
+end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Pod
@@ -1096,17 +1139,10 @@ local function mode_command__execute(context, recipe, command_table)
         commands[#commands + 1] = string.escape_shell(tostring(command_table.user))
     end
 
-    local container_name
-    if type(command_table.container) == "number" and recipe.containers[command_table.container] then
-        local container = recipe.containers[command_table.container]
-        container__ensure_name(container, recipe.pod.name, tostring(command_table.container))
-        container_name = container.name
-    else
-        container_name = tostring(command_table.container)
-        container_name = normalize_name(container_name)
-        if string.begins_with(container_name, "*") then
-            container_name = recipe.pod.name .. "-" .. container_name:sub(2)
-        end
+    local container_name = recipe__resolve_container_name(recipe, command_table.container)
+    if not container_name then
+        log.error("Container '" .. tostring(command_table.container) .. "' not found in recipe '" .. recipe.name .. "'.")
+        return false
     end
 
     commands[#commands + 1] = string.escape_shell(container_name)
@@ -1557,7 +1593,7 @@ local function mode_logs__help(context)
     log.print("  --debug            enable debug output\n")
     log.print("TARGET:")
     log.print("  <recipe>             show logs for all containers in the recipe's pod")
-    log.print("  <recipe>/<container> filter logs to a specific container (index, *relative, absolute)")
+    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
 local function mode_logs__execute(context, action, target)
@@ -1612,30 +1648,10 @@ local function mode_logs__execute(context, action, target)
     end
 
     if container_spec and container_spec ~= "" then
-        local container_name
-        local container_index = tonumber(container_spec)
-        if container_index and loaded_recipe.containers[container_index] then
-            local container = loaded_recipe.containers[container_index]
-            container__ensure_name(container, loaded_recipe.pod.name, tostring(container_index))
-            container_name = container.name
-        else
-            container_name = normalize_name(container_spec)
-            if string.begins_with(container_name, "*") then
-                container_name = loaded_recipe.pod.name .. "-" .. container_name:sub(2)
-            end
-            -- check if container exists in recipe
-            local found = false
-            for i, container in ipairs(loaded_recipe.containers) do
-                container__ensure_name(container, loaded_recipe.pod.name, tostring(i))
-                if container.name == container_name then
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                log.error("Container '" .. container_spec .. "' not found in recipe '" .. recipe_name .. "'.")
-                return false
-            end
+        local container_name = recipe__resolve_container_name(loaded_recipe, container_spec)
+        if not container_name then
+            log.error("Container '" .. container_spec .. "' not found in recipe '" .. recipe_name .. "'.")
+            return false
         end
         commands[#commands + 1] = "-c"
         commands[#commands + 1] = string.escape_shell(container_name)
@@ -1727,6 +1743,7 @@ local function mode_help__handle(context)
     log.print("  config             manage and inspect configuration")
     log.print("  help               display this help and exit")
     log.print("  init               initialize default configuration and recipe")
+    log.print("  logs               show or follow logs for a pod or container")
     log.print("  recipe             inspect and edit recipes")
     log.print("  simulate           simulate all commands (default mode)\n")
     log.print("OPTIONS:")
