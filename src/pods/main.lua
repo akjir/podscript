@@ -29,6 +29,7 @@ require "src.pods.mode_default"
 require "src.pods.mode_simulate"
 require "src.pods.mode_help"
 require "src.pods.mode_init"
+require "src.pods.mode_logs"
 require "src.pods.system"
 
 global<const> *
@@ -147,6 +148,11 @@ local function main__parse_action_and_targets(context, modes)
         is_command = true
         param_offset = 1
     end
+    
+    local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and parameters[1] == "logs")
+    if context.mode.selected == modes.simulate and parameters[1] == "logs" then
+        param_offset = 1
+    end
 
     local raw_targets = {}
     if is_command then
@@ -154,8 +160,8 @@ local function main__parse_action_and_targets(context, modes)
         if target then table.insert(raw_targets, target) end
         context.targets = { parameters[2 + param_offset] }
     else
-        context.action = parameters[1] or ""
-        raw_targets = table.move(parameters, 2, #parameters, 1, {})
+        context.action = parameters[1 + param_offset] or ""
+        raw_targets = table.move(parameters, 2 + param_offset, #parameters, 1, {})
     end
 
     if log.debug_enabled and not table.is_nil_or_empty(raw_targets) then
@@ -190,16 +196,25 @@ local function main__parse_action_and_targets(context, modes)
             if (is_command or context.action == "status") and (target == "help" or target == "") then
                 table.insert(untangled, target)
             else
+                local target_recipe = target
+                local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and context.parameters[1] == "logs")
+                if is_logs then
+                    local slash_pos = string.find(target, "/")
+                    if slash_pos then
+                        target_recipe = string.sub(target, 1, slash_pos - 1)
+                    end
+                end
+
                 local found = nil
                 for _, group_targets in pairs(groups) do
-                    if table.contains(group_targets, target) then
+                    if table.contains(group_targets, target_recipe) then
                         found = target
                         break
                     end
                 end
 
                 if found == nil then
-                    log.error("Recipe '" .. target .. "' not found in config.")
+                    log.error("Recipe '" .. target_recipe .. "' not found in config.")
                     return false
                 else
                     table.insert(untangled, found)
@@ -231,6 +246,7 @@ global function main(arguments)
         default = mode_default__handle,
         help = mode_help__handle,
         init = mode_init__handle,
+        logs = mode_logs__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,
     }

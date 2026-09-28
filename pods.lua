@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "188.c17da35.dev"
+local BUILD <const> = "189.72e2ccf.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -103,6 +103,7 @@ global log<const> = {
 ---@param prefix string
 ---@return boolean
 string.begins_with = function(str, prefix)
+    if type(str) ~= "string" then error("BEG_CRASH type is " .. type(str) .. "\n" .. debug.traceback()) end
     return str:sub(1, #prefix) == prefix
 end
 
@@ -1528,6 +1529,160 @@ local function mode_default__handle(context)
 end
 -- ------------------------------------------------------------------------- --
 --
+--    SECTION Mode Logs
+--
+-- ------------------------------------------------------------------------- --
+
+local function mode_logs__help(context)
+    if context.flags.simulate then
+        log.print("PodScript " .. get_version_string() .. " - Logs Mode (SIMULATED)\n")
+        log.print("Simulate the execution of log commands for a recipe's pod or container.")
+        log.print("Usage: pods simulate logs [OPTIONS] [<action>] <recipe>[/container]")
+        log.print("   or: lua pods.lua simulate logs [OPTIONS] [<action>] <recipe>[/container]\n")
+    else
+        log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
+        log.print("Show or follow logs for a recipe's pod or container.")
+        log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
+        log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
+    end
+    log.print("ACTIONS:")
+    log.print("  show               fetch and display logs, then exit (default)")
+    log.print("  follow             fetch and follow logs")
+    log.print("  help               display this help\n")
+    log.print("OPTIONS:")
+    log.print("  --tail=<n>         output the specified number of lines at the end")
+    log.print("  --since=<time>     show logs since timestamp")
+    log.print("  --until=<time>     show logs until timestamp")
+    log.print("  --timestamps       show timestamps in the log output")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output\n")
+    log.print("TARGET:")
+    log.print("  <recipe>             show logs for all containers in the recipe's pod")
+    log.print("  <recipe>/<container> filter logs to a specific container (index, *relative, absolute)")
+end
+
+local function mode_logs__execute(context, action, target)
+    if string.is_nil_or_empty(target) then
+        log.error("No recipe target specified.")
+        return false
+    end
+
+    local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
+    if not recipe_name then
+        recipe_name = target
+        container_spec = nil
+    end
+
+    -- Load recipe
+    local loaded_recipe = recipe__load(context.config.recipes.path, recipe_name)
+    if not loaded_recipe then
+        log.error("Recipe '" .. recipe_name .. "' could not be loaded.")
+        return false
+    end
+
+    if not recipe__validate(context, loaded_recipe, recipe_name) then
+        log.error("Recipe '" .. recipe_name .. "' is invalid.")
+        return false
+    end
+
+    local commands = table.create(16)
+    commands[#commands + 1] = "podman"
+    commands[#commands + 1] = "pod"
+    commands[#commands + 1] = "logs"
+    commands[#commands + 1] = "-n"
+    commands[#commands + 1] = "--color"
+
+    if action == "follow" then
+        commands[#commands + 1] = "-f"
+    end
+
+    if context.flags.since then
+        commands[#commands + 1] = "--since"
+        commands[#commands + 1] = string.escape_shell(tostring(context.flags.since))
+    end
+    if context.flags["until"] then
+        commands[#commands + 1] = "--until"
+        commands[#commands + 1] = string.escape_shell(tostring(context.flags["until"]))
+    end
+    if context.flags.tail then
+        commands[#commands + 1] = "--tail"
+        commands[#commands + 1] = tostring(context.flags.tail)
+    end
+    if context.flags.timestamps then
+        commands[#commands + 1] = "--timestamps"
+    end
+
+    if container_spec and container_spec ~= "" then
+        local container_name
+        local container_index = tonumber(container_spec)
+        if container_index and loaded_recipe.containers[container_index] then
+            local container = loaded_recipe.containers[container_index]
+            container__ensure_name(container, loaded_recipe.pod.name, tostring(container_index))
+            container_name = container.name
+        else
+            container_name = normalize_name(container_spec)
+            if string.begins_with(container_name, "*") then
+                container_name = loaded_recipe.pod.name .. "-" .. container_name:sub(2)
+            end
+            -- check if container exists in recipe
+            local found = false
+            for i, container in ipairs(loaded_recipe.containers) do
+                container__ensure_name(container, loaded_recipe.pod.name, tostring(i))
+                if container.name == container_name then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                log.error("Container '" .. container_spec .. "' not found in recipe '" .. recipe_name .. "'.")
+                return false
+            end
+        end
+        commands[#commands + 1] = "-c"
+        commands[#commands + 1] = string.escape_shell(container_name)
+    end
+
+    commands[#commands + 1] = string.escape_shell(loaded_recipe.pod.name)
+    
+    local command_str = table.concat(commands, " ")
+
+    if context.flags.simulate then
+        log.print("Execute log command: ")
+        log.print(command_str .. ";")
+        return true
+    else
+        return os.execute(command_str)
+    end
+end
+
+local function mode_logs__handle(context)
+    local raw_target = context.targets[1]
+    local action = context.action
+    
+    if action == "help" or (string.is_nil_or_empty(action) and string.is_nil_or_empty(raw_target)) then
+        mode_logs__help(context)
+        return
+    end
+    
+    -- If action is not show, follow or help, it might be the target if the action was omitted
+    if action ~= "show" and action ~= "follow" then
+        if not string.is_nil_or_empty(raw_target) then
+            log.error("Invalid action '" .. action .. "' or too many arguments.")
+            return
+        end
+        raw_target = action
+        action = "show"
+    end
+    
+    if #context.targets > 1 then
+        log.error("Logs command only supports a single recipe target.")
+        return
+    end
+
+    mode_logs__execute(context, action, raw_target)
+end
+-- ------------------------------------------------------------------------- --
+--
 --    SECTION Mode Simulate
 --
 -- ------------------------------------------------------------------------- --
@@ -1542,6 +1697,9 @@ local function mode_simulate__handle(context)
         -- remove "command" from parameters
         context.parameters = table.move(parameters, 2, #parameters, 1, {})
         mode_command__handle(context)
+    elseif parameters[1] == "logs" then
+        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_logs__handle(context)
     else
         mode_default__handle(context)
     end
@@ -1789,6 +1947,11 @@ local function main__parse_action_and_targets(context, modes)
         is_command = true
         param_offset = 1
     end
+    
+    local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and parameters[1] == "logs")
+    if context.mode.selected == modes.simulate and parameters[1] == "logs" then
+        param_offset = 1
+    end
 
     local raw_targets = {}
     if is_command then
@@ -1796,8 +1959,8 @@ local function main__parse_action_and_targets(context, modes)
         if target then table.insert(raw_targets, target) end
         context.targets = { parameters[2 + param_offset] }
     else
-        context.action = parameters[1] or ""
-        raw_targets = table.move(parameters, 2, #parameters, 1, {})
+        context.action = parameters[1 + param_offset] or ""
+        raw_targets = table.move(parameters, 2 + param_offset, #parameters, 1, {})
     end
 
     if log.debug_enabled and not table.is_nil_or_empty(raw_targets) then
@@ -1832,16 +1995,25 @@ local function main__parse_action_and_targets(context, modes)
             if (is_command or context.action == "status") and (target == "help" or target == "") then
                 table.insert(untangled, target)
             else
+                local target_recipe = target
+                local is_logs = context.mode.selected == modes.logs or (context.mode.selected == modes.simulate and context.parameters[1] == "logs")
+                if is_logs then
+                    local slash_pos = string.find(target, "/")
+                    if slash_pos then
+                        target_recipe = string.sub(target, 1, slash_pos - 1)
+                    end
+                end
+
                 local found = nil
                 for _, group_targets in pairs(groups) do
-                    if table.contains(group_targets, target) then
+                    if table.contains(group_targets, target_recipe) then
                         found = target
                         break
                     end
                 end
 
                 if found == nil then
-                    log.error("Recipe '" .. target .. "' not found in config.")
+                    log.error("Recipe '" .. target_recipe .. "' not found in config.")
                     return false
                 else
                     table.insert(untangled, found)
@@ -1872,6 +2044,7 @@ global function main(arguments)
         default = mode_default__handle,
         help = mode_help__handle,
         init = mode_init__handle,
+        logs = mode_logs__handle,
         recipe = mode_recipe__handle,
         simulate = mode_simulate__handle,
     }

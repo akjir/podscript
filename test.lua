@@ -419,6 +419,7 @@ add_suite("pods.suite_015_varargs")
 add_suite("pods.suite_016_mode_init")
 add_suite("pods.suite_017_action_status")
 add_suite("pods.suite_018_release_integration")
+add_suite("pods.suite_019_mode_logs")
 add_suite("pods.suite_999_test_framework")
 
 -- ------------------------------------------------------------------------- --

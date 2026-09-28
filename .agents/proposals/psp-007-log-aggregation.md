@@ -1,7 +1,7 @@
 ---
 id: PSP-007
 title: Log Aggregation and Tailing (`logs` mode)
-status: planned
+status: review
 type: feature
 created: 2026-09-26
 updated: 2026-09-28

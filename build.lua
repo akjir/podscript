@@ -258,6 +258,7 @@ local pods_files = {
     "mode_recipe",
     "mode_config",
     "mode_default",
+    "mode_logs",
     "mode_simulate",
     "mode_help",
     "mode_init",

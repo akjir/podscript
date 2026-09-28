@@ -20,6 +20,10 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Options](#options-1)
   - [Generated Files](#generated-files)
   - [Usage](#usage-1)
+- [Logs Mode](#logs-mode)
+  - [Actions](#actions-2)
+  - [Options](#options-2)
+  - [Usage](#usage-2)
 - [Command Mode](#command-mode)
   - [Actions](#actions-2)
   - [Options](#options-2)
@@ -131,11 +135,12 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | :--- | :--- |
 | `(empty)` | **Default Mode**: Executes lifecycle actions on pods and containers defined in recipe files. |
 | `simulate` | **Simulate Mode**: Previews all generated Podman commands without executing them. |
-| `init` | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
-| `command` | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
-| `config` | **Config Mode**: Displays or modifies the active PodScript configuration file. |
-| `recipe` | **Recipe Mode**: Displays or modifies a specific recipe file. |
-| `help` | **Help Mode**: Displays command-line syntax and usage instructions. |
+| `logs`     | **Logs Mode**: Fetches and tails logs from pods and individual containers. |
+| `init`     | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
+| `command`  | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
+| `config`   | **Config Mode**: Displays or modifies the active PodScript configuration file. |
+| `recipe`   | **Recipe Mode**: Displays or modifies a specific recipe file. |
+| `help`     | **Help Mode**: Displays command-line syntax and usage instructions. |
 
 ---
 
@@ -284,6 +289,50 @@ pods --config=staging init
 
 # Display help for init mode
 pods init help
+```
+
+---
+
+## Logs Mode
+
+Fetches and tails logs from pods and containers managed by PodScript.
+
+### Actions
+
+| Action | Description |
+| :--- | :--- |
+| `show` | Display the logs for the target and exit (default). |
+| `follow` | Tail the logs and follow them continuously until interrupted. |
+
+### Options
+
+| Option | Description |
+| :--- | :--- |
+| `--tail=<N>` | Show only the last `N` lines of logs. |
+| `--since=<T>` | Show logs generated since a specific duration (e.g., `1h`, `10m`) or timestamp. |
+| `--until=<T>` | Show logs generated until a specific duration or timestamp. |
+| `--timestamps` | Include timestamps in the log output. |
+
+### Targets
+
+Logs mode targets a single recipe. Optionally, target a specific container inside the recipe using the format `<recipe>/<container>`. The `<container>` part can be:
+- The numeric index of the container inside the recipe.
+- The alternate name (with `*` prefix) or exact container name.
+
+### Usage
+
+```bash
+# Show logs for all containers in the recipe
+pods logs recipe_name
+
+# Tail logs for a specific recipe
+pods logs follow recipe_name
+
+# Tail logs for the first container only
+pods logs follow recipe_name/1
+
+# Show last 50 lines for a specific container by alternate name
+pods logs --tail=50 recipe_name/*app
 ```
 
 ---

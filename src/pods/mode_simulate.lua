@@ -20,6 +20,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require "src.pods.mode_command"
 require "src.pods.mode_default"
+require "src.pods.mode_logs"
 
 global<const> *
 
@@ -40,6 +41,10 @@ global function mode_simulate__handle(context)
         -- remove "command" from parameters
         context.parameters = table.move(parameters, 2, #parameters, 1, {})
         mode_command__handle(context)
+    elseif parameters[1] == "logs" then
+        -- remove "logs" from parameters
+        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        mode_logs__handle(context)
     else
         mode_default__handle(context)
     end
