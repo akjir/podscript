@@ -32,7 +32,7 @@ description: >-
 ## 4. Changelog Rules (`CHANGELOG.md`)
 * **Format:** [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) sections (`Added`, `Changed`, `Fixed`, `Removed`).
 * **Structure:** Single sentence of 6–15 words (~50–85 chars, max 90) ending with a period: `[Past Verb] [Subject/Feature] [context clause (to/for/in)].`
-* **Verbs:** Lead with capitalized past-tense verb (`Added`, `Updated`, `Renamed`, `Refactored`, `Optimized`, `Improved`, `Fixed`, `Removed`; never "Added" under `### Changed`).
+* **Verbs:** Lead with capitalized past-tense verb (`Added`, `Updated`, `Renamed`, `Optimized`, `Improved`, `Fixed`, `Removed`; never "Added" under `### Changed`).
 * **Scope:** Focus on feature/user impact. Avoid sprawling explanations or internal function lists.
-* **Exclusions:** Do not document test additions, changes, or updates.
+* **Exclusions:** Do not document pure code refactorings, test additions, test changes, or test updates.
 * **Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (`--debug`, `table.create`).
