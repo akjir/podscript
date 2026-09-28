@@ -7,7 +7,7 @@
 * **Core Rules:** Zero external dependencies. Linux only (no Windows/macOS). Modular `src/pods/` and `src/pods-converter/`. NEVER edit `pods.lua` or `pods-converter.lua` directly.
 * **Version Control:** NEVER automatically commit changes unless explicitly instructed by the user. The user exclusively decides when and what is committed. This rule must not be broken under any circumstances.
 * **Language & Tone:** Always respond and write strictly in English, **regardless of the language the user uses** (all chat responses, code, comments, docs, tests/fixtures, commits). Concise and precise; no emojis.
-* **Style:** 4 spaces. English comments/vars. Sort functions alphabetically. Avoid globals. Initialize vars (no `nil`).
+* **Style:** 4 spaces. No trailing spaces on empty lines. English comments/vars. Sort functions alphabetically. Avoid globals. Initialize vars (no `nil`).
 * **Reqs:** Lua 5.5+, Podman 5.8.0+. CLI is mode-driven (see [USAGE.md](USAGE.md)).
 * **Testing (TDD):** Rigorous testing strictly mandated. Every new feature, logic branch, parser routine, or bug fix for core `pods` and `pods-converter` MUST have comprehensive tests in their respective `tests/` directories.
 * **Changelog:** Short, concise entries (6–15 words, past tense, backticks for code, no pure refactoring or test changes). See dev skill.

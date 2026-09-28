@@ -173,6 +173,11 @@ global function mode_logs__handle(context)
         action = "show"
     end
     
+    if raw_target and string.begins_with(raw_target, "@") then
+        log.error("Groups are not supported for logs. Only pods and containers are supported.")
+        return
+    end
+
     if #context.targets > 1 then
         log.error("Logs command only supports a single recipe target.")
         return

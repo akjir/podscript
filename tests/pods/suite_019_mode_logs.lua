@@ -151,6 +151,26 @@ return {
                 return captured_cmd
             end,
             expected = true
+        },
+        [s .. "14"] = {
+            description = "Error when using group target explicitly.",
+            simulate = true,
+            parameters = { "logs", "show", "@all" },
+            expectations = {
+                sequence = {
+                    "ERROR: Groups are not supported for logs. Only pods and containers are supported."
+                }
+            },
+        },
+        [s .. "15"] = {
+            description = "Error when using group target implicitly.",
+            simulate = true,
+            parameters = { "logs", "@all" },
+            expectations = {
+                sequence = {
+                    "ERROR: Groups are not supported for logs. Only pods and containers are supported."
+                }
+            },
         }
     }
 }

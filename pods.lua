@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "190.03cfd87.dev"
+local BUILD <const> = "192.7f6c508.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1673,6 +1673,11 @@ local function mode_logs__handle(context)
         action = "show"
     end
     
+    if raw_target and string.begins_with(raw_target, "@") then
+        log.error("Groups are not supported for logs. Only pods and containers are supported.")
+        return
+    end
+
     if #context.targets > 1 then
         log.error("Logs command only supports a single recipe target.")
         return
@@ -1952,7 +1957,7 @@ local function main__parse_action_and_targets(context, modes)
     local is_logs = context.mode.selected == modes.logs or (is_simulate and parameters[1] == "logs")
 
     local raw_targets = {}
-    
+
     if is_command then
         -- Syntax for command mode: podscript command <recipe> <command_to_execute>
         local recipe_target = parameters[1 + param_offset]
@@ -1982,6 +1987,11 @@ local function main__parse_action_and_targets(context, modes)
 
         -- 1. Handle group targeting (e.g., @group_name)
         if string.begins_with(target, "@") then
+            if is_logs then
+                log.error("Groups are not supported for logs. Only pods and containers are supported.")
+                return false
+            end
+
             if string.find(target, "/") or string.find(target, ":") then
                 log.error("Container targeting is not supported for groups: '" .. target .. "'.")
                 return false

@@ -183,6 +183,11 @@ local function main__parse_action_and_targets(context, modes)
 
         -- 1. Handle group targeting (e.g., @group_name)
         if string.begins_with(target, "@") then
+            if is_logs then
+                log.error("Groups are not supported for logs. Only pods and containers are supported.")
+                return false
+            end
+
             if string.find(target, "/") or string.find(target, ":") then
                 log.error("Container targeting is not supported for groups: '" .. target .. "'.")
                 return false
