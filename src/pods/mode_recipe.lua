@@ -53,7 +53,7 @@ local function mode_recipe__edit(context, name)
 end
 
 ---Print config help.
-global function mode_recipe__help()
+local function mode_recipe__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
@@ -157,7 +157,7 @@ end
 ---@param context table
 global function mode_recipe__handle(context)
     log.debug("Recipe mode is used.")
-    local action = context.action
+    local action = context.parameters[1]
     if string.is_nil_or_empty(action) or action == "help" then
         mode_recipe__help()
         return
@@ -166,19 +166,26 @@ global function mode_recipe__handle(context)
         mode_recipe__list(context)
         return
     end
-    local name = context.targets[1]
-    if string.is_nil_or_empty(name) then
-        log.error("No recipe name given.")
-        return
-    else
-        name = normalize_name(name)
-    end
+
     local actions = {
         edit = mode_recipe__edit,
         print = mode_recipe__print
     }
-    local execute = actions[action] or function(_, _)
+    local execute = actions[action]
+    if execute == nil then
         log.error("Unknown action: " .. tostring(action))
+        return
+    end
+
+    local name = context.parameters[2]
+
+    if string.begins_with(name, "@") or string.contains(name, "/") then
+    --TODO@AGENT: Gruppen werden nicht unterstützt und auch pod/container nicht. Hier müssen fehlermeldungen hint. Die contains function gibt es nicht. finde was passendes zur prüfung.
+    end
+
+    if string.is_nil_or_empty(name) then
+        log.error("No recipe name given.")
+        return
     end
     execute(context, name)
 end

@@ -69,3 +69,72 @@ global function split_argument(argument)
     end
     return clean_argument, true
 end
+
+local function untangle_groups(context, list)
+    if log.debug_enabled and not table.is_nil_or_empty(list) then
+        log.debug("Targets   - " .. table.concat(list, " "))
+    end
+
+    local targets = {}
+    local groups = {}
+    if context.config and context.config.recipes and context.config.recipes.groups then
+        groups = context.config.recipes.groups
+    end
+
+    local untangled = {}
+
+    for i = 1, #targets do
+        local target = targets[i]
+
+        -- 1. Handle group targeting (e.g., @group_name)
+        if string.begins_with(target, "@") then
+
+            if string.find(target, "/") or string.find(target, ":") then
+                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+                return false
+            end
+
+            local group_name = string.sub(target, 2)
+            local group_recipes = groups[group_name]
+
+            if group_recipes == nil then
+                log.error("Unknown recipe group '" .. target .. "'.")
+                return false
+            end
+
+            table.append(untangled, group_recipes)
+
+        -- 2. Handle specific edge cases (help or empty string)
+        elseif (target == "help" or target == "") then
+            table.insert(untangled, target)
+
+        -- 3. Handle individual recipe targeting
+        else
+            local target_recipe = target
+
+            -- Verify that the target recipe exists in the configuration groups
+            local is_valid_recipe = false
+            for _, group_targets in pairs(groups) do
+                if table.contains(group_targets, target_recipe) then
+                    is_valid_recipe = true
+                    break
+                end
+            end
+
+            if not is_valid_recipe then
+                log.error("Recipe '" .. target_recipe .. "' not found in config.")
+                return false
+            end
+
+            table.insert(untangled, target)
+        end
+    end
+
+    local final_untangled = table.remove_duplicates(untangled)
+
+    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
+        log.debug("Untangled - " .. table.concat(final_untangled, " "))
+    end
+
+    return final_untangled
+end

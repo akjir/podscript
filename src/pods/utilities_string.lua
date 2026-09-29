@@ -17,7 +17,8 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 ---@diagnostic disable: duplicate-set-field
-global <const> *
+
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --
@@ -30,7 +31,7 @@ global <const> *
 ---@param str string
 ---@param prefix string
 ---@return boolean
-string.begins_with = function(str, prefix)
+function string.begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -38,7 +39,7 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-string.ends_with = function(str, suffix)
+function string.ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
@@ -46,7 +47,7 @@ end
 ---@param str string|nil
 ---@param always_quote boolean|nil
 ---@return string
-string.escape_shell = function(str, always_quote)
+function string.escape_shell(str, always_quote)
     if str == nil then
         return "''"
     end
@@ -60,14 +61,14 @@ end
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean
-string.is_nil_or_empty = function(str)
+function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
 ---Removes leading and trailing whitespaces.
 ---@param str string|nil
 ---@return string
-string.trim = function(str)
+function string.trim(str)
     if str == nil then return "" end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
@@ -77,7 +78,7 @@ end
 ---@param str string
 ---@param sep string
 ---@return table
-string.split = function(str, sep)
+function string.split(str, sep)
     if sep == nil or sep == "" then
         return {str}
     end
