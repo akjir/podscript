@@ -218,5 +218,69 @@ return {
             end,
             expected = true
         },
+        [s .. "29"] = {
+            description = "table.sub - default arguments",
+            run = function()
+                return table.to_string(table.sub({ "a", "b", "c" }))
+            end,
+            expected = table.to_string({ "a", "b", "c" })
+        },
+        [s .. "30"] = {
+            description = "table.sub - specific start and end",
+            run = function()
+                return table.to_string(table.sub({ "a", "b", "c", "d" }, 2, 3))
+            end,
+            expected = table.to_string({ "b", "c" })
+        },
+        [s .. "31"] = {
+            description = "table.sub - negative start",
+            run = function()
+                return table.to_string(table.sub({ "a", "b", "c", "d" }, -2))
+            end,
+            expected = table.to_string({ "c", "d" })
+        },
+        [s .. "32"] = {
+            description = "table.sub - negative end",
+            run = function()
+                return table.to_string(table.sub({ "a", "b", "c", "d" }, 1, -2))
+            end,
+            expected = table.to_string({ "a", "b", "c" })
+        },
+        [s .. "33"] = {
+            description = "table.sub - out of bounds positive",
+            run = function()
+                return table.to_string(table.sub({ "a", "b" }, 1, 5))
+            end,
+            expected = table.to_string({ "a", "b" })
+        },
+        [s .. "34"] = {
+            description = "table.sub - out of bounds negative",
+            run = function()
+                return table.to_string(table.sub({ "a", "b" }, -5, -4))
+            end,
+            expected = table.to_string({})
+        },
+        [s .. "35"] = {
+            description = "table.sub - zero index",
+            run = function()
+                return table.to_string(table.sub({ "a", "b" }, 0, 1))
+            end,
+            expected = table.to_string({ "a" })
+        },
+        [s .. "36"] = {
+            description = "table.sub - empty table",
+            run = function()
+                return table.to_string(table.sub({}))
+            end,
+            expected = table.to_string({})
+        },
+        [s .. "37"] = {
+            description = "table.sub - error on nil table",
+            run = function()
+                local status, err = pcall(table.sub, nil)
+                return status == false and string.find(err, "table.sub expects a table") ~= nil
+            end,
+            expected = true
+        },
     },
 }

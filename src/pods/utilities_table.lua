@@ -30,7 +30,7 @@ global <const> *
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
 ---@param ... table|nil
-table.append = function(target, ...sources)
+function table.append(target, ...sources)
     if target == nil then return end
     for i = 1, sources.n do
         local source = sources[i]
@@ -45,7 +45,7 @@ end
 ---@param target table|nil
 ---@param value any
 ---@return boolean
-table.contains = function(target, value)
+function table.contains(target, value)
     if target == nil then return false end
     for i = 1, #target do
         if (target[i] == value) then return true end
@@ -59,7 +59,7 @@ end
 ---@param target table
 ---@param key any
 ---@param default any
-table.get_or_default = function(target, key, default)
+function table.get_or_default(target, key, default)
     if target == nil then return default end
     local value = target[key]
     if value ~= nil then
@@ -72,14 +72,14 @@ end
 ---@param target table
 ---@param key any
 ---@return boolean
-table.has_key = function(target, key)
+function table.has_key(target, key)
     return target ~= nil and target[key] ~= nil
 end
 
 ---Test if a table is nil or empty.
 ---@param target table
 ---@return boolean
-table.is_nil_or_empty = function(target)
+function table.is_nil_or_empty(target)
     return target == nil or next(target) == nil
 end
 
@@ -88,7 +88,7 @@ end
 ---@param target table
 ---@param ... table
 ---@return table
-table.merge = function(target, ...sources)
+function table.merge(target, ...sources)
     if target == nil then return sources[1] end
     for i = 1, sources.n do
         local source = sources[i]
@@ -104,7 +104,7 @@ end
 ---Remove duplicates from a table. Returns a new table and don't modify the original.
 ---@param target table
 ---@return table
-table.remove_duplicates = function(target)
+function table.remove_duplicates(target)
     if target == nil then return {} end
     local count = #target
     if count == 0 then return {} end
@@ -129,11 +129,37 @@ end
 ---Get table size, including non-numeric keys.
 ---@param table table
 ---@return integer
-table.size = function(table)
+function table.size(table)
     if table == nil then return 0 end
     local count = 0
     for _, _ in pairs(table) do
         count = count + 1
     end
     return count
+end
+
+---Returns a sub-sequence of a sequential table, similar to string.sub.
+---@param target table
+---@param i integer|nil
+---@param j integer|nil
+---@return table
+function table.sub(target, i, j)
+    if type(target) ~= "table" then
+        error("table.sub expects a table as target, got " .. type(target), 2)
+    end
+    local len = #target
+
+    i = i or 1
+    j = j or -1
+
+    if i < 0 then i = len + i + 1 end
+    if j < 0 then j = len + j + 1 end
+
+    i = math.max(1, i)
+    j = math.min(len, j)
+
+    if i > j then return {} end
+
+    local count = j - i + 1
+    return table.move(target, i, j, 1, table.create(count))
 end
