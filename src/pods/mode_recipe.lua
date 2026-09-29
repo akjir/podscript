@@ -179,13 +179,20 @@ global function mode_recipe__handle(context)
 
     local name = context.parameters[2]
 
-    if string.begins_with(name, "@") or string.contains(name, "/") then
-    --TODO@AGENT: Gruppen werden nicht unterstützt und auch pod/container nicht. Hier müssen fehlermeldungen hint. Die contains function gibt es nicht. finde was passendes zur prüfung.
-    end
-
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
         return
     end
+
+    if string.begins_with(name, "@") then
+        log.error("Groups are not supported in recipe mode.")
+        return
+    end
+
+    if string.find(name, "/") then
+        log.error("Pod/container targeting is not supported in recipe mode.")
+        return
+    end
+
     execute(context, name)
 end

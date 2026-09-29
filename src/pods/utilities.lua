@@ -70,12 +70,12 @@ global function split_argument(argument)
     return clean_argument, true
 end
 
-local function untangle_groups(context, list)
+global function untangle(context, list)
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end
 
-    local targets = {}
+    local targets = list
     local groups = {}
     if context.config and context.config.recipes and context.config.recipes.groups then
         groups = context.config.recipes.groups

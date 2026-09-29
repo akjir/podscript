@@ -164,8 +164,8 @@ end
 ---@param context table
 global function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = context.action
-    local command = context.targets[1]
+    local name = context.parameters[1]
+    local command = context.parameters[2]
 
     if string.is_nil_or_empty(name) or name == "help" then
         mode_command__help(context)

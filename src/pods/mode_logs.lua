@@ -135,10 +135,10 @@ local function mode_logs__execute(context, action, target)
 end
 
 global function mode_logs__handle(context)
-    local raw_target = context.targets[1]
-    local action = context.action
+    local action = context.parameters[1]
+    local raw_target = context.parameters[2]
     
-    if action == "help" or (string.is_nil_or_empty(action) and string.is_nil_or_empty(raw_target)) then
+    if action == "help" or string.is_nil_or_empty(action) then
         mode_logs__help(context)
         return
     end
@@ -158,7 +158,7 @@ global function mode_logs__handle(context)
         return
     end
 
-    if #context.targets > 1 then
+    if #context.parameters > 2 then
         log.error("Logs command only supports a single recipe target.")
         return
     end

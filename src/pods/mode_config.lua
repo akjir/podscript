@@ -71,8 +71,8 @@ end
 ---@param context table
 global function mode_config__handle(context)
     log.debug("Config mode is used.")
-    local action = context.action
-    if action == "" then
+    local action = context.parameters[1]
+    if string.is_nil_or_empty(action) then
         action = "print"
     end
     local actions = {

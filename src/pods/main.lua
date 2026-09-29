@@ -103,7 +103,7 @@ local function main__parse_arguments(context, arguments, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        context.mode.selected = modes.help
+        context.mode = modes.help
         return
     end
     -- parse arguments
@@ -128,7 +128,7 @@ local function main__parse_arguments(context, arguments, modes)
             local is_mode = (not has_seen_positional) and modes[argument]
             has_seen_positional = true
             if is_mode then
-                context.mode.selected = modes[argument]
+                context.mode = modes[argument]
             else
                 table.insert(context.parameters, argument)
             end

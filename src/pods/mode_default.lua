@@ -33,17 +33,21 @@ global<const> *
 ---@param context table
 global function mode_default__handle(context)
     log.debug("Default mode is used.")
-    local action = context.action
-    local targets = context.targets
+    local action = context.parameters[1]
 
     -- validate action
-    if action == "" then
+    if string.is_nil_or_empty(action) then
         log.error("No action set.")
         return
     end
     if not table.contains({ "create", "recreate", "remove", "update", "status" }, action) then
         log.error("Unknown action '" .. action .. "'.")
         return
+    end
+
+    local targets = {}
+    for i = 2, #context.parameters do
+        targets[#targets + 1] = context.parameters[i]
     end
 
     -- validate targets
@@ -61,8 +65,8 @@ global function mode_default__handle(context)
         return
     end
 
-    -- targets are already untangled
-    local untangled_targets = targets
+    local untangled_targets = untangle(context, targets)
+    if not untangled_targets then return end
 
     -- handle recipes
     local recipe_path = context.config.recipes.path
