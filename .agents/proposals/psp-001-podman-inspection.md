@@ -9,6 +9,9 @@ updated: 2026-09-27
 
 # PSP-001: Running Containers Display & Granular Podman Inspection
 
+> [!NOTE]
+> **Historical Record:** This proposal was successfully implemented. Following a subsequent refactoring, the status logic (`pod__status`) originally placed in `src/pods/pod.lua` was moved directly into `src/pods/mode_default.lua`, where it architecturally belongs as an action of the default mode.
+
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary

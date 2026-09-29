@@ -17,7 +17,7 @@ description: >-
 * **`planned`:** Formal technical specification agreed: architecture, schema, and tests defined (Part 2).
 * **`in-progress`:** Active development following `podscript-dev-workflow` (TDD first). Pre-requisite: baseline test suites (`lua test.lua --dev` & `lua test.lua`) verified green before making changes. Tasks tracked in Part 3.
 * **`review`:** Implementation complete. Verification: dev tests (`lua test.lua --dev`), release build (`lua build.lua`), and release tests (`lua test.lua`) 100% green; changelog and docs prepared. Awaits manual user review and approval.
-* **`completed`:** Manually reviewed and approved by user; merged and verified; retained in board as permanent architectural record. Delivered artifacts logged.
+* **`completed`:** Manually reviewed, approved, and merged. Retained permanently as a historical architectural record. If later superseded or reversed by new architecture, DO NOT change status; instead, prepend a `> [!NOTE]` "Historical Record" block explaining the divergence.
 * **`rejected`:** Dismissed or superseded; rationale documented in spec.
 
 ## 3. Creating a Proposal

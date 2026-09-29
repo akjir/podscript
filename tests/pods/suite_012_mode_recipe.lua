@@ -30,7 +30,7 @@ return {
             parameters = { "recipe", "print", "unknown" },
             expectations = {
                 sequence = {
-                    "ERROR: Recipe 'unknown' not found in config."
+                    "ERROR: Could not open file './tests/pods/recipes/unknown.lua'!"
                 }
             },
         },

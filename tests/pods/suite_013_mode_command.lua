@@ -191,7 +191,7 @@ return {
             parameters = { "command", "unknown" },
             expectations = {
                 sequence = {
-                    "ERROR: Recipe 'unknown' not found in config."
+                    "ERROR: Couldn't load recipe './tests/pods/recipes/unknown.lua'!"
                 }
             },
         },

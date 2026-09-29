@@ -9,6 +9,9 @@ updated: 2026-09-27
 
 # PSP-005: Architectural Refactoring: Explicit Context Table
 
+> [!NOTE]
+> **Historical Record:** This proposal was successfully implemented and delivered. However, later architectural changes reversed the decision regarding the centralized parsing of `action` and `targets` in `main.lua`. The modes now handle their own parameter parsing directly from `context.parameters`, and `context.action`/`context.targets` have been removed. This document remains as a historical record of the original explicit context refactoring.
+
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary

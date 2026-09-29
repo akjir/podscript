@@ -186,11 +186,15 @@ process_content = function(content, state)
                 end
                 is_const = false
             else
-                local fn_rest = trimmed:match("^global%s+function%s+([%w_].*)$") or trimmed:match("^function%s+([%w_].*)$")
+                local fn_rest = trimmed:match("^global%s+function%s+([%w_.:].*)$") or trimmed:match("^function%s+([%w_.:].*)$")
                 if fn_rest then
                     local leading_ws = line:match("^(%s*)") or ""
                     if not is_global then
-                        table.insert(result, leading_ws .. "local function " .. fn_rest .. "\n")
+                        if string.find(fn_rest, "[.:]") then
+                            table.insert(result, leading_ws .. "function " .. fn_rest .. "\n")
+                        else
+                            table.insert(result, leading_ws .. "local function " .. fn_rest .. "\n")
+                        end
                     else
                         table.insert(result, leading_ws .. "global function " .. fn_rest .. "\n")
                     end

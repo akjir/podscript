@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "193.69d203e.dev"
+local BUILD <const> = "197.7477816.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -102,7 +102,7 @@ global log<const> = {
 ---@param str string
 ---@param prefix string
 ---@return boolean
-string.begins_with = function(str, prefix)
+function string.begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
@@ -110,7 +110,7 @@ end
 ---@param str string
 ---@param suffix string
 ---@return boolean
-string.ends_with = function(str, suffix)
+function string.ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
@@ -118,7 +118,7 @@ end
 ---@param str string|nil
 ---@param always_quote boolean|nil
 ---@return string
-string.escape_shell = function(str, always_quote)
+function string.escape_shell(str, always_quote)
     if str == nil then
         return "''"
     end
@@ -132,14 +132,14 @@ end
 ---Test if string is empty or nil.
 ---@param str string|nil
 ---@return boolean
-string.is_nil_or_empty = function(str)
+function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
 ---Removes leading and trailing whitespaces.
 ---@param str string|nil
 ---@return string
-string.trim = function(str)
+function string.trim(str)
     if str == nil then return "" end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
@@ -149,7 +149,7 @@ end
 ---@param str string
 ---@param sep string
 ---@return table
-string.split = function(str, sep)
+function string.split(str, sep)
     if sep == nil or sep == "" then
         return {str}
     end
@@ -174,7 +174,7 @@ end
 ---Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
 ---@param target table|nil
 ---@param ... table|nil
-table.append = function(target, ...sources)
+function table.append(target, ...sources)
     if target == nil then return end
     for i = 1, sources.n do
         local source = sources[i]
@@ -189,7 +189,7 @@ end
 ---@param target table|nil
 ---@param value any
 ---@return boolean
-table.contains = function(target, value)
+function table.contains(target, value)
     if target == nil then return false end
     for i = 1, #target do
         if (target[i] == value) then return true end
@@ -203,7 +203,7 @@ end
 ---@param target table
 ---@param key any
 ---@param default any
-table.get_or_default = function(target, key, default)
+function table.get_or_default(target, key, default)
     if target == nil then return default end
     local value = target[key]
     if value ~= nil then
@@ -216,14 +216,14 @@ end
 ---@param target table
 ---@param key any
 ---@return boolean
-table.has_key = function(target, key)
+function table.has_key(target, key)
     return target ~= nil and target[key] ~= nil
 end
 
 ---Test if a table is nil or empty.
 ---@param target table
 ---@return boolean
-table.is_nil_or_empty = function(target)
+function table.is_nil_or_empty(target)
     return target == nil or next(target) == nil
 end
 
@@ -232,7 +232,7 @@ end
 ---@param target table
 ---@param ... table
 ---@return table
-table.merge = function(target, ...sources)
+function table.merge(target, ...sources)
     if target == nil then return sources[1] end
     for i = 1, sources.n do
         local source = sources[i]
@@ -248,7 +248,7 @@ end
 ---Remove duplicates from a table. Returns a new table and don't modify the original.
 ---@param target table
 ---@return table
-table.remove_duplicates = function(target)
+function table.remove_duplicates(target)
     if target == nil then return {} end
     local count = #target
     if count == 0 then return {} end
@@ -273,13 +273,39 @@ end
 ---Get table size, including non-numeric keys.
 ---@param table table
 ---@return integer
-table.size = function(table)
+function table.size(table)
     if table == nil then return 0 end
     local count = 0
     for _, _ in pairs(table) do
         count = count + 1
     end
     return count
+end
+
+---Returns a sub-sequence of a sequential table, similar to string.sub.
+---@param target table
+---@param i integer|nil
+---@param j integer|nil
+---@return table
+function table.sub(target, i, j)
+    if type(target) ~= "table" then
+        error("table.sub expects a table as target, got " .. type(target), 2)
+    end
+    local len = #target
+
+    i = i or 1
+    j = j or -1
+
+    if i < 0 then i = len + i + 1 end
+    if j < 0 then j = len + j + 1 end
+
+    i = math.max(1, i)
+    j = math.min(len, j)
+
+    if i > j then return {} end
+
+    local count = j - i + 1
+    return table.move(target, i, j, 1, table.create(count))
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -329,6 +355,75 @@ local function split_argument(argument)
         return parameter, value
     end
     return clean_argument, true
+end
+
+local function untangle(context, list)
+    if log.debug_enabled and not table.is_nil_or_empty(list) then
+        log.debug("Targets   - " .. table.concat(list, " "))
+    end
+
+    local targets = list
+    local groups = {}
+    if context.config and context.config.recipes and context.config.recipes.groups then
+        groups = context.config.recipes.groups
+    end
+
+    local untangled = {}
+
+    for i = 1, #targets do
+        local target = targets[i]
+
+        -- 1. Handle group targeting (e.g., @group_name)
+        if string.begins_with(target, "@") then
+
+            if string.find(target, "/") or string.find(target, ":") then
+                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+                return false
+            end
+
+            local group_name = string.sub(target, 2)
+            local group_recipes = groups[group_name]
+
+            if group_recipes == nil then
+                log.error("Unknown recipe group '" .. target .. "'.")
+                return false
+            end
+
+            table.append(untangled, group_recipes)
+
+        -- 2. Handle specific edge cases (help or empty string)
+        elseif (target == "help" or target == "") then
+            table.insert(untangled, target)
+
+        -- 3. Handle individual recipe targeting
+        else
+            local target_recipe = target
+
+            -- Verify that the target recipe exists in the configuration groups
+            local is_valid_recipe = false
+            for _, group_targets in pairs(groups) do
+                if table.contains(group_targets, target_recipe) then
+                    is_valid_recipe = true
+                    break
+                end
+            end
+
+            if not is_valid_recipe then
+                log.error("Recipe '" .. target_recipe .. "' not found in config.")
+                return false
+            end
+
+            table.insert(untangled, target)
+        end
+    end
+
+    local final_untangled = table.remove_duplicates(untangled)
+
+    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
+        log.debug("Untangled - " .. table.concat(final_untangled, " "))
+    end
+
+    return final_untangled
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -899,213 +994,6 @@ local function pod__update(recipe, simulate)
         container__update(containers[id], recipe.pod, simulate)
     end
 end
-
----Print help for status action.
----@param context table
-local function pod__status_help(context)
-    log.print("PodScript " .. get_version_string() .. " - Status\n")
-    log.print("Display the runtime status of pods and containers.")
-    log.print("Usage: pods status [OPTIONS] [TARGETS]")
-    log.print("   or: lua pods.lua status [OPTIONS] [TARGETS]\n")
-    log.print("OPTIONS:")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --all              include all unmanaged podman containers")
-    log.print("  --full             display extended container information (image, command, ports)\n")
-    log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
-end
-
----Print status of containers.
----@param context table
-local function pod__status(context)
-    local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
-    local lines = system.exec_capture(query_command)
-    if not lines then
-        log.error("Failed to query podman status.")
-        return
-    end
-
-    local podman_containers = {}
-    for i = 1, #lines do
-        local parts = string.split(lines[i], ";;;")
-        if #parts >= 9 then
-            podman_containers[#podman_containers + 1] = {
-                id = parts[1],
-                image = parts[2],
-                command = parts[3],
-                created = parts[4],
-                status = parts[5],
-                ports = parts[6],
-                names = parts[7],
-                pod = parts[8],
-                restarts = parts[9]
-            }
-        end
-    end
-
-    local display_containers = {}
-    local managed_expected = {}
-
-    local targets_to_resolve = {}
-    if not table.is_nil_or_empty(context.targets) then
-        for i = 1, #context.targets do
-            targets_to_resolve[#targets_to_resolve + 1] = context.targets[i]
-        end
-    elseif not context.flags.all then
-        -- resolve all known recipes
-        if context.config.recipes and context.config.recipes.groups then
-            local recipe_map = {}
-            for _, group_targets in pairs(context.config.recipes.groups) do
-                if type(group_targets) == "table" then
-                    for _, target in ipairs(group_targets) do
-                        if type(target) == "string" and not string.begins_with(target, "@") then
-                            local clean_target = string.trim(target)
-                            if clean_target ~= "" and not recipe_map[clean_target] then
-                                recipe_map[clean_target] = true
-                                targets_to_resolve[#targets_to_resolve + 1] = clean_target
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    for i = 1, #targets_to_resolve do
-        local target = targets_to_resolve[i]
-        local recipe = recipe__load(context.config.recipes.path, target, true)
-        if recipe ~= nil and recipe__validate(context, recipe, target) then
-            for id = 1, #recipe.containers do
-                local container = recipe.containers[id]
-                container__ensure_name(container, recipe.pod.name, tostring(id))
-                managed_expected[container.name] = {
-                    recipe = target,
-                    pod_name = recipe.pod.name
-                }
-            end
-        end
-    end
-
-    if not context.flags.all then
-        local found_names = {}
-        for i = 1, #podman_containers do
-            local pc = podman_containers[i]
-            if managed_expected[pc.names] then
-                display_containers[#display_containers + 1] = pc
-                found_names[pc.names] = true
-            end
-        end
-
-        for expected_name, info in pairs(managed_expected) do
-            if not found_names[expected_name] then
-                display_containers[#display_containers + 1] = {
-                    id = "-",
-                    image = "-",
-                    command = "-",
-                    created = "-",
-                    status = "Not Found",
-                    ports = "-",
-                    names = expected_name,
-                    pod = info.pod_name,
-                    restarts = "-"
-                }
-            end
-        end
-    else
-        display_containers = podman_containers
-        local found_names = {}
-        for i = 1, #podman_containers do
-            found_names[podman_containers[i].names] = true
-        end
-
-        if not table.is_nil_or_empty(context.targets) then
-            for expected_name, info in pairs(managed_expected) do
-                if not found_names[expected_name] then
-                    display_containers[#display_containers + 1] = {
-                        id = "-",
-                        image = "-",
-                        command = "-",
-                        created = "-",
-                        status = "Not Found",
-                        ports = "-",
-                        names = expected_name,
-                        pod = info.pod_name,
-                        restarts = "-"
-                    }
-                end
-            end
-        end
-    end
-
-    if #display_containers == 0 then
-        log.print("No containers found.")
-        return
-    end
-
-    table.sort(display_containers, function(a, b)
-        if a.pod == b.pod then
-            return a.names < b.names
-        end
-        return a.pod < b.pod
-    end)
-
-    local cols = {}
-    if context.flags.full then
-        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE", "COMMAND", "PORTS" }
-    else
-        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED" }
-    end
-
-    local pad_right = function(str, len)
-        str = str or ""
-        if #str < len then
-            return str .. string.rep(" ", len - #str)
-        end
-        return str
-    end
-
-    local max_lengths = {}
-    for i = 1, #cols do
-        local col = cols[i]
-        max_lengths[col] = #col
-    end
-
-    for i = 1, #display_containers do
-        local c = display_containers[i]
-        for j = 1, #cols do
-            local col = cols[j]
-            local val = tostring(c[string.lower(col)] or "")
-            if #val > max_lengths[col] then
-                max_lengths[col] = #val
-            end
-        end
-    end
-
-    local header_line = ""
-    for i = 1, #cols do
-        local col = cols[i]
-        header_line = header_line .. pad_right(col, max_lengths[col])
-        if i < #cols then
-            header_line = header_line .. "   "
-        end
-    end
-    log.print(header_line)
-
-    for i = 1, #display_containers do
-        local c = display_containers[i]
-        local row_line = ""
-        for j = 1, #cols do
-            local col = cols[j]
-            local val = tostring(c[string.lower(col)] or "")
-            row_line = row_line .. pad_right(val, max_lengths[col])
-            if j < #cols then
-                row_line = row_line .. "   "
-            end
-        end
-        log.print(row_line)
-    end
-end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Mode Command
@@ -1244,8 +1132,8 @@ end
 ---@param context table
 local function mode_command__handle(context)
     log.debug("Command mode is used.")
-    local name = context.action
-    local command = context.targets[1]
+    local name = context.parameters[1]
+    local command = context.parameters[2]
 
     if string.is_nil_or_empty(name) or name == "help" then
         mode_command__help(context)
@@ -1416,7 +1304,7 @@ end
 ---@param context table
 local function mode_recipe__handle(context)
     log.debug("Recipe mode is used.")
-    local action = context.action
+    local action = context.parameters[1]
     if string.is_nil_or_empty(action) or action == "help" then
         mode_recipe__help()
         return
@@ -1425,20 +1313,34 @@ local function mode_recipe__handle(context)
         mode_recipe__list(context)
         return
     end
-    local name = context.targets[1]
-    if string.is_nil_or_empty(name) then
-        log.error("No recipe name given.")
-        return
-    else
-        name = normalize_name(name)
-    end
+
     local actions = {
         edit = mode_recipe__edit,
         print = mode_recipe__print
     }
-    local execute = actions[action] or function(_, _)
+    local execute = actions[action]
+    if execute == nil then
         log.error("Unknown action: " .. tostring(action))
+        return
     end
+
+    local name = context.parameters[2]
+
+    if string.is_nil_or_empty(name) then
+        log.error("No recipe name given.")
+        return
+    end
+
+    if string.begins_with(name, "@") then
+        log.error("Groups are not supported in recipe mode.")
+        return
+    end
+
+    if string.find(name, "/") then
+        log.error("Pod/container targeting is not supported in recipe mode.")
+        return
+    end
+
     execute(context, name)
 end
 -- ------------------------------------------------------------------------- --
@@ -1488,8 +1390,8 @@ end
 ---@param context table
 local function mode_config__handle(context)
     log.debug("Config mode is used.")
-    local action = context.action
-    if action == "" then
+    local action = context.parameters[1]
+    if string.is_nil_or_empty(action) then
         action = "print"
     end
     local actions = {
@@ -1508,15 +1410,221 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Print status of containers.
+---@param context table
+---@param targets table
+local function mode_default__status(context, targets)
+    local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
+    local lines = system.exec_capture(query_command)
+    if not lines then
+        log.error("Failed to query podman status.")
+        return
+    end
+
+    local podman_containers = {}
+    for i = 1, #lines do
+        local parts = string.split(lines[i], ";;;")
+        if #parts >= 9 then
+            podman_containers[#podman_containers + 1] = {
+                id = parts[1],
+                image = parts[2],
+                command = parts[3],
+                created = parts[4],
+                status = parts[5],
+                ports = parts[6],
+                names = parts[7],
+                pod = parts[8],
+                restarts = parts[9]
+            }
+        end
+    end
+
+    local display_containers = {}
+    local managed_expected = {}
+
+    local targets_to_resolve = {}
+    if not table.is_nil_or_empty(targets) then
+        for i = 1, #targets do
+            targets_to_resolve[#targets_to_resolve + 1] = targets[i]
+        end
+    elseif not context.flags.all then
+        -- resolve all known recipes
+        if context.config.recipes and context.config.recipes.groups then
+            local recipe_map = {}
+            for _, group_targets in pairs(context.config.recipes.groups) do
+                if type(group_targets) == "table" then
+                    for _, target in ipairs(group_targets) do
+                        if type(target) == "string" and not string.begins_with(target, "@") then
+                            local clean_target = string.trim(target)
+                            if clean_target ~= "" and not recipe_map[clean_target] then
+                                recipe_map[clean_target] = true
+                                targets_to_resolve[#targets_to_resolve + 1] = clean_target
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    for i = 1, #targets_to_resolve do
+        local target = targets_to_resolve[i]
+        local recipe = recipe__load(context.config.recipes.path, target, true)
+        if recipe ~= nil and recipe__validate(context, recipe, target) then
+            for id = 1, #recipe.containers do
+                local container = recipe.containers[id]
+                container__ensure_name(container, recipe.pod.name, tostring(id))
+                managed_expected[container.name] = {
+                    recipe = target,
+                    pod_name = recipe.pod.name
+                }
+            end
+        end
+    end
+
+    if not context.flags.all then
+        local found_names = {}
+        for i = 1, #podman_containers do
+            local pc = podman_containers[i]
+            if managed_expected[pc.names] then
+                display_containers[#display_containers + 1] = pc
+                found_names[pc.names] = true
+            end
+        end
+
+        for expected_name, info in pairs(managed_expected) do
+            if not found_names[expected_name] then
+                display_containers[#display_containers + 1] = {
+                    id = "-",
+                    image = "-",
+                    command = "-",
+                    created = "-",
+                    status = "Not Found",
+                    ports = "-",
+                    names = expected_name,
+                    pod = info.pod_name,
+                    restarts = "-"
+                }
+            end
+        end
+    else
+        display_containers = podman_containers
+        local found_names = {}
+        for i = 1, #podman_containers do
+            found_names[podman_containers[i].names] = true
+        end
+
+        if not table.is_nil_or_empty(targets) then
+            for expected_name, info in pairs(managed_expected) do
+                if not found_names[expected_name] then
+                    display_containers[#display_containers + 1] = {
+                        id = "-",
+                        image = "-",
+                        command = "-",
+                        created = "-",
+                        status = "Not Found",
+                        ports = "-",
+                        names = expected_name,
+                        pod = info.pod_name,
+                        restarts = "-"
+                    }
+                end
+            end
+        end
+    end
+
+    if #display_containers == 0 then
+        log.print("No containers found.")
+        return
+    end
+
+    table.sort(display_containers, function(a, b)
+        if a.pod == b.pod then
+            return a.names < b.names
+        end
+        return a.pod < b.pod
+    end)
+
+    local cols = {}
+    if context.flags.full then
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE", "COMMAND", "PORTS" }
+    else
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED" }
+    end
+
+    local pad_right = function(str, len)
+        str = str or ""
+        if #str < len then
+            return str .. string.rep(" ", len - #str)
+        end
+        return str
+    end
+
+    local max_lengths = {}
+    for i = 1, #cols do
+        local col = cols[i]
+        max_lengths[col] = #col
+    end
+
+    for i = 1, #display_containers do
+        local c = display_containers[i]
+        for j = 1, #cols do
+            local col = cols[j]
+            local val = tostring(c[string.lower(col)] or "")
+            if #val > max_lengths[col] then
+                max_lengths[col] = #val
+            end
+        end
+    end
+
+    local header_line = ""
+    for i = 1, #cols do
+        local col = cols[i]
+        header_line = header_line .. pad_right(col, max_lengths[col])
+        if i < #cols then
+            header_line = header_line .. "   "
+        end
+    end
+    log.print(header_line)
+
+    for i = 1, #display_containers do
+        local c = display_containers[i]
+        local row_line = ""
+        for j = 1, #cols do
+            local col = cols[j]
+            local val = tostring(c[string.lower(col)] or "")
+            row_line = row_line .. pad_right(val, max_lengths[col])
+            if j < #cols then
+                row_line = row_line .. "   "
+            end
+        end
+        log.print(row_line)
+    end
+end
+
+---Print help for status action.
+---@param context table
+local function mode_default__status_help(context)
+    log.print("PodScript " .. get_version_string() .. " - Status\n")
+    log.print("Display the runtime status of pods and containers.")
+    log.print("Usage: pods status [OPTIONS] [TARGETS]")
+    log.print("   or: lua pods.lua status [OPTIONS] [TARGETS]\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --all              include all unmanaged podman containers")
+    log.print("  --full             display extended container information (image, command, ports)\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
+end
 ---Handle default mode.
 ---@param context table
 local function mode_default__handle(context)
     log.debug("Default mode is used.")
-    local action = context.action
-    local targets = context.targets
+    local action = context.parameters[1]
 
     -- validate action
-    if action == "" then
+    if string.is_nil_or_empty(action) then
         log.error("No action set.")
         return
     end
@@ -1524,6 +1632,8 @@ local function mode_default__handle(context)
         log.error("Unknown action '" .. action .. "'.")
         return
     end
+
+    local targets = table.sub(context.parameters, 2)
 
     -- validate targets
     if table.is_nil_or_empty(targets) and action ~= "status" then
@@ -1533,15 +1643,15 @@ local function mode_default__handle(context)
 
     if action == "status" then
         if not table.is_nil_or_empty(targets) and targets[1] == "help" then
-            pod__status_help(context)
+            mode_default__status_help(context)
         else
-            pod__status(context)
+            mode_default__status(context, targets)
         end
         return
     end
 
-    -- targets are already untangled
-    local untangled_targets = targets
+    local untangled_targets = untangle(context, targets)
+    if not untangled_targets then return end
 
     -- handle recipes
     local recipe_path = context.config.recipes.path
@@ -1671,10 +1781,10 @@ local function mode_logs__execute(context, action, target)
 end
 
 local function mode_logs__handle(context)
-    local raw_target = context.targets[1]
-    local action = context.action
+    local action = context.parameters[1]
+    local raw_target = context.parameters[2]
     
-    if action == "help" or (string.is_nil_or_empty(action) and string.is_nil_or_empty(raw_target)) then
+    if action == "help" or string.is_nil_or_empty(action) then
         mode_logs__help(context)
         return
     end
@@ -1694,7 +1804,7 @@ local function mode_logs__handle(context)
         return
     end
 
-    if #context.targets > 1 then
+    if #context.parameters > 2 then
         log.error("Logs command only supports a single recipe target.")
         return
     end
@@ -1924,7 +2034,7 @@ local function main__parse_arguments(context, arguments, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        context.mode.selected = modes.help
+        context.mode = modes.help
         return
     end
     -- parse arguments
@@ -1949,129 +2059,12 @@ local function main__parse_arguments(context, arguments, modes)
             local is_mode = (not has_seen_positional) and modes[argument]
             has_seen_positional = true
             if is_mode then
-                context.mode.selected = modes[argument]
+                context.mode = modes[argument]
             else
                 table.insert(context.parameters, argument)
             end
         end
     end
-end
-
----Parse the action and targets parameters from the context.
----@param context table The runtime context containing parameters and configuration.
----@param modes table The available execution modes.
----@return boolean success True if parsing was successful, false otherwise.
-local function main__parse_action_and_targets(context, modes)
-    local parameters = context.parameters
-    local param_offset = 0
-
-    local is_simulate = context.mode.selected == modes.simulate
-    if is_simulate and (parameters[1] == "command" or parameters[1] == "logs") then
-        param_offset = 1
-    end
-
-    local is_command = context.mode.selected == modes.command or (is_simulate and parameters[1] == "command")
-    local is_logs = context.mode.selected == modes.logs or (is_simulate and parameters[1] == "logs")
-
-    local raw_targets = {}
-
-    if is_command then
-        -- Syntax for command mode: podscript command <recipe> <command_to_execute>
-        local recipe_target = parameters[1 + param_offset]
-        if recipe_target then
-            table.insert(raw_targets, recipe_target)
-        end
-        context.targets = { parameters[2 + param_offset] }
-    else
-        -- Syntax for default mode: podscript <action> <target1> <target2> ...
-        context.action = parameters[1 + param_offset] or ""
-        raw_targets = table.move(parameters, 2 + param_offset, #parameters, 1, {})
-    end
-
-    if log.debug_enabled and not table.is_nil_or_empty(raw_targets) then
-        log.debug("Targets   - " .. table.concat(raw_targets, " "))
-    end
-
-    local groups = {}
-    if context.config and context.config.recipes and context.config.recipes.groups then
-        groups = context.config.recipes.groups
-    end
-
-    local untangled = {}
-
-    for i = 1, #raw_targets do
-        local target = raw_targets[i]
-
-        -- 1. Handle group targeting (e.g., @group_name)
-        if string.begins_with(target, "@") then
-            if is_logs then
-                log.error("Groups are not supported for logs. Only pods and containers are supported.")
-                return false
-            end
-
-            if string.find(target, "/") or string.find(target, ":") then
-                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
-                return false
-            end
-
-            local group_name = string.sub(target, 2)
-            local group_recipes = groups[group_name]
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return false
-            end
-
-            table.append(untangled, group_recipes)
-
-        -- 2. Handle specific edge cases (help or empty string)
-        elseif (is_command or context.action == "status") and (target == "help" or target == "") then
-            table.insert(untangled, target)
-
-        -- 3. Handle individual recipe targeting
-        else
-            local target_recipe = target
-
-            -- Logs mode allows optional container paths (e.g., recipe/container)
-            if is_logs then
-                local slash_pos = string.find(target, "/")
-                if slash_pos then
-                    target_recipe = string.sub(target, 1, slash_pos - 1)
-                end
-            end
-
-            -- Verify that the target recipe exists in the configuration groups
-            local is_valid_recipe = false
-            for _, group_targets in pairs(groups) do
-                if table.contains(group_targets, target_recipe) then
-                    is_valid_recipe = true
-                    break
-                end
-            end
-
-            if not is_valid_recipe then
-                log.error("Recipe '" .. target_recipe .. "' not found in config.")
-                return false
-            end
-
-            table.insert(untangled, target)
-        end
-    end
-
-    local final_untangled = table.remove_duplicates(untangled)
-
-    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
-        log.debug("Untangled - " .. table.concat(final_untangled, " "))
-    end
-
-    -- Assign final processed values to context variables
-    if is_command then
-        context.action = final_untangled[1] or ""
-    else
-        context.targets = final_untangled
-    end
-
-    return true
 end
 
 ---Main function.
@@ -2100,17 +2093,9 @@ global function main(arguments)
         },
 
         -- READ-ONLY (RO): Parsed once from CLI
-        flags = {},          -- Parsed command-line flags (e.g., { ["--debug"] = true })
-        parameters = {},     -- Parsed positional command-line arguments
-
-        -- READ-ONLY (RO) after main.lua initialization
-        mode = {
-            selected = modes.default, -- The selected mode handler function
-        },
-
-        -- READ-ONLY (RO): Parsed centrally in main.lua after config load
-        action = "",         -- The single action to execute
-        targets = {},        -- The untangled list of targets
+        mode = modes.default,     -- The selected mode handler function
+        flags = {},               -- Parsed command-line flags (e.g., { ["--debug"] = true })
+        parameters = {},          -- Parsed positional command-line arguments
     }
 
     -- check lua version
@@ -2169,8 +2154,8 @@ global function main(arguments)
     context.config.path = config_full_path
 
     -- handle modes that do not require configuration
-    if context.mode.selected == modes.init or context.mode.selected == modes.help then
-        context.mode.selected(context)
+    if context.mode == modes.help or context.mode == modes.init then
+        context.mode(context)
         return
     end
 
@@ -2179,17 +2164,13 @@ global function main(arguments)
         return
     end
 
-    if not main__parse_action_and_targets(context, modes) then
-        return
-    end
-
     -- config simulate activates simulate mode if default mode is selected
-    if context.config.simulate and context.mode.selected == modes["default"] then
-        context.mode.selected = modes["simulate"]
+    if context.config.simulate and context.mode == modes.default then
+        context.mode = modes.simulate
     end
 
     -- handle mode
-    context.mode.selected(context)
+    context.mode(context)
 end
 
 -- prevent excecution when imported from test_suite

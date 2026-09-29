@@ -11,9 +11,9 @@ return {
                 sequence = {
                     "DEBUG: Debug mode is enabled.",
                     "DEBUG: Config './tests/pods/configs/config_007_pods.lua' is used.",
+                    "INFO: Simulate mode is active.",
                     "DEBUG: Targets   - @nona",
                     "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path",
-                    "INFO: Simulate mode is active.",
                     "Create pod 'Simple Pod' ('si_po'): ",
                     "podman pod create --name si_po;",
                     "Create container 'supr_app': ",
