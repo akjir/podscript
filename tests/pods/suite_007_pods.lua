@@ -74,5 +74,17 @@ return {
                 }
             },
         },
+        [s .. "07"] = {
+            description = "Simulate create with config simulate = false.",
+            config = "config_010_simulate_false_with_pods",
+            parameters = { "create", "@nona" },
+            simulate = true,
+            expectations = {
+                sequence = {
+                    "INFO: Simulate mode is active.",
+                    "podman pod create --name si_po;",
+                }
+            },
+        },
     },
 }

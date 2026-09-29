@@ -287,7 +287,7 @@ global function mode_default__handle(context)
         -- handle recipe
         if recipe ~= nil and recipe__validate(context, recipe, target) then
             --action is valid at this point
-            pod_actions[action](recipe, context.config.simulate)
+            pod_actions[action](recipe, context.flags.simulate)
         end
     end
 end

@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "198.d6d1c3a.dev"
+local BUILD <const> = "199.e0b22c7.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1668,7 +1668,7 @@ local function mode_default__handle(context)
         -- handle recipe
         if recipe ~= nil and recipe__validate(context, recipe, target) then
             --action is valid at this point
-            pod_actions[action](recipe, context.config.simulate)
+            pod_actions[action](recipe, context.flags.simulate)
         end
     end
 end

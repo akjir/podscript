@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed a crash in `string.trim` when providing a `nil` value.
 - Fixed column shifting in `status` action by using robust delimiters.
 - Fixed `simulate` flag being bypassed during `recipe` and `config` edit modes.
+- Fixed `simulate` mode being bypassed for default actions when config disables simulation.
 
 ## [1.4.0] - 2026-09-24
 

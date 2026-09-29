@@ -39,11 +39,11 @@ global function mode_simulate__handle(context)
     local parameters = context.parameters
     if parameters[1] == "command" then
         -- remove "command" from parameters
-        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        context.parameters = table.sub(parameters, 2)
         mode_command__handle(context)
     elseif parameters[1] == "logs" then
         -- remove "logs" from parameters
-        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        context.parameters = table.sub(parameters, 2)
         mode_logs__handle(context)
     else
         mode_default__handle(context)
