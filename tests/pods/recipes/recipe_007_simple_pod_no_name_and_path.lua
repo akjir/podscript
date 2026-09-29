@@ -7,7 +7,6 @@ return {
     containers = {
         {
             name = " supR App  ",
-            detach = true,
             restart = "never",
             image = "alpine:latest",
             volumes = {

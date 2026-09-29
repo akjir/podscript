@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "197.7477816.dev"
+local BUILD <const> = "198.d6d1c3a.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -643,8 +643,8 @@ local function container__create(container, pod, simulate)
     commands[#commands + 1] = string.escape_shell(pod.name)
 
     -- detach
-    -- default is false
-    if container.detach then
+    -- default is true
+    if container.detach ~= false then
         commands[#commands + 1] = "--detach"
     end
 

@@ -47,8 +47,8 @@ global function container__create(container, pod, simulate)
     commands[#commands + 1] = string.escape_shell(pod.name)
 
     -- detach
-    -- default is false
-    if container.detach then
+    -- default is true
+    if container.detach ~= false then
         commands[#commands + 1] = "--detach"
     end
 

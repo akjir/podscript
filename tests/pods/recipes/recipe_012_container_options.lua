@@ -6,6 +6,7 @@ return {
     containers = {
         {
             name = "snoitpo",
+            detach = false,
             options = {
                 "--unknown thing",
                 "--another unknown",
