@@ -71,10 +71,12 @@ function util.format_line(line, status)
     return line .. string.rep(" ", pad) .. status
 end
 
+---Normalizes a name by converting it to lowercase, trimming whitespace, and replacing internal spaces with underscores.
+---@param str string The name to normalize.
+---@return string # The normalized name.
 function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
-
 
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
