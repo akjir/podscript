@@ -82,9 +82,10 @@ local function mode_command__execute(context, recipe, command_table)
     commands[#commands + 1] = string.escape_shell(container_name)
     commands[#commands + 1] = command_table.execute
 
-    system.exec(table.concat(commands, " "),
-        "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
-        context.flags.simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
+        simulate = context.flags.simulate
+    })
 end
 
 ---Print command help.
@@ -252,7 +253,7 @@ global function mode_command__handle(context)
 
             local command_table = nil
             local command_num = tonumber(command_name)
-            
+
             if command_num ~= nil then
                 local valid_commands = mode_command__get_valid_commands(recipe, true)
                 if command_num > 0 and command_num <= #valid_commands then

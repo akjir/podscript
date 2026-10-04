@@ -73,8 +73,8 @@ end
 function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local success = os.execute("test -d " .. safe_path)
-    return success == true or success == 0
+    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
+    return success == true
 end
 
 ---Get the absolute path of a given path.
@@ -98,51 +98,60 @@ function system.get_absolute_path(path)
 end
 
 ---Execute a command.
----Only executes a command, if simulate is set to false.
 ---@param command string
----@param prefix string
----@param simulate boolean
----@param direct boolean
-function system.exec(command, prefix, simulate, direct)
+---@param options table|nil Options for execution.
+---@return boolean success, string|nil exit_reason, number|nil exit_code
+function system.exec(command, options)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
-    if not string.ends_with(command, ";") then
-        command = command .. ";"
+    options = options or {}
+    if type(options) ~= "table" then error("Expected table for options, got " .. type(options), 2) end
+
+    local prefix = options.prefix or ""
+    local simulate = options.simulate == true
+    local interactive = options.interactive == true
+    local silent = options.silent == true
+
+    local final_command = command
+    local print_command = command
+    if not string.ends_with(print_command, ";") then
+        print_command = print_command .. ";"
+    end
+
+    if not interactive then
+        final_command = print_command
     end
 
     if simulate then
-        if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
+        if not string.is_nil_or_empty(prefix) then
             log.print(prefix)
         end
-        log.print(command)
-        return
+        log.print(print_command)
+        return true, "exit", 0
     end
 
-    log.debug("Execute: " .. command)
+    log.debug("Execute: " .. print_command)
 
-    if direct then
-        local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
-        if not success then
+    if interactive then
+        local success, exit_reason, exit_code = os.execute(final_command)
+        if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
-        return
+        return success, exit_reason, exit_code
     end
 
     -- combine STDOUT and STDERR using 2>&1
-    local handle = io.popen("( " .. command .. " ) 2>&1")
+    local handle = io.popen("( " .. final_command .. " ) 2>&1")
     if not handle then
-        log.error("Failed to execute command '" .. command .. "'!")
-        return
-    end
-
-    local safe_prefix = ""
-    if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
-        safe_prefix = prefix
+        if not silent then
+            log.error("Failed to execute command '" .. final_command .. "'!")
+        end
+        return false, "failed", -1
     end
 
     local output_captured = false
     for line in handle:lines() do
         if not output_captured then
-            log.print(safe_prefix .. line)
+            log.print(prefix .. line)
             output_captured = true
         else
             log.print(line)
@@ -150,15 +159,17 @@ function system.exec(command, prefix, simulate, direct)
     end
 
     if not output_captured then
-        log.print(safe_prefix .. "...")
+        log.print(prefix .. "...")
     end
 
-    local success, _, exit_code = handle:close()
+    local success, exit_reason, exit_code = handle:close()
 
     -- check if the command actually succeeded
-    if not success then
+    if not success and not silent then
         log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
     end
+
+    return success, exit_reason, exit_code
 end
 
 ---Execute a command and capture its standard output as a list of lines.

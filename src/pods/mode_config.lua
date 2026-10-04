@@ -48,7 +48,7 @@ local function mode_config__edit(context)
         return
     end
     local command = editor .. " " .. string.escape_shell(context.config.path)
-    system.exec(command, "", context.flags.simulate, true)
+    system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 ---Print config help.
 global function mode_config__help()

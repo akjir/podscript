@@ -73,8 +73,10 @@ global function pod__create(recipe, simulate)
     end
 
     -- create pod
-    system.exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate = simulate
+    })
 
     -- create containers
     local containers = recipe.containers
@@ -101,8 +103,10 @@ global function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate, false)
+    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), {
+        prefix = "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate = simulate
+    })
 end
 
 ---Remove and create pod and containers.

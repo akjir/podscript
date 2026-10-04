@@ -1,5 +1,5 @@
 return {
-    editor = "editor",
+    editor = "false",
     recipes = {
         path = "tests/pods/recipes",
         groups = {

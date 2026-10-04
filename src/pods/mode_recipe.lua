@@ -55,7 +55,7 @@ local function mode_recipe__edit(context, name)
     local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
-    system.exec(command, "", context.flags.simulate, true)
+    system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 
 ---Print config help.

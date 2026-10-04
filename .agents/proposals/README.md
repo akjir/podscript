@@ -32,6 +32,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
 | `PSP-017` | Human-Readable Configuration Output & Validation | `feature` | `completed` | [psp-017-human-config-output.md](psp-017-human-config-output.md) |
 | `PSP-016` | Resilient and Intelligent Testing Framework | `architecture` | `completed` | [psp-016-resilient-testing.md](psp-016-resilient-testing.md) |
+| `PSP-020` | Refactor system.exec | `refactor` | `completed` | [psp-020-system-exec-refactoring.md](psp-020-system-exec-refactoring.md) |
 
 ---
 

@@ -47,8 +47,8 @@ return {
             parameters = { "config", "edit" },
             expectations = {
                 sequence = {
-                    "DEBUG: Execute: editor ./tests/pods/configs/config_012_invalid_editor.lua;",
-                    "ERROR: Command exited with code '127'!"
+                    "DEBUG: Execute: false ./tests/pods/configs/config_012_invalid_editor.lua;",
+                    "ERROR: Command exited with code '1'!"
                 }
             },
         },

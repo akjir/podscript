@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `init` mode to initialize default configuration and recipe files.
 
 ### Changed
+- Refactored `system.exec` to use an options table for flexible command execution.
 
 - Changed `config show` output to a structured, hierarchical diagnostic tree.
 - Renamed `print` action to `show` in `config` and `recipe` modes.
@@ -45,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `list` action to `recipe` mode for displaying configured recipes.
 
 ### Changed
+- Refactored `system.exec` to use an options table for flexible command execution.
 
 - Updated minimum Lua requirement from 5.4 to 5.5.
 - Refactored debug flag into `log.debug_enabled` to avoid global collisions.
@@ -88,6 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added the ability to target recipe groups using the `@` prefix in the target argument.
 
 ### Changed
+- Refactored `system.exec` to use an options table for flexible command execution.
 
 - Renamed `dryrun` option to `simulate` for better clarity.
 - Renamed `PodConfig` to `Recipe` for better clarity.
@@ -120,6 +123,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a `commands` field to containers for running commands on startup.
 
 ### Changed
+- Refactored `system.exec` to use an options table for flexible command execution.
 
 - Renamed the generic `commands` field to `options` to avoid confusion with container startup commands.
 

@@ -137,13 +137,13 @@ local function mode_logs__execute(context, action, target)
     
     local command_str = table.concat(commands, " ")
 
-    if context.flags.simulate then
-        log.print("Execute log command: ")
-        log.print(command_str .. ";")
-        return true
-    else
-        return os.execute(command_str)
-    end
+    local success = system.exec(command_str, {
+        simulate = context.flags.simulate,
+        interactive = true,
+        silent = true,
+        prefix = "Execute log command: "
+    })
+    return success
 end
 
 global function mode_logs__handle(context)

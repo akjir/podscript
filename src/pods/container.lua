@@ -109,7 +109,10 @@ global function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Create container '" .. container.name .. "': ",
+        simulate = simulate
+    })
 end
 
 ---Ensure container name.
@@ -154,8 +157,8 @@ end
 ---@param simulate boolean
 global function container__remove(container, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
-    system.exec("podman stop " .. string.escape_shell(container.name), "Stop container '" .. container.name .. "': ", simulate, false)
-    system.exec("podman rm " .. string.escape_shell(container.name), "Remove container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman stop " .. string.escape_shell(container.name), { prefix = "Stop container '" .. container.name .. "': ", simulate = simulate })
+    system.exec("podman rm " .. string.escape_shell(container.name), { prefix = "Remove container '" .. container.name .. "': ", simulate = simulate })
 end
 
 ---Update a container image.
@@ -167,5 +170,5 @@ global function container__update(container, pod, simulate)
     if type(pod) ~= "table" then error("pod must be a table", 2) end
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate })
 end

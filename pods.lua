@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "216.0d4ac3b.dev"
+local BUILD <const> = "217.1d9d18d.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -501,8 +501,8 @@ end
 function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local success = os.execute("test -d " .. safe_path)
-    return success == true or success == 0
+    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
+    return success == true
 end
 
 ---Get the absolute path of a given path.
@@ -526,51 +526,60 @@ function system.get_absolute_path(path)
 end
 
 ---Execute a command.
----Only executes a command, if simulate is set to false.
 ---@param command string
----@param prefix string
----@param simulate boolean
----@param direct boolean
-function system.exec(command, prefix, simulate, direct)
+---@param options table|nil Options for execution.
+---@return boolean success, string|nil exit_reason, number|nil exit_code
+function system.exec(command, options)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
-    if not string.ends_with(command, ";") then
-        command = command .. ";"
+    options = options or {}
+    if type(options) ~= "table" then error("Expected table for options, got " .. type(options), 2) end
+
+    local prefix = options.prefix or ""
+    local simulate = options.simulate == true
+    local interactive = options.interactive == true
+    local silent = options.silent == true
+
+    local final_command = command
+    local print_command = command
+    if not string.ends_with(print_command, ";") then
+        print_command = print_command .. ";"
+    end
+
+    if not interactive then
+        final_command = print_command
     end
 
     if simulate then
-        if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
+        if not string.is_nil_or_empty(prefix) then
             log.print(prefix)
         end
-        log.print(command)
-        return
+        log.print(print_command)
+        return true, "exit", 0
     end
 
-    log.debug("Execute: " .. command)
+    log.debug("Execute: " .. print_command)
 
-    if direct then
-        local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
-        if not success then
+    if interactive then
+        local success, exit_reason, exit_code = os.execute(final_command)
+        if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
-        return
+        return success, exit_reason, exit_code
     end
 
     -- combine STDOUT and STDERR using 2>&1
-    local handle = io.popen("( " .. command .. " ) 2>&1")
+    local handle = io.popen("( " .. final_command .. " ) 2>&1")
     if not handle then
-        log.error("Failed to execute command '" .. command .. "'!")
-        return
-    end
-
-    local safe_prefix = ""
-    if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
-        safe_prefix = prefix
+        if not silent then
+            log.error("Failed to execute command '" .. final_command .. "'!")
+        end
+        return false, "failed", -1
     end
 
     local output_captured = false
     for line in handle:lines() do
         if not output_captured then
-            log.print(safe_prefix .. line)
+            log.print(prefix .. line)
             output_captured = true
         else
             log.print(line)
@@ -578,15 +587,17 @@ function system.exec(command, prefix, simulate, direct)
     end
 
     if not output_captured then
-        log.print(safe_prefix .. "...")
+        log.print(prefix .. "...")
     end
 
-    local success, _, exit_code = handle:close()
+    local success, exit_reason, exit_code = handle:close()
 
     -- check if the command actually succeeded
-    if not success then
+    if not success and not silent then
         log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
     end
+
+    return success, exit_reason, exit_code
 end
 
 ---Execute a command and capture its standard output as a list of lines.
@@ -787,7 +798,10 @@ local function container__create(container, pod, simulate)
     end
 
     -- create and execute final podman command
-    system.exec(table.concat(commands, " "), "Create container '" .. container.name .. "': ", simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Create container '" .. container.name .. "': ",
+        simulate = simulate
+    })
 end
 
 ---Ensure container name.
@@ -832,8 +846,8 @@ end
 ---@param simulate boolean
 local function container__remove(container, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
-    system.exec("podman stop " .. string.escape_shell(container.name), "Stop container '" .. container.name .. "': ", simulate, false)
-    system.exec("podman rm " .. string.escape_shell(container.name), "Remove container '" .. container.name .. "': ", simulate, false)
+    system.exec("podman stop " .. string.escape_shell(container.name), { prefix = "Stop container '" .. container.name .. "': ", simulate = simulate })
+    system.exec("podman rm " .. string.escape_shell(container.name), { prefix = "Remove container '" .. container.name .. "': ", simulate = simulate })
 end
 
 ---Update a container image.
@@ -845,7 +859,7 @@ local function container__update(container, pod, simulate)
     if type(pod) ~= "table" then error("pod must be a table", 2) end
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate })
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -1047,8 +1061,10 @@ local function pod__create(recipe, simulate)
     end
 
     -- create pod
-    system.exec(table.concat(commands, " "), "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Create pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate = simulate
+    })
 
     -- create containers
     local containers = recipe.containers
@@ -1075,8 +1091,10 @@ local function pod__remove(recipe, simulate)
     end
 
     -- remove pod
-    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
-        simulate, false)
+    system.exec("podman pod rm " .. string.escape_shell(recipe.pod.name), {
+        prefix = "Remove pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "'): ",
+        simulate = simulate
+    })
 end
 
 ---Remove and create pod and containers.
@@ -1161,9 +1179,10 @@ local function mode_command__execute(context, recipe, command_table)
     commands[#commands + 1] = string.escape_shell(container_name)
     commands[#commands + 1] = command_table.execute
 
-    system.exec(table.concat(commands, " "),
-        "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
-        context.flags.simulate, false)
+    system.exec(table.concat(commands, " "), {
+        prefix = "Execute command '" .. command_table.execute .. "' in container '" .. container_name .. "': ",
+        simulate = context.flags.simulate
+    })
 end
 
 ---Print command help.
@@ -1331,7 +1350,7 @@ local function mode_command__handle(context)
 
             local command_table = nil
             local command_num = tonumber(command_name)
-            
+
             if command_num ~= nil then
                 local valid_commands = mode_command__get_valid_commands(recipe, true)
                 if command_num > 0 and command_num <= #valid_commands then
@@ -1381,7 +1400,7 @@ local function mode_recipe__edit(context, name)
     local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
-    system.exec(command, "", context.flags.simulate, true)
+    system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 
 ---Print config help.
@@ -1570,7 +1589,7 @@ local function mode_config__edit(context)
         return
     end
     local command = editor .. " " .. string.escape_shell(context.config.path)
-    system.exec(command, "", context.flags.simulate, true)
+    system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 ---Print config help.
 local function mode_config__help()
@@ -2168,13 +2187,13 @@ local function mode_logs__execute(context, action, target)
     
     local command_str = table.concat(commands, " ")
 
-    if context.flags.simulate then
-        log.print("Execute log command: ")
-        log.print(command_str .. ";")
-        return true
-    else
-        return os.execute(command_str)
-    end
+    local success = system.exec(command_str, {
+        simulate = context.flags.simulate,
+        interactive = true,
+        silent = true,
+        prefix = "Execute log command: "
+    })
+    return success
 end
 
 local function mode_logs__handle(context)
