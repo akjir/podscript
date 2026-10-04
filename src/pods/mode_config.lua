@@ -33,6 +33,12 @@ global<const> *
 ---Edit config.
 ---@param context table
 local function mode_config__edit(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if type(context) ~= "table" or type(context.config) ~= "table" then
         error("mode_config__edit requires a valid context object", 2)
     end
@@ -61,6 +67,12 @@ end
 ---Show config.
 ---@param context table
 local function mode_config__show(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if type(context) ~= "table" or type(context.config) ~= "table" then
         error("mode_config__show requires a valid context object", 2)
     end
@@ -191,6 +203,12 @@ end
 ---Handle config mode.
 ---@param context table
 global function mode_config__handle(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if type(context) ~= "table" or type(context.parameters) ~= "table" then
         error("mode_config__handle requires a valid context object", 2)
     end

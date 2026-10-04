@@ -46,6 +46,12 @@ global<const> *
 ---@param context table
 ---@return boolean
 global function main__config_load_and_set(context)
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
     local config_path = context.config.path
 
     local config, error, _ = system.load_lua_file(config_path)
@@ -100,6 +106,14 @@ end
 ---@param arguments string[]
 ---@param modes table
 local function main__parse_arguments(context, arguments, modes)
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    if type(arguments) ~= "table" then error("arguments must be a table", 2) end
+    if type(modes) ~= "table" then error("modes must be a table", 2) end
+    context.config = context.config or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then

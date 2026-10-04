@@ -35,6 +35,12 @@ global<const> *
 ---Create initial recipe and config files.
 ---@param context table
 local function mode_init__create(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     local recipe_path = util.build_full_path(".", "recipe", ".lua")
     local config_path = context.config.path or util.build_full_path("config", "", ".lua")
 
@@ -107,6 +113,12 @@ end
 ---Handle init mode.
 ---@param context table
 global function mode_init__handle(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     log.debug("Init mode is used.")
     local action = context.parameters[1] or ""
     if action == "" then

@@ -36,6 +36,12 @@ global<const> *
 ---@param context table
 ---@param name string
 local function mode_recipe__edit(context, name)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -72,6 +78,12 @@ end
 ---List recipes defined in config.
 ---@param context table
 local function mode_recipe__list(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if table.is_nil_or_empty(context.config.recipes) or table.is_nil_or_empty(context.config.recipes.groups) then
         log.print("There are no recipes defined in config.")
         return
@@ -138,6 +150,12 @@ end
 ---@param context table
 ---@param name string
 local function mode_recipe__show(context, name)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -156,6 +174,12 @@ end
 ---Handle recipe mode.
 ---@param context table
 global function mode_recipe__handle(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     log.debug("Recipe mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) or action == "help" then

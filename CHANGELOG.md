@@ -24,7 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- Fixed missing nil-safety and early validation in config mode.
+- Fixed crash during command validation by passing missing recipe argument.
+- Fixed missing nil-safety and early validation across all mode handlers and core functions.
 - Fixed `recipe__load` global error in `status` by correcting module build order.
 - Fixed a crash in `string.trim` when providing a `nil` value.
 - Fixed column shifting in `status` action by using robust delimiters.

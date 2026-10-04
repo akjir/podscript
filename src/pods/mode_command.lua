@@ -34,6 +34,10 @@ global<const> *
 
 ---Validates command_table.
 local function mode_command__validate(command_table, recipe)
+    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
     if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
         log.error("No container in command table set!")
         return false
@@ -51,6 +55,16 @@ end
 ---@param recipe table
 ---@param command_table table
 local function mode_command__execute(context, recipe, command_table)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
+    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
     local commands = table.create(8)
     commands[1] = "podman exec -it"
 
@@ -75,6 +89,12 @@ end
 
 ---Print command help.
 local function mode_command__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
@@ -102,6 +122,9 @@ end
 ---@param suppress_warnings boolean|nil
 ---@return table
 local function mode_command__get_valid_commands(recipe, suppress_warnings)
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
     if table.is_nil_or_empty(recipe.pod.commands) then
         return {}
     end
@@ -134,6 +157,15 @@ end
 ---@param recipe table
 ---@param target string
 local function mode_command__list(context, recipe, target)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
     if table.is_nil_or_empty(recipe.pod.commands) then
         log.print("There are no commands defined in recipe '" .. target .. "'.")
         return
@@ -163,6 +195,12 @@ end
 ---Handle recipe mode.
 ---@param context table
 global function mode_command__handle(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     log.debug("Command mode is used.")
     local name = context.parameters[1]
     local command = context.parameters[2]
@@ -199,7 +237,7 @@ global function mode_command__handle(context)
                 log.error("Command '" .. command .. "' not found in recipe '" .. target .. "'.")
                 return
             end
-            if mode_command__validate(command_table) then
+            if mode_command__validate(command_table, recipe) then
                 mode_command__execute(context, recipe, command_table)
             end
         end

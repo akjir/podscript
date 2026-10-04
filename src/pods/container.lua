@@ -34,6 +34,8 @@ global<const> *
 ---@param pod table
 ---@param simulate boolean
 global function container__create(container, pod, simulate)
+    if type(container) ~= "table" then error("container must be a table", 2) end
+    if type(pod) ~= "table" then error("pod must be a table", 2) end
     -- main command
     local commands = table.create(16)
     commands[1] = "podman run"
@@ -116,6 +118,7 @@ end
 ---@param container_alternate_name string
 ---@return boolean
 global function container__ensure_name(container, pod_name, container_alternate_name)
+    if type(container) ~= "table" then error("container must be a table", 2) end
     -- container name is optional
     if string.is_nil_or_empty(container.name) then
         container.name = pod_name .. "-" .. container_alternate_name
@@ -133,6 +136,7 @@ end
 ---@param pod_name string
 ---@return boolean
 global function container__is_valid(container, pod_name)
+    if type(container) ~= "table" then error("container must be a table", 2) end
     if table.is_nil_or_empty(container) then
         log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
@@ -149,6 +153,7 @@ end
 ---@param container table
 ---@param simulate boolean
 global function container__remove(container, simulate)
+    if type(container) ~= "table" then error("container must be a table", 2) end
     system.exec("podman stop " .. string.escape_shell(container.name), "Stop container '" .. container.name .. "': ", simulate, false)
     system.exec("podman rm " .. string.escape_shell(container.name), "Remove container '" .. container.name .. "': ", simulate, false)
 end
@@ -158,6 +163,8 @@ end
 ---@param pod table
 ---@param simulate boolean
 global function container__update(container, pod, simulate)
+    if type(container) ~= "table" then error("container must be a table", 2) end
+    if type(pod) ~= "table" then error("pod must be a table", 2) end
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
     system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), "", simulate, false)

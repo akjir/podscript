@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
+---@diagnostic disable: duplicate-set-field
 ---@diagnostic disable: lowercase-global
+
 global<const> *
 
 ---@build block:
@@ -53,7 +55,7 @@ function util.build_full_path(path, file_name, file_extension)
 end
 
 ---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
----@param str string The input string to be normalized.
+---@param line string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
 function util.format_line(line, status)
     local extra = 0
@@ -87,6 +89,12 @@ function util.split_argument(argument)
 end
 
 function util.untangle(context, list)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end

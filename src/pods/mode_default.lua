@@ -33,6 +33,13 @@ global<const> *
 ---@param context table
 ---@param targets table
 global function mode_default__status(context, targets)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
+    if type(targets) ~= "table" then error("targets must be a table", 2) end
     local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
     local lines = system.exec_capture(query_command)
     if not lines then
@@ -224,6 +231,12 @@ end
 ---Print help for status action.
 ---@param context table
 global function mode_default__status_help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     log.print("PodScript " .. get_version_string() .. " - Status\n")
     log.print("Display the runtime status of pods and containers.")
     log.print("Usage: pods status [OPTIONS] [TARGETS]")
@@ -239,6 +252,12 @@ end
 ---Handle default mode.
 ---@param context table
 global function mode_default__handle(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
     log.debug("Default mode is used.")
     local action = context.parameters[1]
 
