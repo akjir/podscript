@@ -21,6 +21,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-013` | Systemd / Quadlet Export | `feature` | `concept` | [psp-013-systemd-quadlet-export.md](psp-013-systemd-quadlet-export.md) |
 | `PSP-014` | Command Mode Syntax Alignment | `feature` | `concept` | [psp-014-command-syntax-alignment.md](psp-014-command-syntax-alignment.md) |
 | `PSP-015` | Docker Compose to PodScript Converter | `feature` | `concept` | [psp-015-docker-compose-converter.md](psp-015-docker-compose-converter.md) |
+| `PSP-017` | Human-Readable Configuration Output & Validation | `feature` | `concept` | [psp-017-human-config-output.md](psp-017-human-config-output.md) |
 
 ### Completed Proposals
 
