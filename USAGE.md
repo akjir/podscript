@@ -64,6 +64,15 @@ Or when running directly via the Lua interpreter:
 lua pods.lua [MODE] [OPTIONS] [ACTION] [TARGETS...]
 ```
 
+### Shell Autocompletion
+
+To enable terminal autocompletion for the `pods` and `./pods` commands, source the provided completion script:
+
+```bash
+source .pods-completion.bash
+```
+*(You can add this command to your `~/.bashrc` to make it permanent.)*
+
 ---
 
 ## Quick Start

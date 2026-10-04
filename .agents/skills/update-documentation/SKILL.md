@@ -8,7 +8,7 @@ description: >-
 
 ## 1. Trigger Conditions
 Review and update documentation on:
-* **Syntax Changes:** Added, modified, or removed CLI modes, actions, options/flags, or target patterns.
+* **Syntax Changes:** Added, modified, or removed CLI modes, actions, options/flags, or target patterns. Ensure `.pods-completion.bash` is also updated to reflect these syntax changes.
 * **Feature Changes:** Lifecycle steps, configuration file structure, or recipe format changes.
 * **Requirements:** Supported Podman, Lua, or OS version changes.
 

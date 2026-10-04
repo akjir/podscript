@@ -34,7 +34,7 @@ description: >-
     * **Living Document:** If implementation details, CLI syntax, or technical choices diverge from the original proposal during development (e.g., necessary corrections or better alternatives discovered during coding), the PSP document (Part 1 and Part 2) MUST be updated to accurately reflect the final, actual implementation.
 3. **Promote to `review`:**
     * **Post-Verification (After):** Run `lua test.lua --dev`, execute release build (`lua build.lua`), and verify full release suite passes (`lua test.lua`).
-    * **Documentation:** Update `CHANGELOG.md`, `USAGE.md` (see `update-documentation` skill), and the CLI help menu if applicable.
+    * **Documentation:** Update `CHANGELOG.md`, `USAGE.md` (see `update-documentation` skill), the CLI help menu, and `.pods-completion.bash` if syntax changed.
     * **Update Status:** Set frontmatter `status: review` in the proposal spec and update `.agents/proposals/README.md`.
     * **Request Approval:** Present deliverables to the user for manual inspection and verification. Never transition to `completed` autonomously.
 4. **Promote to `completed`:**
