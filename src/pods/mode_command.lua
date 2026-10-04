@@ -32,7 +32,10 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Validates command_table.
+---Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
+---@param command_table table The command table to validate.
+---@param recipe table The recipe containing the command.
+---@return boolean True if the command is valid, false otherwise.
 local function mode_command__validate(command_table, recipe)
     if type(command_table) ~= "table" then error("command_table must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -48,10 +51,10 @@ local function mode_command__validate(command_table, recipe)
     return true
 end
 
----Build and execute command.
----@param context table
----@param recipe table
----@param command_table table
+---Constructs and executes a Podman command to run a predefined command within a recipe's container.
+---@param context table Application context.
+---@param recipe table The recipe containing the command and container definitions.
+---@param command_table table The specific command configuration to execute.
 local function mode_command__execute(context, recipe, command_table)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -79,7 +82,8 @@ local function mode_command__execute(context, recipe, command_table)
     })
 end
 
----Print command help.
+---Displays the help text for the command mode, outlining usage, actions, and options.
+---@param context table Application context.
 local function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -107,10 +111,10 @@ local function mode_command__help(context)
     log.print("  <number>           command by numeric index defined in recipe to execute")
 end
 
----Get a list of valid commands for a recipe.
----@param recipe table
----@param suppress_warnings boolean|nil
----@return table
+---Retrieves and sorts all valid commands defined within a recipe's pod configuration.
+---@param recipe table The recipe to inspect.
+---@param suppress_warnings boolean|nil True to suppress warnings for commands missing descriptions.
+---@return table An array of valid command tables, each containing the command name, description, and original table.
 local function mode_command__get_valid_commands(recipe, suppress_warnings)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if table.is_nil_or_empty(recipe.pod.commands) then
@@ -140,10 +144,10 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
     return valid_commands
 end
 
----List all commands for a recipe.
----@param context table
----@param recipe table
----@param target string
+---Lists all predefined commands available for a specified recipe, formatting them for display.
+---@param context table Application context.
+---@param recipe table The loaded recipe containing the commands.
+---@param target string The name of the target recipe.
 local function mode_command__list(context, recipe, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -173,8 +177,8 @@ local function mode_command__list(context, recipe, target)
     end
 end
 
----Handle recipe mode.
----@param context table
+---Handles the command mode, parsing arguments to list or execute predefined recipe commands.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_command__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Command mode is used.")

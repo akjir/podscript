@@ -42,10 +42,9 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Loads PodScript config. Sets default values if missing.
----Returns false if fails to load a file or no recipes are defined.
----@param context table
----@return boolean
+---Loads the PodScript configuration file and populates the application context. Sets default values for missing fields.
+---@param context table The application context object to modify.
+---@return boolean True if the configuration was successfully loaded and contains recipes, false otherwise.
 global function main__config_load_and_set(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local config_path = context.config.path
@@ -97,10 +96,10 @@ global function main__config_load_and_set(context)
     return true
 end
 
----Parse arguments and retuns true if error.
----@param context table
----@param arguments string[]
----@param modes table
+---Parses command-line arguments and populates the context with flags, parameters, and the selected mode.
+---@param context table The application context object.
+---@param arguments string[] Array of command-line arguments.
+---@param modes table Dictionary mapping mode names to their handler functions.
 local function main__parse_arguments(context, arguments, modes)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(arguments) ~= "table" then error("arguments must be a table", 2) end
@@ -141,8 +140,8 @@ local function main__parse_arguments(context, arguments, modes)
     end
 end
 
----Main function.
----@param arguments string[]
+---The main entry point for PodScript. Initializes the context, parses arguments, and dispatches to the appropriate mode handler.
+---@param arguments string[] Array of command-line arguments passed to the application.
 ---@build global:
 global function main(arguments)
     local modes = {

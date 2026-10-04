@@ -32,8 +32,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Handle simulate mode.
----@param context table
+---Activates global simulation mode, forwarding execution to the underlying command with the simulation flag enabled.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_simulate__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.info("Simulate mode is active.")

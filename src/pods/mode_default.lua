@@ -30,9 +30,9 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Print status of containers.
----@param context table
----@param targets table
+---Queries Podman and formats the runtime status of managed pods and containers for display.
+---@param context table Application context.
+---@param targets table Array of recipe names to filter the status output.
 global function mode_default__status(context, targets)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(targets) ~= "table" then error("targets must be a table", 2) end
@@ -224,8 +224,8 @@ global function mode_default__status(context, targets)
     end
 end
 
----Print help for status action.
----@param context table
+---Displays the help text for the status action within the default mode.
+---@param context table Application context.
 global function mode_default__status_help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.print("PodScript " .. get_version_string() .. " - Status\n")
@@ -240,8 +240,8 @@ global function mode_default__status_help(context)
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
 end
----Handle default mode.
----@param context table
+---Handles the default mode, orchestrating lifecycle actions (create, recreate, remove, update) or displaying status.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_default__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Default mode is used.")

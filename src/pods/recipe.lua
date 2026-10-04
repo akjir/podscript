@@ -30,11 +30,11 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Load PodScript recipe.
----@param recipe_path string
----@param recipe_name string
----@param suppress_errors boolean|nil
----@return table|nil
+---Loads and evaluates a PodScript recipe file, returning the resulting configuration table.
+---@param recipe_path string The base directory path containing the recipes.
+---@param recipe_name string The specific name of the recipe to load.
+---@param suppress_errors boolean|nil True to suppress error logging if the recipe fails to load.
+---@return table|nil The loaded recipe table, or nil if an error occurred.
 global function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
@@ -51,11 +51,11 @@ global function recipe__load(recipe_path, recipe_name, suppress_errors)
     end
 end
 
----Validate recipe.
----@param context table
----@param recipe table
----@param file_name string
----@return boolean
+---Validates a loaded recipe, ensuring all required fields, pod properties, and containers are properly configured.
+---@param context table Application context providing default configuration values.
+---@param recipe table The recipe table to validate and normalize.
+---@param file_name string The name of the recipe file (used for error reporting).
+---@return boolean True if the recipe is valid, false otherwise.
 global function recipe__validate(context, recipe, file_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -124,10 +124,10 @@ global function recipe__validate(context, recipe, file_name)
     return true
 end
 
----Resolve a container name from a user specification (index, name, *relative).
----@param recipe table
----@param container_spec string|number
----@return string|nil name
+---Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
+---@param recipe table The recipe containing the container definitions.
+---@param container_spec string|number The container identifier to resolve.
+---@return string|nil The resolved absolute container name, or nil if not found.
 global function recipe__resolve_container_name(recipe, container_spec)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if type(container_spec) == "number" or tonumber(container_spec) then

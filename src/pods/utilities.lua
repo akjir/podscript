@@ -30,11 +30,11 @@ global<const> *
 
 global util <const> = {}
 
----Build a full path with given parts.
----@param path string
----@param file_name string
----@param file_extension string
----@return string
+---Constructs a complete file path from a base directory, filename, and extension.
+---@param path string The base directory path.
+---@param file_name string The name of the file.
+---@param file_extension string The extension to append (e.g., '.lua').
+---@return string The fully resolved file path.
 function util.build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")

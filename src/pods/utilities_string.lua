@@ -27,26 +27,26 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Test if a string begins with another string.
----@param str string
----@param prefix string
----@return boolean
+---Evaluates whether a string starts with a specified prefix.
+---@param str string The source string to evaluate.
+---@param prefix string The prefix to search for.
+---@return boolean True if the string starts with the prefix, false otherwise.
 function string.begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
----Test if a string ends with another string.
----@param str string
----@param suffix string
----@return boolean
+---Evaluates whether a string ends with a specified suffix.
+---@param str string The source string to evaluate.
+---@param suffix string The suffix to search for.
+---@return boolean True if the string ends with the suffix, false otherwise.
 function string.ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
----Escapes a string for safe use in shell commands.
----@param str string|nil
----@param always_quote boolean|nil
----@return string
+---Escapes a string securely for injection into shell commands.
+---@param str string|nil The string to escape.
+---@param always_quote boolean|nil True to wrap the string in single quotes unconditionally.
+---@return string The safely escaped shell string.
 function string.escape_shell(str, always_quote)
     if str == nil then
         return "''"
@@ -58,26 +58,26 @@ function string.escape_shell(str, always_quote)
     return str
 end
 
----Test if string is empty or nil.
----@param str string|nil
----@return boolean
+---Evaluates whether a string is nil or strictly empty.
+---@param str string|nil The string to evaluate.
+---@return boolean True if the string is nil or empty, false otherwise.
 function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
----Removes leading and trailing whitespaces.
----@param str string|nil
----@return string
+---Strips leading and trailing whitespace characters from a string.
+---@param str string|nil The string to trim.
+---@return string The trimmed string, or an empty string if nil.
 function string.trim(str)
     if str == nil then return "" end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
----Splits a string by a given separator.
----@param str string
----@param sep string
----@return table
+---Partitions a string into a table of substrings divided by a given separator.
+---@param str string The string to partition.
+---@param sep string The separator substring.
+---@return table An array of resulting substrings.
 function string.split(str, sep)
     if sep == nil or sep == "" then
         return {str}
@@ -94,9 +94,9 @@ function string.split(str, sep)
     return result
 end
 
----Calculates the visible length of a string (ignoring UTF-8 continuation bytes).
----@param str string
----@return integer
+---Computes the visible character count of a string, accounting for multi-byte UTF-8 sequences.
+---@param str string The string to measure.
+---@return integer The visible character length.
 function string.visible_length(str)
     if str == nil then return 0 end
     local extra = 0

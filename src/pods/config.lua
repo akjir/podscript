@@ -30,10 +30,10 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Check if a recipe is defined in the configuration.
----@param context table
----@param recipe_name string
----@return boolean
+---Checks if a specific recipe is defined within the application configuration.
+---@param context table Application context containing configuration data.
+---@param recipe_name string Name of the recipe to search for.
+---@return boolean True if the recipe exists in a group, false otherwise.
 global function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local groups = context.config.recipes.groups or {}
@@ -48,10 +48,10 @@ global function config__has_recipe(context, recipe_name)
     return false
 end
 
----Untangle targets from configuration groups.
----@param context table
----@param list table
----@return table|boolean
+---Resolves group aliases and expands targets into a unique list of individual recipe names.
+---@param context table Application context containing configuration data.
+---@param list table List of target strings (recipe names or @group aliases).
+---@return table|boolean A deduplicated array of recipe names, or false if an error occurred.
 global function config__untangle(context, list)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if log.debug_enabled and not table.is_nil_or_empty(list) then

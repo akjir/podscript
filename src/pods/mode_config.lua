@@ -30,8 +30,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Edit config.
----@param context table
+---Opens the configuration file in the user's preferred editor.
+---@param context table Application context containing the configured editor and file path.
 local function mode_config__edit(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -43,7 +43,7 @@ local function mode_config__edit(context)
     local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
----Print config help.
+---Displays the help text for the config mode, detailing available actions and options.
 global function mode_config__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods config [OPTIONS] ACTION")
@@ -57,8 +57,8 @@ global function mode_config__help()
     log.print("  show               show config")
 end
 
----Show config.
----@param context table
+---Displays the current configuration, including settings, validated directories, and recipe groups.
+---@param context table Application context containing the configuration data.
 local function mode_config__show(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -236,8 +236,8 @@ local function mode_config__show(context)
     end
 end
 
----Handle config mode.
----@param context table
+---Handles the config mode, dispatching to the appropriate sub-action (show, edit, help).
+---@param context table Application context containing parsed flags and parameters.
 global function mode_config__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 

@@ -32,8 +32,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Create initial recipe and config files.
----@param context table
+---Generates an initial example recipe and configuration file in the current working directory.
+---@param context table Application context defining output paths.
 local function mode_init__create(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local recipe_path = util.build_full_path(".", "recipe", ".lua")
@@ -93,7 +93,7 @@ local function mode_init__create(context)
     log.info("Created '" .. config_path .. "'.")
 end
 
----Print init help.
+---Displays the help text for the init mode, outlining usage, actions, and options.
 global function mode_init__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods init [OPTIONS]")
@@ -105,8 +105,8 @@ global function mode_init__help()
     log.print("  help               display this help and exit")
 end
 
----Handle init mode.
----@param context table
+---Handles the init mode, determining whether to display help or create initialization files.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_init__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Init mode is used.")

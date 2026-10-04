@@ -29,10 +29,10 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Create a container.
----@param container table
----@param pod table
----@param simulate boolean
+---Creates and starts a container within a specified pod using Podman.
+---@param container table Container configuration table.
+---@param pod table Pod configuration table.
+---@param simulate boolean True to simulate the creation command without executing it.
 global function container__create(container, pod, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if type(pod) ~= "table" then error("pod must be a table", 2) end
@@ -115,11 +115,11 @@ global function container__create(container, pod, simulate)
     })
 end
 
----Ensure container name.
----@param container table
----@param pod_name string
----@param container_alternate_name string
----@return boolean
+---Ensures a container has a valid name, generating one from the pod name and an alternate if omitted or prefixed with an asterisk.
+---@param container table Container configuration table to update.
+---@param pod_name string The name of the parent pod.
+---@param container_alternate_name string A fallback name to append if the container name is missing.
+---@return boolean True upon successful name resolution.
 global function container__ensure_name(container, pod_name, container_alternate_name)
     if type(container) ~= "table" then error("container must be a table", 2) end
     -- container name is optional
@@ -134,10 +134,10 @@ global function container__ensure_name(container, pod_name, container_alternate_
     return true
 end
 
----Test if container is valid. Container.name is optional.
----@param container table
----@param pod_name string
----@return boolean
+---Validates the configuration of a container, verifying required fields like the image.
+---@param container table Container configuration table to validate.
+---@param pod_name string The name of the parent pod.
+---@return boolean True if the container is valid, false otherwise.
 global function container__is_valid(container, pod_name)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if table.is_nil_or_empty(container) then
@@ -152,19 +152,19 @@ global function container__is_valid(container, pod_name)
     return true
 end
 
----Stop and removes a container.
----@param container table
----@param simulate boolean
+---Stops and removes a specified container via Podman.
+---@param container table Container configuration table containing the container name.
+---@param simulate boolean True to simulate the stop and remove commands without executing them.
 global function container__remove(container, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     system.exec("podman stop " .. string.escape_shell(container.name), { prefix = "Stop container '" .. container.name .. "': ", simulate = simulate })
     system.exec("podman rm " .. string.escape_shell(container.name), { prefix = "Remove container '" .. container.name .. "': ", simulate = simulate })
 end
 
----Update a container image.
----@param container table
----@param pod table
----@param simulate boolean
+---Pulls the latest image for a specified container from its registry using Podman.
+---@param container table Container configuration table containing image details.
+---@param pod table Pod configuration table used for fallback registry resolution.
+---@param simulate boolean True to simulate the pull command without executing it.
 global function container__update(container, pod, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if type(pod) ~= "table" then error("pod must be a table", 2) end

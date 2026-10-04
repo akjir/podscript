@@ -33,9 +33,9 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Edit recipe.
----@param context table
----@param name string
+---Opens a designated recipe file in the configured text editor.
+---@param context table Application context defining the editor and paths.
+---@param name string The name of the recipe to edit.
 local function mode_recipe__edit(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local found = name
@@ -54,7 +54,7 @@ local function mode_recipe__edit(context, name)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 
----Print config help.
+---Displays the help text for the recipe mode, outlining usage, actions, and options.
 local function mode_recipe__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
@@ -72,8 +72,8 @@ local function mode_recipe__help()
     log.print("  *                  name of the recipe")
 end
 
----List recipes defined in config.
----@param context table
+---Discovers and formats all mapped recipes (and optionally unlinked recipe files) for display.
+---@param context table Application context containing configuration paths and flags.
 local function mode_recipe__list(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -211,9 +211,9 @@ local function mode_recipe__list(context)
     end
 end
 
----Show recipe content.
----@param context table
----@param name string
+---Reads and outputs the content of a specified recipe file directly to the console.
+---@param context table Application context containing configuration paths.
+---@param name string The name of the recipe file to display.
 local function mode_recipe__show(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local found = name
@@ -231,8 +231,8 @@ local function mode_recipe__show(context, name)
     end
 end
 
----Handle recipe mode.
----@param context table
+---Handles the recipe mode, dispatching execution to list, edit, show, or display help.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_recipe__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Recipe mode is used.")

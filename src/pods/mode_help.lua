@@ -28,8 +28,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Handle help mode. Prints help.
----@param context table
+---Handles the help mode, outputting global usage, available modes, actions, and options.
+---@param context table Application context.
 global function mode_help__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.print("PodScript " .. get_version_string() .. "\n")

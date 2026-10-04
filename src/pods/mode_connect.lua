@@ -32,6 +32,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the connect mode, outlining usage, actions, and target formatting.
+---@param context table Application context.
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -57,6 +59,10 @@ local function mode_connect__help(context)
     log.print("  <absolute_name>      connect directly to an absolute container name\n")
 end
 
+---Resolves the target container and spawns an interactive shell connection via Podman.
+---@param context table Application context.
+---@param target string The target container identifier (recipe name or absolute container name).
+---@return boolean True if the connection command succeeds, false otherwise.
 local function mode_connect__shell(context, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -134,6 +140,8 @@ local function mode_connect__shell(context, target)
     return success
 end
 
+---Handles the connect mode, parsing arguments and invoking the shell connection.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_connect__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local action = context.parameters[1]

@@ -38,5 +38,6 @@ description: >-
 * **Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (`--debug`, `table.create`).
 
 ## 5. Coding Guidelines
+* **Function Documentation**: Every function must have concise, highly precise, and professional documentation (strictly in English) immediately above its definition using `---` (LuaCATS style). Ensure all parameters (`@param`) and return values (`@return`) are comprehensively typed and described.
 * **Early Validation**: Always validate function arguments upfront. For example, handlers receiving a `context` object should immediately verify it (e.g., `if type(context) ~= "table" then error("...", 2) end`) to prevent cascading nil errors.
 * **Nil-Safety**: Always provide defaults for optional or deeply nested structures (e.g., `local groups = context.config.recipes.groups or {}`) before iteration.

@@ -32,6 +32,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the logs mode, detailing usage, actions, and available flags.
+---@param context table Application context.
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -61,6 +63,11 @@ local function mode_logs__help(context)
     log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
+---Executes the podman log command for a target recipe's pod or specific container.
+---@param context table Application context containing flags (e.g., since, tail).
+---@param action string The logging action (e.g., 'show' or 'follow').
+---@param target string The recipe and optional container specification to fetch logs for.
+---@return boolean True if the logging command is successfully dispatched, false otherwise.
 local function mode_logs__execute(context, action, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if string.is_nil_or_empty(target) then
@@ -136,6 +143,8 @@ local function mode_logs__execute(context, action, target)
     return success
 end
 
+---Handles the logs mode, processing commands to display or stream podman logs.
+---@param context table Application context containing parsed flags and parameters.
 global function mode_logs__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local action = context.parameters[1]

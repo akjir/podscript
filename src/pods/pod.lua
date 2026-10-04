@@ -29,9 +29,9 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Create pod and containers.
----@param recipe table
----@param simulate boolean
+---Constructs and executes Podman commands to create a pod and its defined containers.
+---@param recipe table The recipe containing the pod and container configurations.
+---@param simulate boolean True to simulate the creation commands without executing them.
 global function pod__create(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     local commands = table.create(8)
@@ -85,9 +85,9 @@ global function pod__create(recipe, simulate)
     end
 end
 
----Remove pod and containers.
----@param recipe table
----@param simulate boolean
+---Stops and removes all containers associated with a pod, followed by the pod itself, via Podman.
+---@param recipe table The recipe defining the pod and containers to remove.
+---@param simulate boolean True to simulate the removal commands without executing them.
 global function pod__remove(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     -- remove containers
@@ -105,18 +105,18 @@ global function pod__remove(recipe, simulate)
     })
 end
 
----Remove and create pod and containers.
----@param recipe table
----@param simulate boolean
+---Removes an existing pod and its containers, then sequentially recreates them.
+---@param recipe table The recipe defining the pod and containers to recreate.
+---@param simulate boolean True to simulate the recreation commands without executing them.
 global function pod__recreate(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     pod__remove(recipe, simulate)
     pod__create(recipe, simulate)
 end
 
----Update containers of the pod.
----@param recipe table
----@param simulate boolean
+---Iterates over a pod's containers and pulls their respective latest images from their registries.
+---@param recipe table The recipe defining the pod and its containers.
+---@param simulate boolean True to simulate the update commands without executing them.
 global function pod__update(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")

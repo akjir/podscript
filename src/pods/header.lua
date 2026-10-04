@@ -33,8 +33,8 @@ global VERSION<const> = "1.5.0"
 ---@build const:
 global BUILD<const> = "dev"
 
----Get the full version string formatted as 'v<VERSION>+<BUILD>'.
----@return string
+---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
+---@return string The formatted version string.
 global function get_version_string()
     return "v" .. VERSION .. "+" .. BUILD
 end

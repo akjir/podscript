@@ -26,10 +26,9 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Appends one or more sequential tables to another.
----Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
----@param target table|nil
----@param ... table|nil
+---Appends elements from one or more sequential tables into a target table.
+---@param target table|nil The destination table.
+---@param ... table|nil The source tables to append.
 function table.append(target, ...sources)
     if target == nil then return end
     for i = 1, sources.n do
@@ -40,11 +39,10 @@ function table.append(target, ...sources)
     end
 end
 
----Test if a table contains a value. Only works with sequential tables.
----Returns false if table is nil or value is not found.
----@param target table|nil
----@param value any
----@return boolean
+---Evaluates whether a sequential table contains a specific value.
+---@param target table|nil The table to search.
+---@param value any The value to locate.
+---@return boolean True if the value is found, false otherwise.
 function table.contains(target, value)
     if target == nil then return false end
     for i = 1, #target do
@@ -53,11 +51,11 @@ function table.contains(target, value)
     return false
 end
 
----Get value from table or default if key not found.
----You can use "table and table[key] or default" instead, if there is no false value in table.
----@param target table
----@param key any
----@param default any
+---Retrieves a value from a table by key, returning a fallback if missing.
+---@param target table The table to query.
+---@param key any The key to lookup.
+---@param default any The fallback value.
+---@return any The resolved value.
 function table.get_or_default(target, key, default)
     if target == nil then return default end
     local value = target[key]
@@ -67,26 +65,25 @@ function table.get_or_default(target, key, default)
     return default
 end
 
----Check if a key exists in a table.
----@param target table
----@param key any
----@return boolean
+---Evaluates whether a table contains a specific key.
+---@param target table The table to inspect.
+---@param key any The key to locate.
+---@return boolean True if the key exists, false otherwise.
 function table.has_key(target, key)
     return target ~= nil and target[key] ~= nil
 end
 
----Test if a table is nil or empty.
----@param target table
----@return boolean
+---Evaluates whether a table is nil or contains no elements.
+---@param target table The table to inspect.
+---@return boolean True if nil or empty, false otherwise.
 function table.is_nil_or_empty(target)
     return target == nil or next(target) == nil
 end
 
----Merges two or more tables by adding key-value pairs from sources to target.
----If a key from a source table already exists in the target table, its value will be overwritten.
----@param target table
----@param ... table
----@return table
+---Merges key-value pairs from multiple source tables into a target table, overwriting existing keys.
+---@param target table The destination table.
+---@param ... table The source tables.
+---@return table The merged target table.
 function table.merge(target, ...sources)
     if target == nil then return sources[1] end
     for i = 1, sources.n do
@@ -100,9 +97,9 @@ function table.merge(target, ...sources)
     return target
 end
 
----Remove duplicates from a table. Returns a new table and don't modify the original.
----@param target table
----@return table
+---Creates a new sequential table containing only unique values from the source.
+---@param target table The source table.
+---@return table A new table free of duplicates.
 function table.remove_duplicates(target)
     if target == nil then return {} end
     local count = #target
@@ -125,9 +122,9 @@ function table.remove_duplicates(target)
     return result
 end
 
----Get table size, including non-numeric keys.
----@param table table
----@return integer
+---Counts the total number of key-value pairs in a table, including non-numeric keys.
+---@param table table The table to measure.
+---@return integer The total element count.
 function table.size(table)
     if table == nil then return 0 end
     local count = 0
@@ -137,11 +134,11 @@ function table.size(table)
     return count
 end
 
----Returns a sub-sequence of a sequential table, similar to string.sub.
----@param target table
----@param i integer|nil
----@param j integer|nil
----@return table
+---Extracts a sub-sequence from a sequential table, utilizing 1-based indexing.
+---@param target table The source table.
+---@param i integer|nil The starting index (inclusive, defaults to 1).
+---@param j integer|nil The ending index (inclusive, defaults to -1).
+---@return table A new table containing the extracted slice.
 function table.sub(target, i, j)
     if type(target) ~= "table" then
         error("table.sub expects a table as target, got " .. type(target), 2)

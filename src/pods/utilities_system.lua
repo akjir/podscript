@@ -29,8 +29,8 @@ global<const> *
 
 global system <const> = {}
 
----Check if the current Lua version is 5.5 or higher.
----@return boolean
+---Evaluates whether the executing Lua runtime is version 5.5 or higher.
+---@return boolean True if the version requirement is met, false otherwise.
 function system.check_lua_version()
     local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
     if not major_string or not minor_string then return false end
@@ -39,8 +39,8 @@ function system.check_lua_version()
     return major > 5 or (major == 5 and minor >= 5)
 end
 
----Check if the current operating system is Linux.
----@return boolean
+---Evaluates whether the host operating system is Linux via uname.
+---@return boolean True if running on Linux, false otherwise.
 function system.check_os()
     local handle = io.popen("uname -s")
     if not handle then return false end
@@ -51,8 +51,8 @@ function system.check_os()
     return "Linux" == string.trim(result)
 end
 
----Check if the current Podman version is 5.8.0 or higher.
----@return boolean
+---Evaluates whether the installed Podman CLI is version 5.8.0 or higher.
+---@return boolean True if the version requirement is met, false otherwise.
 function system.check_podman_version()
     local handle = io.popen("podman --version 2>&1")
     if not handle then return false end
@@ -67,9 +67,9 @@ function system.check_podman_version()
     return major > 5 or (major == 5 and minor >= 8)
 end
 
----Check if a directory exists.
----@param path string
----@return boolean
+---Evaluates whether a directory exists at the specified path.
+---@param path string The directory path to verify.
+---@return boolean True if the directory exists, false otherwise.
 function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
@@ -77,9 +77,9 @@ function system.directory_exists(path)
     return success == true
 end
 
----Check if a container exists and is running.
----@param container_name string
----@return boolean
+---Evaluates whether a specific Podman container is currently running.
+---@param container_name string The name of the container to inspect.
+---@return boolean True if the container is running, false otherwise.
 function system.container_exists(container_name)
     if type(container_name) ~= "string" then error("Expected string for container_name, got " .. type(container_name), 2) end
     local escaped_name = string.escape_shell(container_name)
@@ -91,9 +91,9 @@ function system.container_exists(container_name)
     return false
 end
 
----Get the absolute path of a given path.
----@param path string
----@return string
+---Resolves the absolute path for a given file system path using realpath.
+---@param path string The path to resolve.
+---@return string The absolute path.
 function system.get_absolute_path(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if string.is_nil_or_empty(path) then return "" end
@@ -111,10 +111,12 @@ function system.get_absolute_path(path)
     return path
 end
 
----Execute a command.
----@param command string
----@param options table|nil Options for execution.
----@return boolean success, string|nil exit_reason, number|nil exit_code
+---Executes a shell command synchronously, optionally buffering output or running interactively.
+---@param command string The shell command to execute.
+---@param options table|nil Configuration options (simulate, interactive, silent, prefix).
+---@return boolean success True if the command exited with code 0.
+---@return string|nil exit_reason The reason for termination (e.g., 'exit').
+---@return number|nil exit_code The numeric exit status.
 function system.exec(command, options)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
     options = options or {}
@@ -188,9 +190,9 @@ function system.exec(command, options)
     return success, exit_reason, exit_code
 end
 
----Execute a command and capture its standard output as a list of lines.
----@param command string
----@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
+---Executes a shell command and captures standard output into an array of lines.
+---@param command string The shell command to execute.
+---@return table|nil An array of output lines, or nil if execution failed.
 function system.exec_capture(command)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
     local handle = io.popen(command)
@@ -204,9 +206,9 @@ function system.exec_capture(command)
     return lines
 end
 
----Check if a file exists.
----@param path string
----@return boolean
+---Evaluates whether a file exists and is readable at the specified path.
+---@param path string The file path to verify.
+---@return boolean True if the file is readable, false otherwise.
 function system.file_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local file = io.open(path, "r")
@@ -217,10 +219,10 @@ function system.file_exists(path)
     return false
 end
 
----List files in a directory matching a pattern.
----@param path string
----@param pattern string|nil
----@return table|nil files The list of filenames.
+---Retrieves a list of files within a directory, optionally filtered by a Lua pattern.
+---@param path string The directory to scan.
+---@param pattern string|nil A Lua pattern to filter filenames.
+---@return table|nil An array of matching filenames, or nil if the directory is unreadable.
 function system.list_directory(path, pattern)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
@@ -238,11 +240,11 @@ function system.list_directory(path, pattern)
     return files
 end
 
----Loads a Lua file and returns the result.
----@param path string
----@return table|nil result The object returned by the file (usually a table).
----@return string|nil error Error message if something went wrong.
----@return string|nil error_type The type of error ("load" or "execution").
+---Loads and executes a Lua script, capturing any compilation or runtime errors.
+---@param path string The path to the Lua file.
+---@return table|nil result The value returned by the executed chunk.
+---@return string|nil error The error message, if any.
+---@return string|nil error_type The error phase ('load' or 'execution').
 function system.load_lua_file(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local chunk, err = loadfile(path)
@@ -256,9 +258,9 @@ function system.load_lua_file(path)
     return result, nil, nil
 end
 
----Read file content line by line and return as a table.
----@param path string
----@return table|nil
+---Reads a file and returns its contents as an array of lines.
+---@param path string The path to the file.
+---@return table|nil An array of lines, or nil if the file could not be opened.
 function system.read_file_content_by_line(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local file = io.open(path, "r")
@@ -274,8 +276,8 @@ function system.read_file_content_by_line(path)
     return lines
 end
 
----Check if the program is run with elevated execution rights (sudo).
----@return boolean
+---Evaluates whether the current process is running with root privileges (UID 0).
+---@return boolean True if elevated, false otherwise.
 function system.runs_elevated()
     local handle = io.popen("id -u")
     if not handle then return false end
@@ -284,10 +286,10 @@ function system.runs_elevated()
     return "0" == string.trim(result)
 end
 
----Write content to a file.
----@param path string
----@param content string
----@return boolean
+---Writes string content to a file, overwriting any existing data.
+---@param path string The destination file path.
+---@param content string The data to write.
+---@return boolean True upon successful write, false otherwise.
 function system.write_file(path, content)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if type(content) ~= "string" then error("Expected string for content, got " .. type(content), 2) end
