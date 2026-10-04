@@ -22,7 +22,6 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-014` | Command Mode Syntax Alignment | `feature` | `concept` | [psp-014-command-syntax-alignment.md](psp-014-command-syntax-alignment.md) |
 | `PSP-015` | Docker Compose to PodScript Converter | `feature` | `concept` | [psp-015-docker-compose-converter.md](psp-015-docker-compose-converter.md) |
 | `PSP-018` | Human-Readable Recipe Output | `feature` | `concept` | [psp-018-human-recipe-output.md](psp-018-human-recipe-output.md) |
-| `PSP-019` | Interactive Container Shell Access (`connect` action) | `feature` | `review` | [psp-019-connect-action.md](psp-019-connect-action.md) |
 
 ### Completed Proposals
 
@@ -33,6 +32,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-017` | Human-Readable Configuration Output & Validation | `feature` | `completed` | [psp-017-human-config-output.md](psp-017-human-config-output.md) |
 | `PSP-016` | Resilient and Intelligent Testing Framework | `architecture` | `completed` | [psp-016-resilient-testing.md](psp-016-resilient-testing.md) |
 | `PSP-020` | Refactor system.exec | `refactor` | `completed` | [psp-020-system-exec-refactoring.md](psp-020-system-exec-refactoring.md) |
+| `PSP-019` | Interactive Container Shell Access (`connect` action) | `feature` | `completed` | [psp-019-connect-action.md](psp-019-connect-action.md) |
 
 ---
 

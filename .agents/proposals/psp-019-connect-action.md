@@ -1,7 +1,7 @@
 ---
 id: PSP-019
 title: Interactive Container Shell Access (`connect` mode)
-status: review
+status: completed
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
@@ -92,21 +92,27 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Implement `src/pods/mode_connect.lua` with help menu and execution logic.
-- [ ] Register `connect` mode in `src/pods/main.lua` and `src/pods/mode_simulate.lua`.
-- [ ] Update `src/pods/mode_help.lua` to document the new `connect` mode.
-- [ ] Update `.pods-completion.bash` to support the new `connect` mode.
-- [ ] Add tests in `tests/pods/suite_020_mode_connect.lua` to verify target resolution and command construction.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` to detail the new `connect` syntax and behavior.
-- [ ] Add entry to `CHANGELOG.md` under "Added".
-- [ ] Set status to `review`, update `README.md` board, request manual user approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Implement `src/pods/mode_connect.lua` with help menu and execution logic.
+- [x] Register `connect` mode in `src/pods/main.lua` and `src/pods/mode_simulate.lua`.
+- [x] Update `src/pods/mode_help.lua` to document the new `connect` mode.
+- [x] Update `.pods-completion.bash` to support the new `connect` mode.
+- [x] Add tests in `tests/pods/suite_020_mode_connect.lua` to verify target resolution and command construction.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Update `USAGE.md` to detail the new `connect` syntax and behavior.
+- [x] Add entry to `CHANGELOG.md` under "Added".
+- [x] Set status to `review`, update `README.md` board, request manual user approval.
+- [x] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-10-04:** Initial concept drafted. `connect` chosen over `interact` for brevity. Designed as a dedicated mode (analogous to `logs`) rather than a default bulk action to properly handle interactive 1-to-1 container targeting, leveraging `recipe__resolve_container_name`.
+* **2026-10-04:** Fully implemented and completed by AI assistant based on manual approval. Built and tests verified.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `src/pods/mode_connect.lua` (Implementation of the `connect` mode)
+* Updated `src/pods/main.lua`, `src/pods/mode_simulate.lua`, `src/pods/mode_help.lua`
+* Updated `.pods-completion.bash`
+* Tests added in `tests/pods/suite_020_mode_connect.lua`
+* Updated `USAGE.md` and `CHANGELOG.md`
+* Compiled `pods.lua` release file
