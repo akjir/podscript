@@ -12,37 +12,42 @@ updated: 2026-10-04
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-Analogous to [PSP-017](psp-017-human-config-output.md), this proposal aims to replace the raw JSON/Lua dump currently output by the `pods recipe show <recipe>` command with a structured, human-readable view of the recipe's configuration. The new output will provide a clear overview of containers, ports, volumes, and other properties, reusing formatting functions developed in PSP-017 where applicable.
+Analogous to [PSP-017](psp-017-human-config-output.md), this proposal aims to replace the raw JSON/Lua dump currently output by the `pods recipe show <recipe>` command with a structured, human-readable, and diagnostic view of the recipe's configuration. The new output will provide a clear overview of containers, ports, volumes, and other properties, validate local host paths for volumes, and reuse formatting functions developed in PSP-017 where applicable.
 
 ### 1.2 Motivation
-Currently, `pods recipe show` reads the recipe file and prints it to the terminal as a raw data dump. A raw dump provides no additional insight compared to simply looking at the file (e.g. `pods recipe edit`). By transforming the output into a formatted, human-readable summary, users can instantly understand the structure of the recipe without having to parse Lua or JSON mentally.
+Currently, `pods recipe show` reads the recipe file and prints it to the terminal as a raw data dump. A raw dump provides no additional insight compared to simply looking at the file (e.g. `pods recipe edit`). By transforming the output into a formatted diagnostic tool, users can instantly understand the structure of the recipe and see if required local host directories for volumes exist, saving debugging time.
 
 ### 1.3 Goals & Non-Goals
 * **Goals:** 
   * Provide a clean, formatted terminal output for `pods recipe show <recipe>`.
   * Display containers and their essential configurations (image, ports, volumes, environment variables) in a readable way.
-  * Ensure consistent alignment and formatting by sharing layout/printing code with the `config show` implementation (from PSP-017).
+  * Validate if local host paths defined in volumes exist.
+  * Consistently align the validation tags (`[OK]`, `[NOT FOUND]`) for readability, sharing layout/printing code with the `config show` implementation (from PSP-017).
+  * Print summary sentences for missing local volume paths.
   * Completely remove old code and tests related to the raw JSON/Lua dumping of recipes.
 * **Non-Goals:** 
   * Modifying how recipes are parsed or executed.
   * Changing the `pods recipe edit` behavior.
 
 ### 1.4 Description
-When a user runs `pods recipe show <recipe>`, the system will load the recipe and print it in a human-readable format. The output could look similar to this:
+When a user runs `pods recipe show <recipe>`, the system will load the recipe and print it in a human-readable format with runtime validation. The output will look like this:
 
 ```text
 Recipe: /home/user/project/myrecipe.lua
-============================================================
 
 Containers:
   • web
     Image:      nginx:latest
     Ports:      8080:80
-    Volumes:    /var/www:/usr/share/nginx/html
+    Volumes:    /var/www:/usr/share/nginx/html      [NOT FOUND]
     
   • db
     Image:      postgres:15
     Env:        POSTGRES_USER=admin
+    Volumes:    ./data:/var/lib/postgresql/data     [OK]
+
+Validation Summary:
+- Local volume path '/var/www' for container 'web' not found!
 ```
 
 ### 1.5 Alternatives
@@ -65,12 +70,16 @@ No changes to the actual recipe schema. The changes are strictly confined to the
    * **Rewrite `mode_recipe__show(context, recipe_name)`:**
      * Print a formatted header.
      * Iterate over the containers defined in the recipe and print their key properties (Image, Ports, Volumes, Env, etc.) in a clear, indented list.
-     * Reuse padding/alignment logic developed for PSP-017.
+     * Check local host paths defined in `Volumes` using `system.directory_exists` or `system.file_exists` (reusing utilities if applicable).
+     * Reuse padding/alignment logic developed for PSP-017 to strictly align `[OK]` and `[NOT FOUND]` tags for volumes.
+     * Print the final summary warnings for missing local volume paths.
 
 ### 2.4 Testing Strategy
 * **`tests/pods/test_mode_recipe.lua`:**
    * Remove old tests that assert the output matches the raw JSON/Lua dump format.
    * Add tests for the new structured string output, ensuring properties (ports, volumes, images) are correctly displayed.
+   * Test `recipe show` with valid volumes (assert `[OK]` tags and no warnings).
+   * Test `recipe show` with missing local volume paths (assert `[NOT FOUND]` and summary warning).
 
 ---
 
@@ -81,8 +90,9 @@ No changes to the actual recipe schema. The changes are strictly confined to the
 - [ ] Identify and remove raw dump logic from `mode_recipe.lua` and related unused code.
 - [ ] Remove corresponding tests for raw output.
 - [ ] Rewrite `mode_recipe__show` to output formatted, human-readable text.
-- [ ] Share or reuse alignment and string formatting functions from `PSP-017`.
-- [ ] Write new tests verifying the human-readable format.
+- [ ] Validate local volume paths and share/reuse alignment and string formatting functions from `PSP-017`.
+- [ ] Add summary warnings for missing local volume paths.
+- [ ] Write new tests verifying the human-readable format and validation.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Add entry to `CHANGELOG.md`.
