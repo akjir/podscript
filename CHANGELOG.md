@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Renamed `print` action to `show` in `config` and `recipe` modes.
 - Changed default container `detach` option to `true`.
 - Downgraded default pod path fallback log to debug.
 

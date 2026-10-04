@@ -38,7 +38,7 @@ PodScript simplifies container operations by replacing complex shell scripts and
 - **Recipe Groups:** Aggregate multiple recipes into logical groups (`@group_name`) to orchestrate entire stacks in a single command.
 - **Container Maintenance Commands:** Define and execute ad-hoc maintenance tasks inside running containers by command name or numeric index.
 - **Runtime Inspection:** Query and display the real-time status of managed pods and containers directly through PodScript.
-- **Built-in Inspection & Editing:** Quickly inspect (`print`) or modify (`edit`) configuration files and recipes via integrated CLI modes.
+- **Built-in Inspection & Editing:** Quickly inspect (`show`) or modify (`edit`) configuration files and recipes via integrated CLI modes.
 - **Project Initialization:** Bootstrap default configuration and recipe files with a single command via the `init` mode.
 - **Zero External Dependencies:** Ships as a self-contained single script (`pods.lua`) requiring only Lua and Podman.
 - **Safe Execution:** Automated shell argument escaping, prerequisite validation, and privilege checks.
@@ -183,8 +183,8 @@ pods [MODE] [OPTIONS] [ACTION] [TARGETS]
 | `(default)` | Executes lifecycle actions (`create`, `recreate`, `remove`, `status`, `update`) on specified targets. |
 | `simulate` | Previews all generated commands without executing them. |
 | `init` | Initializes a default configuration and an example recipe file. |
-| `config` | Displays (`print`) or opens (`edit`) the active configuration file. |
-| `recipe` | Displays (`print`) or opens (`edit`) a specific recipe file. |
+| `config` | Displays (`show`) or opens (`edit`) the active configuration file. |
+| `recipe` | Displays (`show`) or opens (`edit`) a specific recipe file. |
 | `command` | Lists (`list`) or executes maintenance commands defined in a recipe. |
 | `help` | Displays command-line help and usage information. |
 

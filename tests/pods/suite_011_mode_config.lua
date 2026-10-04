@@ -13,9 +13,9 @@ return {
             },
         },
         [s .. "02"] = {
-            description = "Print current config.",
+            description = "Show current config.",
             config = "config_003_simulate_true",
-            parameters = { "config", "print" },
+            parameters = { "config", "show" },
             expectations = {
                 sequence = {
                     "  1: return {",
@@ -51,7 +51,7 @@ return {
             },
         },
         [s .. "05"] = {
-            description = "Print current config (no action).",
+            description = "Show current config (no action).",
             config = "config_003_simulate_true",
             parameters = { "config" },
             expectations = {

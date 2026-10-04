@@ -12,14 +12,14 @@ updated: 2026-10-04
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-This proposal aims to replace the raw JSON/Lua dump currently output by the `pods config` (and `pods config print`) command with a structured, human-readable, and diagnostic tree view. The new output will not only display the active configuration and resolved default values but also proactively validate paths and recipe files.
+This proposal aims to replace the raw JSON/Lua dump currently output by the `pods config` (and `pods config show`) command with a structured, human-readable, and diagnostic tree view. The new output will not only display the active configuration and resolved default values but also proactively validate paths and recipe files.
 
 ### 1.2 Motivation
-Currently, `pods config print` simply reads the `config.lua` file line by line and prints it to the terminal. This is redundant because users can see the exact same content by using `pods config edit`. A pure file dump provides no additional insight. By transforming the output into a diagnostic tool, users can instantly see how groups resolve, whether required directories exist, and if targeted recipes are missing or misspelled, saving significant debugging time.
+Currently, `pods config show` simply reads the `config.lua` file line by line and prints it to the terminal. This is redundant because users can see the exact same content by using `pods config edit`. A pure file dump provides no additional insight. By transforming the output into a diagnostic tool, users can instantly see how groups resolve, whether required directories exist, and if targeted recipes are missing or misspelled, saving significant debugging time.
 
 ### 1.3 Goals & Non-Goals
 * **Goals:** 
-  * Provide a clean, formatted terminal output for `pods config print`.
+  * Provide a clean, formatted terminal output for `pods config show`.
   * Validate if the configured `pods.path` and `recipes.path` directories exist.
   * Hierarchically expand recipe groups and validate if the corresponding `.lua` recipe files exist.
   * Identify and list any unreferenced/unused `.lua` files in the recipes directory.
@@ -30,7 +30,7 @@ Currently, `pods config print` simply reads the `config.lua` file line by line a
   * Changing the `pods config edit` behavior.
 
 ### 1.4 Description
-When a user runs `pods config` or `pods config print`, the system will load the active configuration (with defaults applied) and perform runtime validation. The output will look like this:
+When a user runs `pods config` or `pods config show`, the system will load the active configuration (with defaults applied) and perform runtime validation. The output will look like this:
 
 ```text
 Configuration: /home/user/project/config.lua
@@ -67,7 +67,7 @@ Validation Summary:
 
 ### 1.5 Alternatives
 * **Keep existing behavior:** Rejected because it offers no value over `pods config edit`.
-* **Add a new `pods config doctor` command:** Rejected to keep the CLI surface small. `pods config print` should just be smart by default.
+* **Add a new `pods config doctor` command:** Rejected to keep the CLI surface small. `pods config show` should just be smart by default.
 
 ---
 
@@ -75,10 +75,10 @@ Validation Summary:
 
 ### 2.1 Architecture & Affected Modules
 * `src/pods/system.lua`: Needs new utilities to check for directories and list files.
-* `src/pods/mode_config.lua`: The entire `mode_config__print` function will be rewritten. Unused functions related to raw text printing will be removed.
+* `src/pods/mode_config.lua`: The entire `mode_config__show` function will be rewritten. Unused functions related to raw text printing will be removed.
 
 ### 2.2 Schema & Syntax Changes
-No changes to the actual `config.lua` schema. The changes are strictly confined to the standard output format of `pods config print`.
+No changes to the actual `config.lua` schema. The changes are strictly confined to the standard output format of `pods config show`.
 
 ### 2.3 Implementation Details
 1. **`src/pods/system.lua` Additions:**
@@ -86,8 +86,8 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
    * Add `system.list_directory(path, pattern)`: Uses `io.popen("ls -1 ...")` to retrieve a list of files in a directory to check for unreferenced `.lua` recipes.
 
 2. **`src/pods/mode_config.lua` Changes:**
-   * **Remove:** Remove the `system.read_file_content_by_line` logic from `mode_config__print`.
-   * **Rewrite `mode_config__print(context)`:**
+   * **Remove:** Remove the `system.read_file_content_by_line` logic from `mode_config__show`.
+   * **Rewrite `mode_config__show(context)`:**
      * Print the header, active `context.config.editor`, and `context.config.simulate`.
      * Check `context.config.pods.path` and `context.config.recipes.path` using `system.directory_exists`.
      * Iterate over `context.config.recipes.groups` to print the hierarchical tree.
@@ -100,10 +100,10 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
 
 ### 2.4 Testing Strategy
 * **`tests/pods/test_mode_config.lua`:**
-  * Test `config print` with a fully valid configuration (assert `[OK]` tags and no warnings).
-  * Test `config print` with missing directories (assert `[NOT FOUND]` on directories).
-  * Test `config print` with a missing recipe in a nested group (assert `[NOT FOUND]` and summary warning).
-  * Test `config print` with unreferenced files in the mock recipe directory (assert unreferenced file warning).
+  * Test `config show` with a fully valid configuration (assert `[OK]` tags and no warnings).
+  * Test `config show` with missing directories (assert `[NOT FOUND]` on directories).
+  * Test `config show` with a missing recipe in a nested group (assert `[NOT FOUND]` and summary warning).
+  * Test `config show` with unreferenced files in the mock recipe directory (assert unreferenced file warning).
 * **`tests/pods/test_system.lua`:**
   * Add unit tests for `directory_exists` and `list_directory`.
 
@@ -114,7 +114,7 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [ ] Add `directory_exists` and `list_directory` to `src/pods/system.lua` with tests.
-- [ ] Rewrite `mode_config__print` in `src/pods/mode_config.lua`.
+- [ ] Rewrite `mode_config__show` in `src/pods/mode_config.lua`.
 - [ ] Align tags using fixed-width string formatting.
 - [ ] Add summary warnings for missing recipes and unreferenced `.lua` files.
 - [ ] Build release (`lua build.lua`).

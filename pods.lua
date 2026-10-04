@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "199.e0b22c7.dev"
+local BUILD <const> = "201.7bfee6e.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1211,7 +1211,7 @@ local function mode_recipe__help()
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
     log.print("  list               list all recipes")
-    log.print("  print              print recipe\n")
+    log.print("  show               show recipe\n")
     log.print("NAME:")
     log.print("  *                  name of the recipe")
 end
@@ -1281,10 +1281,10 @@ local function mode_recipe__list(context)
     end
 end
 
----Print recipe content.
+---Show recipe content.
 ---@param context table
 ---@param name string
-local function mode_recipe__print(context, name)
+local function mode_recipe__show(context, name)
     local found = name
     if found == nil then return end
 
@@ -1316,7 +1316,7 @@ local function mode_recipe__handle(context)
 
     local actions = {
         edit = mode_recipe__edit,
-        print = mode_recipe__print
+        show = mode_recipe__show
     }
     local execute = actions[action]
     if execute == nil then
@@ -1371,12 +1371,12 @@ local function mode_config__help()
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit config")
-    log.print("  print              print config")
+    log.print("  show               show config")
 end
 
----Print config.
+---Show config.
 ---@param context table
-local function mode_config__print(context)
+local function mode_config__show(context)
     local lines = system.read_file_content_by_line(context.config.path)
     if not lines then return end
 
@@ -1392,12 +1392,12 @@ local function mode_config__handle(context)
     log.debug("Config mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then
-        action = "print"
+        action = "show"
     end
     local actions = {
         help = mode_config__help,
         edit = mode_config__edit,
-        print = mode_config__print
+        show = mode_config__show
     }
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))
@@ -1825,11 +1825,11 @@ local function mode_simulate__handle(context)
     local parameters = context.parameters
     if parameters[1] == "command" then
         -- remove "command" from parameters
-        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        context.parameters = table.sub(parameters, 2)
         mode_command__handle(context)
     elseif parameters[1] == "logs" then
         -- remove "logs" from parameters
-        context.parameters = table.move(parameters, 2, #parameters, 1, {})
+        context.parameters = table.sub(parameters, 2)
         mode_logs__handle(context)
     else
         mode_default__handle(context)

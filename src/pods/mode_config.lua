@@ -52,12 +52,12 @@ global function mode_config__help()
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit config")
-    log.print("  print              print config")
+    log.print("  show               show config")
 end
 
----Print config.
+---Show config.
 ---@param context table
-local function mode_config__print(context)
+local function mode_config__show(context)
     local lines = system.read_file_content_by_line(context.config.path)
     if not lines then return end
 
@@ -73,12 +73,12 @@ global function mode_config__handle(context)
     log.debug("Config mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then
-        action = "print"
+        action = "show"
     end
     local actions = {
         help = mode_config__help,
         edit = mode_config__edit,
-        print = mode_config__print
+        show = mode_config__show
     }
     local execute = actions[action] or function()
         log.error("Unknown action: " .. tostring(action))

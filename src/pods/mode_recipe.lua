@@ -64,7 +64,7 @@ local function mode_recipe__help()
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
     log.print("  list               list all recipes")
-    log.print("  print              print recipe\n")
+    log.print("  show               show recipe\n")
     log.print("NAME:")
     log.print("  *                  name of the recipe")
 end
@@ -134,10 +134,10 @@ local function mode_recipe__list(context)
     end
 end
 
----Print recipe content.
+---Show recipe content.
 ---@param context table
 ---@param name string
-local function mode_recipe__print(context, name)
+local function mode_recipe__show(context, name)
     local found = name
     if found == nil then return end
 
@@ -169,7 +169,7 @@ global function mode_recipe__handle(context)
 
     local actions = {
         edit = mode_recipe__edit,
-        print = mode_recipe__print
+        show = mode_recipe__show
     }
     local execute = actions[action]
     if execute == nil then

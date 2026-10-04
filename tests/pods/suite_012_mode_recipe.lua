@@ -4,7 +4,7 @@ return {
     suite = s,
     tests = {
         [s .. "01"] = {
-            description = "Print recipe help.",
+            description = "Show recipe help.",
             parameters = { "recipe", "help" },
             expectations = {
                 sequence = {
@@ -13,9 +13,9 @@ return {
             },
         },
         [s .. "02"] = {
-            description = "Print recipe content.",
+            description = "Show recipe content.",
             config = "config_005_recipes",
-            parameters = { "recipe", "print", "recipe_002_no_pod" },
+            parameters = { "recipe", "show", "recipe_002_no_pod" },
             expectations = {
                 sequence = {
                     "  1: return {",
@@ -25,9 +25,9 @@ return {
             },
         },
         [s .. "03"] = {
-            description = "Print for recipe not in config.",
+            description = "Show for recipe not in config.",
             config = "config_005_recipes",
-            parameters = { "recipe", "print", "unknown" },
+            parameters = { "recipe", "show", "unknown" },
             expectations = {
                 sequence = {
                     "ERROR: Could not open file './tests/pods/recipes/unknown.lua'!"
@@ -35,9 +35,9 @@ return {
             },
         },
         [s .. "04"] = {
-            description = "Print for recipe that doesn't exist on disk.",
+            description = "Show for recipe that doesn't exist on disk.",
             config = "config_005_recipes",
-            parameters = { "recipe", "print", "recipe_000_unkown" },
+            parameters = { "recipe", "show", "recipe_000_unkown" },
             expectations = {
                 sequence = {
                     "ERROR: Could not open file './tests/pods/recipes/recipe_000_unkown.lua'!"
@@ -57,7 +57,7 @@ return {
         [s .. "06"] = {
             description = "Recipe with missing name.",
             config = "config_005_recipes",
-            parameters = { "recipe", "print" },
+            parameters = { "recipe", "show" },
             expectations = {
                 sequence = {
                     "ERROR: No recipe name given."
@@ -65,7 +65,7 @@ return {
             },
         },
         [s .. "07"] = {
-            description = "Print recipe help without action.",
+            description = "Show recipe help without action.",
             parameters = { "recipe" },
             expectations = {
                 sequence = {

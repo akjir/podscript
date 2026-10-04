@@ -422,7 +422,7 @@ pods config [OPTIONS] [ACTION]
 
 | Action | Description |
 | :--- | :--- |
-| `print` | Display the contents of the configuration file with line numbers. (Default when omitted). |
+| `show` | Display the contents of the configuration file with line numbers. (Default when omitted). |
 | `edit` | Open the active configuration file in the external text editor specified in the config. |
 | `help` | Display command-line help for config mode. |
 
@@ -450,11 +450,11 @@ If `editor` is empty or unset, the `edit` action logs an error and aborts.
 
 ```bash
 # Print default configuration with line numbers
-pods config print
+pods config show
 pods config
 
 # Print an alternative configuration
-pods --config=staging config print
+pods --config=staging config show
 
 # Open the active configuration in the configured editor
 pods config edit
@@ -477,7 +477,7 @@ pods recipe [OPTIONS] [ACTION] [RECIPE]
 | `edit` | Open the specified recipe file in the configured external editor. |
 | `help` | Display command-line help for recipe mode. (Default when omitted). |
 | `list` | List all available recipes defined in configuration groups. |
-| `print` | Display the contents of the specified recipe file with line numbers. |
+| `show` | Display the contents of the specified recipe file with line numbers. |
 
 ### Options
 
@@ -497,13 +497,13 @@ pods recipe help
 pods recipe list
 
 # Print a recipe file with line numbers
-pods recipe print web-service
+pods recipe show web-service
 
 # Edit a recipe file using the configured external editor
 pods recipe edit web-service
 
 # Print a recipe located in an alternative configuration path
-pods --config=staging recipe print web-service
+pods --config=staging recipe show web-service
 ```
 
 ---
@@ -673,7 +673,7 @@ pods command postgres 2
 pods --config=staging create @stack
 
 # Inspect the staging configuration
-pods --config=staging config print
+pods --config=staging config show
 
 # Run with verbose debug logging to inspect command construction
 pods --debug update web-service
