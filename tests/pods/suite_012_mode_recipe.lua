@@ -45,12 +45,14 @@ return {
             },
         },
         [s .. "05"] = {
-            description = "Recipe with unknown action.",
+            description = "Show recipe implicitly without action.",
             config = "config_005_recipes",
-            parameters = { "recipe", "unknown", "recipe_002_no_pod" },
+            parameters = { "recipe", "recipe_002_no_pod" },
             expectations = {
                 sequence = {
-                    "ERROR: Unknown action: unknown"
+                    "  1: return {",
+                    "  2:     name = \"nopod\",",
+                    "  3: }"
                 }
             },
         },

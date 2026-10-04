@@ -196,12 +196,12 @@ global function mode_recipe__handle(context)
         show = mode_recipe__show
     }
     local execute = actions[action]
-    if execute == nil then
-        log.error("Unknown action: " .. tostring(action))
-        return
-    end
-
     local name = context.parameters[2]
+
+    if execute == nil then
+        execute = mode_recipe__show
+        name = action
+    end
 
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")

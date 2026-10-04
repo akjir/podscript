@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "210.8ad4c29.dev"
+local BUILD <const> = "211.630cadf.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1490,12 +1490,12 @@ local function mode_recipe__handle(context)
         show = mode_recipe__show
     }
     local execute = actions[action]
-    if execute == nil then
-        log.error("Unknown action: " .. tostring(action))
-        return
-    end
-
     local name = context.parameters[2]
+
+    if execute == nil then
+        execute = mode_recipe__show
+        name = action
+    end
 
     if string.is_nil_or_empty(name) then
         log.error("No recipe name given.")
