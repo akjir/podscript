@@ -24,6 +24,10 @@ return {
                     "Directories:",
                     "Groups:",
                     "  • all"
+                },
+                matches = {
+                    "  Pods:%s+%[NOT FOUND%]",
+                    "  Recipes:%s+/.+%s+%[OK, %d+ recipes found%]"
                 }
             },
         },
@@ -60,6 +64,10 @@ return {
                     "Directories:",
                     "Groups:",
                     "  • all"
+                },
+                matches = {
+                    "  Pods:%s+%[NOT FOUND%]",
+                    "  Recipes:%s+/.+%s+%[OK, %d+ recipes found%]"
                 }
             }
         },
@@ -69,8 +77,6 @@ return {
             parameters = { "config", "show" },
             expectations = {
                 sequence = {
-                    "[NOT FOUND]",
-                    "[OK",
                     "  • all",
                     "    └── missing_recipe                      [NOT FOUND]",
                     "  • database",
@@ -85,6 +91,10 @@ return {
                     "Validation Summary:",
                     "- Recipe files for 'frontend' and 'missing_recipe' not found!",
                     "- Potentially unreferenced recipe files 'recipe_002_no_pod.lua'"
+                },
+                matches = {
+                    "  Pods:%s+/.+%s+%[NOT FOUND%]",
+                    "  Recipes:%s+/.+%s+%[OK, %d+ recipes found%]"
                 }
             }
         }
