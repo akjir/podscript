@@ -1,71 +1,89 @@
 ---
 id: PSP-019
-title: Interactive Container Shell Access (`connect` action)
+title: Interactive Container Shell Access (`connect` mode)
 status: concept
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
 ---
 
-# PSP-019: Interactive Container Shell Access (`connect` action)
+# PSP-019: Interactive Container Shell Access (`connect` mode)
 
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-Introduce a new default CLI action, `pods connect`, providing interactive shell access (specifically `bash`) to a running container.
+Introduce a new CLI mode, `pods connect`, providing interactive shell access (specifically `bash` falling back to `sh`) to a running container.
 
 ### 1.2 Motivation
-Developers frequently need to enter a running container for debugging, manual inspection, or executing ad-hoc commands not predefined in the recipe. Currently, this requires manually looking up the container name and executing verbose `podman exec -it <container> bash` commands. A native `pods connect` action streamlines this workflow.
+Developers frequently need to enter a running container for debugging, manual inspection, or executing ad-hoc commands not predefined in the recipe. Currently, this requires manually looking up the container name and executing verbose `podman exec -it <container> bash` commands. A native `pods connect` mode streamlines this workflow.
 
 ### 1.3 Goals & Non-Goals
 * **Goals:**
-    * Add `pods connect <target>` as a top-level default action.
-    * Target an individual container using the `recipe/container` syntax (from `PSP-006`) or just `recipe` if the recipe contains only a single container.
-    * Execute `podman exec -it <generated_container_name> sh -c "bash || sh"` safely using raw `os.execute`.
+    * Add `pods connect <target>` as a top-level mode (analogous to `logs`).
+    * Target an individual container using the same string parsing mechanism utilized by `mode_logs.lua` (`<recipe>[/<container>]`).
+    * Allow omitting the container name if the recipe contains only a single container.
+    * Alternatively, allow connecting directly to a container using its full, absolute name.
+    * Execute `podman exec -it <generated_container_name> sh -c "bash || sh"` safely using `system.exec` with the `interactive` option (introduced in PSP-020) to preserve standard terminal I/O.
 * **Non-Goals:**
-    * Executing detached/background commands (that is the domain of `pods command` or regular `podman exec`).
+    * Executing predefined recipe commands (already implemented via `pods command exec`).
+    * Executing detached/background commands.
 
 ### 1.4 Description
 Users will use `pods connect <target>` to open an interactive shell session inside a container. The system attempts to launch `bash` by default, falling back to `/bin/sh` if `bash` is unavailable (e.g., in Alpine Linux).
 
 **Syntax rules:**
 * `pods connect <recipe>`: If the recipe has exactly 1 container, it connects to it. If it has multiple, it aborts with an error prompting the user to specify the container.
-* `pods connect <recipe>/<container>`: Connects directly to the specified container.
+* `pods connect <recipe>/<container>`: Connects directly to the specified container defined in the recipe.
+* `pods connect <absolute_container_name>`: Connects directly to the container matching the exact absolute name provided, bypassing recipe parsing if no matching recipe exists.
+* Supports standard parameters like `--config=NAME` and `--debug`. `--simulate` will print the target command instead of executing.
 
 **Execution:**
-Under the hood, it constructs and runs `podman exec -it <absolute_container_name> sh -c "bash || sh"`. Since it's interactive, it must allocate a TTY. It will use raw `os.execute` directly, completely bypassing the internal `system.exec` utility to ensure standard input/output/error streams are fully attached to the user's terminal without any redirection or capture.
+Under the hood, it constructs and runs `podman exec -it <absolute_container_name> sh -c "bash || sh"`. Since it's interactive, it must allocate a TTY. It will use the refactored `system.exec` utility (from PSP-020) with the `interactive` option, ensuring standard input/output/error streams are fully attached to the user's terminal without any redirection or capture.
 
 ### 1.5 Alternatives
-* `pods interact`: Considered, but `connect` is shorter and standard in many CLI tools (like `kubectl port-forward` vs `exec`, although `exec` is also common). `connect` clearly implies establishing an interactive session.
-* `pods exec`: Conflicts conceptually with `pods command` which is meant for predefined commands, or suggests it takes arbitrary commands like `docker exec`. `connect` specifically targets an interactive bash shell.
+* `pods interact`: Considered, but `connect` is shorter and clearly implies establishing a session.
+* `pods exec`: Recently implemented in `mode_command` (`pods command exec`) for executing explicitly predefined script commands in the container. `connect` serves a different use-case, targeting arbitrary interactive bash shell sessions.
 
 ---
 
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `src/pods/mode_default.lua` (to register the `connect` action)
-* `src/pods/pod.lua` (to implement `pod__connect(recipe_name, container_name)`)
-* `src/pods/utilities.lua` (potentially leverage `parse_recipe_and_container` if implemented, or implement it here if PSP-019 lands first).
+* `src/pods/mode_connect.lua` (New mode to handle target parsing, validation, and execution. Keeps logic strictly separated from `mode_default.lua` which is built for bulk multi-target/group operations).
+* `src/pods/main.lua` (Register `connect = mode_connect__handle` in the global `modes` dictionary).
+* `src/pods/mode_simulate.lua` (Add `connect` logic or simply rely on standard simulation flags as done in other modes).
+* `src/pods/mode_help.lua` (Add `connect` to the main help menu).
 
 ### 2.2 Schema & Syntax Changes
 * No config schema changes.
-* CLI syntax addition: `pods connect <recipe>[/<container>]`.
+* CLI syntax addition: `pods connect [OPTIONS] <target>`. `target` can be `<recipe>[/<container>]` or `<absolute_container_name>`.
 
 ### 2.3 Implementation Details
-1. **Target Parsing**: In `mode_default.lua` handling `connect`, parse the target argument. If it contains a `/`, split it into `recipe_name` and `container_name`.
-2. **Validation**: 
-   * Load the recipe.
-   * If `container_name` is provided, ensure it exists in the recipe.
-   * If not provided, check `#recipe.containers`. If `== 1`, auto-select it. If `> 1`, throw a fatal error.
-3. **Early Validation (Status Check)**: Before executing the command, use `system.container_exists(abs_container_name)` (or similar status check) to ensure the container is running. If not, cleanly abort with `log.error("Container is not running.")` to prevent raw Podman error output.
-4. **Security (Safe Execution)**: Escape the absolute container name to prevent command injection using `local safe_name = "'" .. abs_container_name:gsub("'", "'\\''") .. "'"`.
-5. **Execution & Process Handling**: Construct the command using the fallback shell: `podman exec -it " .. safe_name .. " sh -c 'bash || sh'`. Execute this command using raw `os.execute(cmd)`. This explicitly bypasses `system.exec` (which intercepts and mutes stderr) to guarantee the interactive TTY functions properly and all standard streams (stdin, stdout, stderr) remain fully attached to the terminal.
+1. **Target Parsing (`mode_connect.lua`)**: 
+   * Extract the target argument `context.parameters[1]`.
+   * Check for `help` and redirect to `mode_connect__help(context)`.
+   * Split the target by `/` into `recipe_name` and `container_spec`. (Similar logic to `mode_logs__execute`). If no `/` is found, `recipe_name` is the full target and `container_spec` is nil.
+2. **Validation & Resolution**: 
+   * Try to load the recipe using `recipe__load(context.config.recipes.path, recipe_name)`.
+   * **If the recipe exists and is valid:**
+       * If `container_spec` is omitted, check `#loaded_recipe.containers`. If `== 1`, assign `container_spec = "1"`. If `> 1`, throw a fatal error.
+       * Resolve the absolute container name using: `recipe__resolve_container_name(loaded_recipe, container_spec)`.
+   * **If the recipe does not exist:**
+       * If `container_spec` is omitted (i.e., no `/` was provided), treat `recipe_name` as an `<absolute_container_name>`.
+       * Validate it directly by proceeding to the Early Validation step. If it fails, report that neither a valid recipe nor a running container by that name could be found.
+3. **Early Validation (Status Check)**: 
+   * Before executing the command, use `system.container_exists(abs_container_name)` to ensure the container is currently running. If not, cleanly abort with `log.error(...)` to prevent messy raw Podman errors.
+4. **Command Construction & Security**: 
+   * Escape the absolute container name using `string.escape_shell(abs_container_name)`.
+   * Construct the command: `podman exec -it " .. escaped_name .. " sh -c 'bash || sh'`.
+5. **Execution & Process Handling**: 
+   * Execute the constructed command using `system.exec(command_str, { interactive = true, simulate = context.flags.simulate, silent = true })`.
 
 ### 2.4 Testing Strategy
-* Create tests for target resolution (recipe with 1 container vs multiple containers).
-* Use `--simulate` (dry-run mode) to verify the correct `podman exec` string is built.
-* Note: Fully testing interactive TTY in automated Lua tests may be limited, so verifying the string output in simulation mode is critical.
+* Create `tests/pods/suite_015_mode_connect.lua`.
+* Use `--simulate` (dry-run mode) to verify command construction for single-container fallback, explicit `/container` targets, and fallback to absolute container names.
+* Test error paths: missing target, invalid recipe, missing container, missing specification for multi-container recipes, and non-existent absolute container names.
+* Fully automated tests for the interactive TTY are generally impractical, so string construction and simulation verification is the critical focus.
 
 ---
 
@@ -73,19 +91,19 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Implement `pod__connect` logic in `src/pods/pod.lua`.
-- [ ] Register `connect` action in `src/pods/mode_default.lua`.
-- [ ] Add tests in `tests/pods/` to verify command construction and container selection logic.
+- [ ] Implement `src/pods/mode_connect.lua` with help menu and execution logic.
+- [ ] Register `connect` mode in `src/pods/main.lua` and `src/pods/mode_simulate.lua`.
+- [ ] Update `src/pods/mode_help.lua` to document the new `connect` mode.
+- [ ] Add tests in `tests/pods/suite_015_mode_connect.lua` to verify target resolution and command construction.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Update CLI help menu (`mode_help.lua`).
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [ ] Update `USAGE.md` to detail the new `connect` syntax and behavior.
+- [ ] Add entry to `CHANGELOG.md` under "Added".
+- [ ] Set status to `review`, update `README.md` board, request manual user approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
-* **2026-10-04:** Initial concept drafted. `connect` chosen over `interact` for brevity. Hardcoded to `bash` as per requirements.
+* **2026-10-04:** Initial concept drafted. `connect` chosen over `interact` for brevity. Designed as a dedicated mode (analogous to `logs`) rather than a default bulk action to properly handle interactive 1-to-1 container targeting, leveraging `recipe__resolve_container_name`.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*
