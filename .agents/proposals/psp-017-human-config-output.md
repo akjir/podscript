@@ -74,14 +74,14 @@ Validation Summary:
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `src/pods/system.lua`: Needs new utilities to check for directories and list files.
+* `src/pods/utilities_system.lua`: Needs new utilities to check for directories and list files.
 * `src/pods/mode_config.lua`: The entire `mode_config__show` function will be rewritten. Unused functions related to raw text printing will be removed.
 
 ### 2.2 Schema & Syntax Changes
 No changes to the actual `config.lua` schema. The changes are strictly confined to the standard output format of `pods config show`.
 
 ### 2.3 Implementation Details
-1. **`src/pods/system.lua` Additions:**
+1. **`src/pods/utilities_system.lua` Additions:**
    * Add `system.directory_exists(path)`: Uses `io.popen("test -d ...")` or similar to check if a directory exists.
    * Add `system.list_directory(path, pattern)`: Uses `io.popen("ls -1 ...")` to retrieve a list of files in a directory to check for unreferenced `.lua` recipes.
 
@@ -104,7 +104,7 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
   * Test `config show` with missing directories (assert `[NOT FOUND]` on directories).
   * Test `config show` with a missing recipe in a nested group (assert `[NOT FOUND]` and summary warning).
   * Test `config show` with unreferenced files in the mock recipe directory (assert unreferenced file warning).
-* **`tests/pods/test_system.lua`:**
+* **`tests/pods/suite_009_utilities_system.lua`:**
   * Add unit tests for `directory_exists` and `list_directory`.
 
 ---
@@ -113,7 +113,7 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Add `directory_exists` and `list_directory` to `src/pods/system.lua` with tests.
+- [ ] Add `directory_exists` and `list_directory` to `src/pods/utilities_system.lua` with tests.
 - [ ] Rewrite `mode_config__show` in `src/pods/mode_config.lua`.
 - [ ] Align tags using fixed-width string formatting.
 - [ ] Add summary warnings for missing recipes and unreferenced `.lua` files.

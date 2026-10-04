@@ -59,7 +59,7 @@ PodScript manages recipes, pods, and container lifecycles declaratively, but ins
         * Intercept the `"status"` action to bypass the per-recipe loop and call `pod__status(context)` once.
     * `src/pods/pod.lua`:
         * Implement `pod__status(context)` to execute the query, filter requested targets, and format output based on the `--full` flag.
-    * `src/pods/system.lua`:
+    * `src/pods/utilities_system.lua`:
         * Implement `system.exec_capture(command)` to use `io.popen` and `handle:lines()` for returning the STDOUT string lines as a table.
 
 ### 2.2 Schema & Syntax Changes
@@ -113,7 +113,7 @@ No changes to `config.lua` or recipe schemas are required, as this primarily que
 ### 3.3 Delivered Artifacts
 * `src/pods/mode_default.lua`
 * `src/pods/pod.lua`
-* `src/pods/system.lua`
+* `src/pods/utilities_system.lua`
 * `tests/pods/suite_017_action_status.lua`
 * `USAGE.md`
 * `CHANGELOG.md`

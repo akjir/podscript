@@ -151,7 +151,7 @@ process_content = function(content, state)
         elseif trimmed == "---@build const:" then
             is_const = true
             -- Do not insert the annotation line into the result
-        elseif trimmed == "global<const> *" or trimmed == "global <const> *" then
+        elseif trimmed == "global<const> *" then
             if state and not state.has_emitted_global_const then
                 state.has_emitted_global_const = true
                 table.insert(result, line .. "\n")
@@ -254,7 +254,7 @@ local pods_files = {
     "utilities_string",
     "utilities_table",
     "utilities",
-    "system",
+    "utilities_system",
     "container",
     "recipe",
     "pod",

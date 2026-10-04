@@ -18,7 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
-global <const> *
+global<const> *
 
 -- ------------------------------------------------------------------------- --
 --   PODSCRIPT TEST
@@ -409,7 +409,7 @@ add_suite("pods.suite_005_targets")
 add_suite("pods.suite_006_recipes")
 add_suite("pods.suite_007_pods")
 add_suite("pods.suite_008_containers")
-add_suite("pods.suite_009_system")
+add_suite("pods.suite_009_utilities_system")
 add_suite("pods.suite_010_utilities")
 add_suite("pods.suite_011_mode_config")
 add_suite("pods.suite_012_mode_recipe")

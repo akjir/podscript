@@ -16,9 +16,8 @@
 ## Architecture & Naming
 * `header.lua`: `VERSION`, `BUILD`, `get_version_string`
 * `log.lua`: `log.*` (including `log.debug_enabled`)
-* `system.lua`: `system.*`
 * `utilities.lua`: global utility functions
-* `utilities_{string,table}.lua`: Extends `string.*` / `table.*`
+* `utilities_{string,table,system}.lua`: Extends `string.*` / `table.*` or provides `system.*`
 * `{container,pod,recipe,config}.lua`: Prefixed `<name>__*`. Modular functions are `global function` (localized by `build.lua` for release).
 * `main.lua`: Prefixed `main__*`
 * `mode_{command,config,default,help,init,recipe,simulate}.lua`: Prefixed `mode_<name>__*`

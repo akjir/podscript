@@ -53,7 +53,7 @@ Currently, `pods recipe list` only enumerates recipes declared in `registry.reci
 
 ### 2.1 Architecture & Affected Modules
 * **Affected Files:**
-    * `src/pods/system.lua`
+    * `src/pods/utilities_system.lua`
     * `src/pods/mode_recipe.lua`
 
 ### 2.2 Schema & Syntax Changes
@@ -61,7 +61,7 @@ Currently, `pods recipe list` only enumerates recipes declared in `registry.reci
 * Addition of `--all` and `--orphans` flag arguments to the `pods recipe list` command line.
 
 ### 2.3 Implementation Details
-* **Directory Scanning in `system.lua`:**
+* **Directory Scanning in `utilities_system.lua`:**
     * Create a helper function `system.list_files(directory, extension)` to scan for files within a given path. It must rely strictly on standard Lua/os facilities without external dependencies, possibly by invoking a low-level OS command (like `ls` via `io.popen`) if Lua's standard library is insufficient for directory traversal.
 * **Comparison in `mode_recipe.lua`:**
     * `mode_recipe__list` will build two tables (sets): configured targets retrieved from the registry, and file targets obtained from the filesystem via `system.list_files`.
@@ -79,7 +79,7 @@ Currently, `pods recipe list` only enumerates recipes declared in `registry.reci
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Implement `system.list_files` in `src/pods/system.lua`.
+- [ ] Implement `system.list_files` in `src/pods/utilities_system.lua`.
 - [ ] Add test cases for directory scanning in the test suite.
 - [ ] Implement the cross-check logic in `src/pods/mode_recipe.lua`.
 - [ ] Add list cross-check edge cases to `tests/pods/suite_012_mode_recipe.lua`.

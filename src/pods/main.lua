@@ -30,7 +30,7 @@ require "src.pods.mode_simulate"
 require "src.pods.mode_help"
 require "src.pods.mode_init"
 require "src.pods.mode_logs"
-require "src.pods.system"
+require "src.pods.utilities_system"
 
 global<const> *
 

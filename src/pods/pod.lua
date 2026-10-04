@@ -20,7 +20,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 require "src.pods.utilities"
 require "src.pods.container"
 
-global <const> *
+global<const> *
 
 ---@build block:
 -- ------------------------------------------------------------------------- --

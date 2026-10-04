@@ -44,14 +44,14 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `src/pods/system.lua`
+* `src/pods/utilities_system.lua`
 * `src/pods/container.lua`
 
 ### 2.2 Schema & Syntax Changes
 * No recipe schema or syntax changes required.
 
 ### 2.3 Implementation Details
-* **Directory Helpers in `system.lua`:**
+* **Directory Helpers in `utilities_system.lua`:**
     * Add `system.directory_exists(path)` using `test -d` or `io.open`.
     * Add `system.make_directory(path, simulate)` executing `mkdir -p`.
 * **Volume Path Resolution in `container.lua`:**
@@ -62,14 +62,14 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 * Mock directory existence and creation checks.
 * Test with relative host paths (`./data`), absolute paths (`/tmp/pod_test`), and nonexistent paths.
 * Verify behavior under `--simulate`.
-* Add test cases to `tests/pods/suite_008_containers.lua` or `tests/pods/suite_009_system.lua`.
+* Add test cases to `tests/pods/suite_008_containers.lua` or `tests/pods/suite_009_utilities_system.lua`.
 
 ---
 
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Add directory helpers to `src/pods/system.lua`.
+- [ ] Add directory helpers to `src/pods/utilities_system.lua`.
 - [ ] Implement volume check logic in `src/pods/container.lua`.
 - [ ] Add tests for directory check and creation to system suite.
 - [ ] Add tests for container creation intercept in container suite.

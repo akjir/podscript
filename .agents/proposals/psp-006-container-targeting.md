@@ -55,7 +55,7 @@ Evaluated using `#` vs `/` vs `--container` for the syntax. Selected `recipe/con
 
 ### 2.1 Architecture & Affected Modules
 * `src/pods/utilities.lua`
-* `src/pods/system.lua`
+* `src/pods/utilities_system.lua`
 * `src/pods/pod.lua`
 * `src/pods/mode_default.lua`
 
@@ -66,7 +66,7 @@ Evaluated using `#` vs `/` vs `--container` for the syntax. Selected `recipe/con
 * **Target Parsing (`utilities.lua`):**
     * Parse target string for `/` delimiter separating recipe name and container name.
     * `parse_recipe_and_container(target)` -> returns `recipe_name`, `container_name`.
-* **Pod & Container Helpers (`system.lua`):**
+* **Pod & Container Helpers (`utilities_system.lua`):**
     * Add `system.pod_exists(name)` executing `podman pod exists <name>`.
     * Add `system.container_exists(name)` executing `podman container exists <name>`.
 * **Pod Dispatch Updates (`pod.lua` / `mode_default.lua`):**
@@ -87,7 +87,7 @@ Evaluated using `#` vs `/` vs `--container` for the syntax. Selected `recipe/con
 ### 3.1 Task Breakdown
 - [ ] Create test stubs in `tests/pods/suite_005_targets.lua` and `tests/pods/suite_007_pods.lua`.
 - [ ] Implement `parse_recipe_and_container` in `src/pods/utilities.lua`.
-- [ ] Implement `system.pod_exists` and `system.container_exists` in `src/pods/system.lua`.
+- [ ] Implement `system.pod_exists` and `system.container_exists` in `src/pods/utilities_system.lua`.
 - [ ] Update optional container targeting in `src/pods/pod.lua` and `src/pods/mode_default.lua`.
 - [ ] Update `USAGE.md` with new CLI syntax.
 - [ ] Add entry to `CHANGELOG.md`.

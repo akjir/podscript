@@ -45,7 +45,7 @@ The proposed feature introduces a new `prune` (or `image prune`) command to the 
 ### 2.1 Architecture & Affected Modules
 * `src/pods/main.lua` (subcommand dispatch for `prune`)
 * `src/pods/mode_prune.lua` (new mode handler)
-* `src/pods/system.lua` (system command executions)
+* `src/pods/utilities_system.lua` (system command executions)
 
 ### 2.2 Schema & Syntax Changes
 No changes to `config.lua` or recipe schemas are anticipated, as this is purely a CLI operational command.
