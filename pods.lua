@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "207.37d8e9f.dev"
+local BUILD <const> = "209.522d934.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -494,30 +494,33 @@ function system.check_podman_version()
 end
 
 ---Check if a directory exists.
----@param full_path string
+---@param path string
 ---@return boolean
-function system.directory_exists(full_path)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
-    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+function system.directory_exists(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
     local success = os.execute("test -d " .. safe_path)
     return success == true or success == 0
 end
 
 ---Get the absolute path of a given path.
----@param full_path string
+---@param path string
 ---@return string
-function system.get_absolute_path(full_path)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
-    if string.is_nil_or_empty(full_path) then return "" end
-    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+function system.get_absolute_path(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    if string.is_nil_or_empty(path) then return "" end
+    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
     local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
-    if not handle then return full_path end
+    if not handle then return path end
     local result = handle:read("*a")
     handle:close()
-    if result and not string.is_nil_or_empty(string.trim(result)) then
-        return string.trim(result)
+    if result then
+        local trimmed_result = string.trim(result)
+        if not string.is_nil_or_empty(trimmed_result) then
+            return trimmed_result
+        end
     end
-    return full_path
+    return path
 end
 
 ---Execute a command.
@@ -601,11 +604,11 @@ function system.exec_capture(command)
 end
 
 ---Check if a file exists.
----@param full_path string
+---@param path string
 ---@return boolean
-function system.file_exists(full_path)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
-    local file = io.open(full_path, "r")
+function system.file_exists(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    local file = io.open(path, "r")
     if file then
         file:close()
         return true
@@ -614,14 +617,14 @@ function system.file_exists(full_path)
 end
 
 ---List files in a directory matching a pattern.
----@param full_path string
+---@param path string
 ---@param pattern string|nil
 ---@return table|nil files The list of filenames.
-function system.list_directory(full_path, pattern)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+function system.list_directory(path, pattern)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
-    if not system.directory_exists(full_path) then return nil end
-    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+    if not system.directory_exists(path) then return nil end
+    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
     local handle = io.popen("ls -1 " .. safe_path .. " 2>/dev/null")
     if not handle then return nil end
     local files = {}
@@ -635,13 +638,13 @@ function system.list_directory(full_path, pattern)
 end
 
 ---Loads a Lua file and returns the result.
----@param full_path string
+---@param path string
 ---@return table|nil result The object returned by the file (usually a table).
 ---@return string|nil error Error message if something went wrong.
 ---@return string|nil error_type The type of error ("load" or "execution").
-function system.load_lua_file(full_path)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
-    local chunk, err = loadfile(full_path)
+function system.load_lua_file(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    local chunk, err = loadfile(path)
     if not chunk then
         return nil, err, "load"
     end
@@ -653,13 +656,13 @@ function system.load_lua_file(full_path)
 end
 
 ---Read file content line by line and return as a table.
----@param full_path string
+---@param path string
 ---@return table|nil
-function system.read_file_content_by_line(full_path)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
-    local file = io.open(full_path, "r")
+function system.read_file_content_by_line(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    local file = io.open(path, "r")
     if not file then
-        log.error("Could not open file '" .. full_path .. "'!")
+        log.error("Could not open file '" .. path .. "'!")
         return nil
     end
     local lines = {}
@@ -681,15 +684,15 @@ function system.runs_elevated()
 end
 
 ---Write content to a file.
----@param full_path string
+---@param path string
 ---@param content string
 ---@return boolean
-function system.write_file(full_path, content)
-    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+function system.write_file(path, content)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if type(content) ~= "string" then error("Expected string for content, got " .. type(content), 2) end
-    local file = io.open(full_path, "w")
+    local file = io.open(path, "w")
     if not file then
-        log.error("Could not write to file '" .. full_path .. "'!")
+        log.error("Could not write to file '" .. path .. "'!")
         return false
     end
     file:write(content)
