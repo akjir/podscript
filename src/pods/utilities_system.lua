@@ -147,6 +147,7 @@ function system.exec(command, options)
 
     if interactive then
         local success, exit_reason, exit_code = os.execute(final_command)
+        success = (success == true) -- os.execute returns boolean?
         if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
@@ -177,6 +178,7 @@ function system.exec(command, options)
     end
 
     local success, exit_reason, exit_code = handle:close()
+    success = (success == true) -- handle:close returns boolean?
 
     -- check if the command actually succeeded
     if not success and not silent then

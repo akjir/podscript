@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "227.3a154ec.dev"
+local BUILD <const> = "228.0699bc6.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -574,6 +574,7 @@ function system.exec(command, options)
 
     if interactive then
         local success, exit_reason, exit_code = os.execute(final_command)
+        success = (success == true) -- os.execute returns boolean?
         if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
@@ -604,6 +605,7 @@ function system.exec(command, options)
     end
 
     local success, exit_reason, exit_code = handle:close()
+    success = (success == true) -- handle:close returns boolean?
 
     -- check if the command actually succeeded
     if not success and not silent then
