@@ -5,11 +5,7 @@
 [![Podman Version](https://img.shields.io/badge/podman-5.8.0%2B-purple.svg)](https://podman.io)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 
-A lightweight, declarative pod and container manager for Podman, written in Lua with zero external dependencies.
-
-PodScript simplifies container operations by replacing complex shell scripts and repetitive CLI invocations with structured Lua recipe files. It provides deterministic lifecycle ordering, recipe grouping, container maintenance tasks, and dry-run simulation out of the box.
-
----
+A script to manage Podman pods and containers using declarative Lua recipes.
 
 ## Table of Contents
 
@@ -18,79 +14,36 @@ PodScript simplifies container operations by replacing complex shell scripts and
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Core Concepts](#core-concepts)
-  - [Recipes](#recipes)
-  - [Lifecycle Ordering](#lifecycle-ordering)
-  - [Recipe Groups](#recipe-groups)
 - [CLI Reference](#cli-reference)
 - [Development](#development)
-  - [Building](#building)
-  - [Testing](#testing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
----
-
 ## Features
 
-- **Declarative Recipes:** Define pods and containers using concise, readable Lua tables.
-- **Deterministic Lifecycle:** Sequential container startup (top-to-bottom) and reverse shutdown (bottom-to-top) for reliable multi-container dependencies.
-- **Dry-Run Simulation:** Preview exact Podman commands before execution using the `simulate` mode.
-- **Recipe Groups:** Aggregate multiple recipes into logical groups (`@group_name`) to orchestrate entire stacks in a single command.
-- **Container Maintenance Commands:** Define and execute ad-hoc maintenance tasks inside running containers by command name or numeric index.
-- **Runtime Inspection:** Query and display the real-time status of managed pods and containers directly through PodScript.
-- **Built-in Inspection & Editing:** Quickly inspect (`show`) or modify (`edit`) configuration files and recipes via integrated CLI modes.
-- **Project Initialization:** Bootstrap default configuration and recipe files with a single command via the `init` mode.
-- **Zero External Dependencies:** Ships as a self-contained single script (`pods.lua`) requiring only Lua and Podman.
-- **Safe Execution:** Automated shell argument escaping, prerequisite validation, and privilege checks.
-
----
+- Declarative pod and container configuration via Lua tables.
+- Deterministic lifecycle ordering (top-to-bottom startup, bottom-to-top shutdown).
+- Dry-run simulation mode (`simulate`) to preview generated Podman commands.
+- Configuration grouping (`@group_name`) for batch recipe execution.
+- Execution of container-specific maintenance commands.
+- Standalone single-file deployment (`pods.lua`) with zero external dependencies.
 
 ## Requirements
 
-| Requirement | Supported Version | Details |
+| Component | Minimum Version | Notes |
 | :--- | :--- | :--- |
-| **Operating System** | Linux | Enforced on startup |
-| **Lua** | 5.5 or higher | Uses Lua 5.5 features (`global<const>`, `table.create`) |
-| **Podman** | 5.8.0 or higher | Tested with rootful and rootless pod operations |
-
----
+| Operating System | Linux | Required |
+| Lua | 5.5 | Utilizes `global<const>` and `table.create` |
+| Podman | 5.8.0 | - |
 
 ## Installation
-
-### 1. Obtain PodScript
-
-Choose one of the following methods to install PodScript:
-
-#### Option A: Clone the Repository
-
-Clone the full repository including configuration templates and examples:
-
-```bash
-git clone https://github.com/akjir/podscript.git
-cd podscript
-```
-
-#### Option B: Direct Download (Standalone Script)
-
-Create a dedicated directory, download the standalone `pods.lua` script directly, and navigate into it:
 
 ```bash
 mkdir -p podscript && cd podscript
 curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/pods.lua -o pods.lua
 ```
 
-You can execute PodScript directly from this directory:
-
-```bash
-lua pods.lua
-```
-
-> [!NOTE]
-> PodScript resolves `config.lua` and recipe files relative to its working directory. Ensure your configuration and recipe files reside in this directory, or use `--config` to specify an alternative path. You can initialize a new directory using `pods init`.
-
-### 2. Set Up a PATH Wrapper (Recommended)
-
-To run PodScript from any directory, create a launcher script in your `PATH` (such as `/usr/local/bin/pods` or `~/.local/bin/pods`):
+Optional: Create a wrapper script in your PATH.
 
 ```bash
 sudo tee /usr/local/bin/pods > /dev/null << 'EOF'
@@ -99,156 +52,114 @@ PODSCRIPT_DIR="/path/to/podscript"
 cd "${PODSCRIPT_DIR}" || exit 1
 exec lua pods.lua "$@"
 EOF
-
 sudo chmod +x /usr/local/bin/pods
 ```
 
-Replace `/path/to/podscript` with the absolute path to your PodScript directory.
-
----
-
 ## Quick Start
 
-Initialize your directory with a default configuration and an example recipe file:
+Initialize the project directory with default configurations:
 
 ```bash
 pods init
 ```
 
-For the step-by-step walkthrough, recipe definitions, and container lifecycle management examples, see the [Quick Start Guide in USAGE.md](USAGE.md#quick-start).
+This generates `config.lua` and a sample `recipe.lua`.
 
----
+Preview the execution of the generated recipe:
+
+```bash
+pods simulate create recipe
+```
+
+Create and start the pod and containers:
+
+```bash
+pods create recipe
+```
 
 ## Core Concepts
 
 ### Recipes
 
-Recipes are Lua files returning a declarative table defining a pod and its containers:
-
-- **Pod Configuration (`pod`):** Defines pod name, publish ports, network options, and shared volumes or paths.
-- **Containers (`containers`):** An array of container definitions including image names, registries, environment variables, restart policies, and custom launch options.
-- **Maintenance Commands (`pod.commands`):** Dedicated tasks executed via `podman exec` inside specific containers.
-
-See [recipe.lua](recipe.lua) for a complete recipe template.
-
-### Lifecycle Ordering
-
-Container ordering within a recipe is deterministic:
-
-1. **Creation & Startup:** Containers are created and started sequentially from first to last (top-to-bottom).
-2. **Shutdown & Removal:** When stopping or removing a pod, containers are stopped and removed in reverse order (bottom-to-top).
-3. **Recreation:** Recreating a pod executes the reverse shutdown followed by sequential startup.
-
-This ensures services with dependencies (such as a database initialized before an application service) start and stop reliably.
-
-### Recipe Groups
-
-Configure recipe collections in `config.lua` to manage multiple applications simultaneously:
+Recipes are defined in Lua tables. A recipe specifies a pod, its network configuration, and a sequential list of containers.
 
 ```lua
 return {
-    recipes = {
-        groups = {
-            core = { "db-server", "cache-server" },
-            web  = { "api-server", "frontend" },
-            all  = { "@core", "@web" },
+    name = "Example Pod",
+    pod = {
+        name = "web-service",
+        publish = { { 8080, 80, "TCP" } },
+    },
+    containers = {
+        {
+            name = "app",
+            image = "example:latest",
         },
     },
 }
 ```
 
-Execute commands against entire groups using the `@` prefix:
+### Groups
 
-```bash
-pods create @core
-pods update @all
+Recipe groups are defined in `config.lua` to manage multiple recipes at once.
+
+```lua
+return {
+    recipes = {
+        groups = {
+            backend = { "db-server", "cache-server" },
+        },
+    },
+}
 ```
 
-When targeting multiple recipes or groups, PodScript follows a **first appearance** rule to guarantee no recipe executes more than once.
-
----
+Execute commands on groups using the `@` prefix: `pods create @backend`.
 
 ## CLI Reference
 
-PodScript follows a mode-driven command structure:
+| Mode | Action | Target | Description |
+| :--- | :--- | :--- | :--- |
+| `(default)` | `create`, `recreate`, `remove`, `status`, `update` | `<recipe>`, `@<group>` | Executes lifecycle actions on recipes or groups. |
+| `simulate` | `create`, `recreate`, `remove`, `update` | `<recipe>`, `@<group>` | Prints generated Podman commands without executing them. |
+| `logs` | `show`, `follow` | `<recipe>[/<container>]` | Retrieves or tails container logs. |
+| `connect` | `shell` | `<recipe>[/<container>]` | Opens an interactive shell in a container. |
+| `command` | `list`, `exec` | `<recipe> [command]` | Executes pre-defined maintenance commands. |
+| `init` | - | - | Generates default `config.lua` and `recipe.lua`. |
+| `config` | `show`, `edit` | - | Displays or edits the active configuration file. |
+| `recipe` | `show`, `edit`, `list` | `<recipe>` | Displays, edits, or lists recipes. |
+| `help` | - | - | Displays syntax and usage information. |
 
-```bash
-pods [MODE] [OPTIONS] [ACTION] [TARGETS]
-```
+Global Options:
 
-### Modes
-
-| Mode | Description |
-| :--- | :--- |
-| `(default)` | Executes lifecycle actions (`create`, `recreate`, `remove`, `status`, `update`) on specified targets. |
-| `simulate` | Previews all generated commands without executing them. |
-| `init` | Initializes a default configuration and an example recipe file. |
-| `config` | Displays (`show`) or opens (`edit`) the active configuration file. |
-| `recipe` | Displays (`show`) or opens (`edit`) a specific recipe file. |
-| `command` | Lists (`list`) or executes maintenance commands defined in a recipe. |
-| `help` | Displays command-line help and usage information. |
-
-### Global Options
-
-- `--config=<name>`: Load an alternative configuration file (e.g., `--config=staging`).
-- `--debug`: Enable verbose debug logging for troubleshooting.
-
-For complete syntax, option matrices, and detailed examples, see [USAGE.md](USAGE.md).
-
----
+- `--config=<name>`: Specify a custom configuration file.
+- `--debug`: Enable verbose execution output.
 
 ## Development
 
-The codebase is organized modularly under `src/pods/` and compiled into a standalone, single-file release script (`pods.lua`).
+Source files are located in `src/pods/`. Never edit `pods.lua` directly.
 
-> [!IMPORTANT]
-> Never edit `pods.lua` directly. All modifications must be made within the `src/pods/` directory.
-
-### Building & Testing
-
-PodScript includes a comprehensive test framework and a build system that bundles the modular source files (`src/pods/`) into a single-file release script.
-
-The provided `./task` script simplifies the development cycle:
+Execute tests and build the release script:
 
 ```bash
-# Verify (complete cycle: dev tests -> build -> release tests)
 ./task verify
-
-# Verify for a specific test ID (works with flags like --fail-fast)
-./task verify 01001
-./task verify 01001 --fail-fast
-
-# Test specific environments (without building)
-./task test            # Run both dev and release tests
-./task test dev        # Run only dev tests
-./task test release    # Run only release tests
-
-# You can always pass test IDs and flags
-./task test dev 01001 --fail-fast
-
-# Build
-./task build           # Build pods.lua
 ```
 
-You can also execute the internal scripts directly for more advanced options:
+Run tests only:
 
 ```bash
-# Build a release version without the .dev suffix
-lua build.lua --release
-
-# Run tests directly to use specific flags (e.g., fail-fast or JSON output)
-lua test.lua --fail-fast
-lua test.lua --json
+./task test
 ```
 
----
+Build `pods.lua`:
+
+```bash
+./task build
+```
 
 ## Disclaimer
 
-PodScript is provided "as is", without warranty of any kind, express or implied. Use this tool at your own risk. It is strongly recommended to maintain current backups of your data and container configurations. The authors are not responsible for any data loss, service interruption, or system instability.
-
----
+PodScript is provided "as is", without warranty of any kind, express or implied. Use this tool at your own risk. The authors are not responsible for any data loss or system instability.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.

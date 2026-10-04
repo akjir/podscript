@@ -48,8 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `list` action to `recipe` mode for displaying configured recipes.
 
 ### Changed
-- Refactored `system.exec` to use an options table for flexible command execution.
 
+- Refactored `system.exec` to use an options table for flexible command execution.
 - Updated minimum Lua requirement from 5.4 to 5.5.
 - Refactored debug flag into `log.debug_enabled` to avoid global collisions.
 - Updated `build.lua` to localize modular functions in release builds.
