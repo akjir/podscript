@@ -36,11 +36,6 @@ global<const> *
 ---@param context table
 global function mode_simulate__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.info("Simulate mode is active.")
     context.flags.simulate = true
     local parameters = context.parameters

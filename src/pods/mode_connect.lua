@@ -34,11 +34,6 @@ global<const> *
 
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Connect Mode (SIMULATED)\n")
         log.print("Simulate connecting to a running container with an interactive shell.")
@@ -64,11 +59,6 @@ end
 
 local function mode_connect__shell(context, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
 
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
@@ -146,11 +136,6 @@ end
 
 global function mode_connect__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local action = context.parameters[1]
     local target = context.parameters[2]
 

@@ -36,8 +36,6 @@ global<const> *
 ---@return boolean
 global function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.recipes = context.config.recipes or {}
     local groups = context.config.recipes.groups or {}
 
     for _, group_targets in pairs(groups) do
@@ -56,11 +54,6 @@ end
 ---@return table|boolean
 global function config__untangle(context, list)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end

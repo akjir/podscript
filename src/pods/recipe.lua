@@ -61,8 +61,6 @@ global function recipe__validate(context, recipe, file_name)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     local config = context.config or {}
     local pods = config.pods or {}
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -131,9 +129,7 @@ end
 ---@param container_spec string|number
 ---@return string|nil name
 global function recipe__resolve_container_name(recipe, container_spec)
-    recipe.pod = recipe.pod or {}
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.containers = recipe.containers or {}
     if type(container_spec) == "number" or tonumber(container_spec) then
         local container_index = tonumber(container_spec)
         if container_index and recipe.containers[container_index] then

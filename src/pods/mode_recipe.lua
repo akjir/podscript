@@ -38,11 +38,6 @@ global<const> *
 ---@param name string
 local function mode_recipe__edit(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -221,11 +216,6 @@ end
 ---@param name string
 local function mode_recipe__show(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -245,11 +235,6 @@ end
 ---@param context table
 global function mode_recipe__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.debug("Recipe mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then

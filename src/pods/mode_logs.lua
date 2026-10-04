@@ -34,11 +34,6 @@ global<const> *
 
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Logs Mode (SIMULATED)\n")
         log.print("Simulate the execution of log commands for a recipe's pod or container.")
@@ -68,11 +63,6 @@ end
 
 local function mode_logs__execute(context, action, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if string.is_nil_or_empty(target) then
         log.error("No recipe target specified.")
         return false
@@ -148,11 +138,6 @@ end
 
 global function mode_logs__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local action = context.parameters[1]
     local raw_target = context.parameters[2]
 

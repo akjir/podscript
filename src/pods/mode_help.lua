@@ -32,11 +32,6 @@ global<const> *
 ---@param context table
 global function mode_help__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")

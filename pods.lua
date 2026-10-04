@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "239.e2b12f1.dev"
+local BUILD <const> = "240.99b8092.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -849,8 +849,6 @@ local function recipe__validate(context, recipe, file_name)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     local config = context.config or {}
     local pods = config.pods or {}
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -919,9 +917,7 @@ end
 ---@param container_spec string|number
 ---@return string|nil name
 local function recipe__resolve_container_name(recipe, container_spec)
-    recipe.pod = recipe.pod or {}
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.containers = recipe.containers or {}
     if type(container_spec) == "number" or tonumber(container_spec) then
         local container_index = tonumber(container_spec)
         if container_index and recipe.containers[container_index] then
@@ -970,8 +966,6 @@ end
 ---@param simulate boolean
 local function pod__create(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     local commands = table.create(8)
     commands[1] = "podman pod create"
 
@@ -1028,8 +1022,6 @@ end
 ---@param simulate boolean
 local function pod__remove(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     -- remove containers
     local containers = recipe.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
@@ -1059,8 +1051,6 @@ end
 ---@param simulate boolean
 local function pod__update(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 
@@ -1083,8 +1073,6 @@ end
 ---@return boolean
 local function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.recipes = context.config.recipes or {}
     local groups = context.config.recipes.groups or {}
 
     for _, group_targets in pairs(groups) do
@@ -1103,11 +1091,6 @@ end
 ---@return table|boolean
 local function config__untangle(context, list)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end
@@ -1174,8 +1157,6 @@ end
 local function mode_command__validate(command_table, recipe)
     if type(command_table) ~= "table" then error("command_table must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
         log.error("No container in command table set!")
         return false
@@ -1194,14 +1175,7 @@ end
 ---@param command_table table
 local function mode_command__execute(context, recipe, command_table)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if type(command_table) ~= "table" then error("command_table must be a table", 2) end
     local commands = table.create(8)
     commands[1] = "podman exec -it"
@@ -1229,11 +1203,6 @@ end
 ---Print command help.
 local function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
@@ -1265,8 +1234,6 @@ end
 ---@return table
 local function mode_command__get_valid_commands(recipe, suppress_warnings)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if table.is_nil_or_empty(recipe.pod.commands) then
         return {}
     end
@@ -1300,14 +1267,7 @@ end
 ---@param target string
 local function mode_command__list(context, recipe, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if table.is_nil_or_empty(recipe.pod.commands) then
         log.print("There are no commands defined in recipe '" .. target .. "'.")
         return
@@ -1338,11 +1298,6 @@ end
 ---@param context table
 local function mode_command__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.debug("Command mode is used.")
 
     local p1 = context.parameters[1]
@@ -1420,11 +1375,6 @@ end
 
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Connect Mode (SIMULATED)\n")
         log.print("Simulate connecting to a running container with an interactive shell.")
@@ -1450,11 +1400,6 @@ end
 
 local function mode_connect__shell(context, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
 
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
@@ -1532,11 +1477,6 @@ end
 
 local function mode_connect__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local action = context.parameters[1]
     local target = context.parameters[2]
 
@@ -1582,11 +1522,6 @@ end
 ---@param name string
 local function mode_recipe__edit(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -1765,11 +1700,6 @@ end
 ---@param name string
 local function mode_recipe__show(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local found = name
     if found == nil then return end
 
@@ -1789,11 +1719,6 @@ end
 ---@param context table
 local function mode_recipe__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.debug("Recipe mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then
@@ -1853,14 +1778,7 @@ end
 ---@param context table
 local function mode_config__edit(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.config) ~= "table" then
-        error("mode_config__edit requires a valid context object", 2)
-    end
+
     local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
@@ -1887,14 +1805,6 @@ end
 ---@param context table
 local function mode_config__show(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.config) ~= "table" then
-        error("mode_config__show requires a valid context object", 2)
-    end
 
     local config_path_str = tostring(context.config.path)
     if not string.is_nil_or_empty(context.config.path) then
@@ -2074,14 +1984,7 @@ end
 ---@param context table
 local function mode_config__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.parameters) ~= "table" then
-        error("mode_config__handle requires a valid context object", 2)
-    end
+
     log.debug("Config mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then
@@ -2108,11 +2011,6 @@ end
 ---@param targets table
 local function mode_default__status(context, targets)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if type(targets) ~= "table" then error("targets must be a table", 2) end
     local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
     local lines = system.exec_capture(query_command)
@@ -2306,11 +2204,6 @@ end
 ---@param context table
 local function mode_default__status_help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.print("PodScript " .. get_version_string() .. " - Status\n")
     log.print("Display the runtime status of pods and containers.")
     log.print("Usage: pods status [OPTIONS] [TARGETS]")
@@ -2327,11 +2220,6 @@ end
 ---@param context table
 local function mode_default__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.debug("Default mode is used.")
     local action = context.parameters[1]
 
@@ -2392,11 +2280,6 @@ end
 
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Logs Mode (SIMULATED)\n")
         log.print("Simulate the execution of log commands for a recipe's pod or container.")
@@ -2426,11 +2309,6 @@ end
 
 local function mode_logs__execute(context, action, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if string.is_nil_or_empty(target) then
         log.error("No recipe target specified.")
         return false
@@ -2506,11 +2384,6 @@ end
 
 local function mode_logs__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local action = context.parameters[1]
     local raw_target = context.parameters[2]
 
@@ -2551,11 +2424,6 @@ end
 ---@param context table
 local function mode_simulate__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.info("Simulate mode is active.")
     context.flags.simulate = true
     local parameters = context.parameters
@@ -2585,11 +2453,6 @@ end
 ---@param context table
 local function mode_help__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
     log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
@@ -2627,11 +2490,6 @@ end
 ---@param context table
 local function mode_init__create(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     local recipe_path = util.build_full_path(".", "recipe", ".lua")
     local config_path = context.config.path or util.build_full_path("config", "", ".lua")
 
@@ -2705,11 +2563,6 @@ end
 ---@param context table
 local function mode_init__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     log.debug("Init mode is used.")
     local action = context.parameters[1] or ""
     if action == "" then
@@ -2736,12 +2589,7 @@ end
 ---@param context table
 ---@return boolean
 local function main__config_load_and_set(context)
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
     local config_path = context.config.path
 
     local config, error, _ = system.load_lua_file(config_path)
@@ -2796,14 +2644,9 @@ end
 ---@param arguments string[]
 ---@param modes table
 local function main__parse_arguments(context, arguments, modes)
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(arguments) ~= "table" then error("arguments must be a table", 2) end
     if type(modes) ~= "table" then error("modes must be a table", 2) end
-    context.config = context.config or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then

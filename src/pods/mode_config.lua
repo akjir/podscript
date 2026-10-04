@@ -34,14 +34,7 @@ global<const> *
 ---@param context table
 local function mode_config__edit(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.config) ~= "table" then
-        error("mode_config__edit requires a valid context object", 2)
-    end
+
     local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
@@ -68,14 +61,6 @@ end
 ---@param context table
 local function mode_config__show(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.config) ~= "table" then
-        error("mode_config__show requires a valid context object", 2)
-    end
 
     local config_path_str = tostring(context.config.path)
     if not string.is_nil_or_empty(context.config.path) then
@@ -255,14 +240,7 @@ end
 ---@param context table
 global function mode_config__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if type(context) ~= "table" or type(context.parameters) ~= "table" then
-        error("mode_config__handle requires a valid context object", 2)
-    end
+
     log.debug("Config mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then

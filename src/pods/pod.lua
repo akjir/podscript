@@ -34,8 +34,6 @@ global<const> *
 ---@param simulate boolean
 global function pod__create(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     local commands = table.create(8)
     commands[1] = "podman pod create"
 
@@ -92,8 +90,6 @@ end
 ---@param simulate boolean
 global function pod__remove(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     -- remove containers
     local containers = recipe.containers
     for id = #containers, 1, -1 do -- reverse order when shutting down containers
@@ -123,8 +119,6 @@ end
 ---@param simulate boolean
 global function pod__update(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
     local containers = recipe.containers
 
