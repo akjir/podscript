@@ -33,7 +33,7 @@ Currently, `pods recipe list` only enumerates recipes declared in `config.lua`. 
     * `pods recipe list [OPTIONS]`
 * **Options:**
     * Default: Shows configured recipes, annotating valid files with `[OK]` and missing files with `[NOT FOUND]`.
-    * `--all` / `--orphans`: Appends unconfigured recipes found on disk under an "Unlinked Recipes" subsection, marked as `[UNREFERENCED]`.
+    * `--all`: Appends unconfigured recipes found on disk under an "Unlinked Recipes" subsection, marked as `[UNREFERENCED]`.
 * **Output Format:**
     ```text
     Recipes:
@@ -64,7 +64,7 @@ Currently, `pods recipe list` only enumerates recipes declared in `config.lua`. 
 
 ### 2.2 Schema & Syntax Changes
 * No changes required for `config.lua` schemas.
-* Addition of `--all` and `--orphans` flag arguments to the `pods recipe list` command line.
+* Addition of `--all` flag argument to the `pods recipe list` command line.
 
 ### 2.3 Implementation Details
 * **Directory Scanning & Validation:**
@@ -95,8 +95,8 @@ Currently, `pods recipe list` only enumerates recipes declared in `config.lua`. 
 - [x] Build release (`lua build.lua`).
 - [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [x] Update `USAGE.md` with the new CLI syntax for `pods recipe list`.
-- [x] Update CLI help menu (`mode_help.lua` or action-specific help) for the new `--all` / `--orphans` flags.
-- [x] Update `.pods-completion.bash` for the new `--all` and `--orphans` flags.
+- [x] Update CLI help menu (`mode_help.lua` or action-specific help) for the new `--all` flag.
+- [x] Update `.pods-completion.bash` for the new `--all` flag.
 - [x] Add entry to `CHANGELOG.md`.
 - [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.

@@ -138,16 +138,14 @@ return {
                     "  1) recipe_011_simple_container (Simple Container)",
                     "  2) recipe_022_description (Super Pod): Super Pod is great",
                     "Unlinked Recipe Files:",
-                    "[UNREFERENCED]",
-                    "Validation Summary:",
-                    "- Potentially unreferenced recipe file"
+                    "[UNREFERENCED]"
                 }
             },
         },
         [s .. "14"] = {
             description = "List recipes validation formatting.",
             config = "config_013_validation",
-            parameters = { "recipe", "list", "--orphans" },
+            parameters = { "recipe", "list", "--all" },
             expectations = {
                 sequence = {
                     "Recipes:",
@@ -155,9 +153,7 @@ return {
                     "missing_recipe                        [NOT FOUND]",
                     "recipe_001_empty                      [OK]",
                     "Unlinked Recipe Files:",
-                    "[UNREFERENCED]",
-                    "Validation Summary:",
-                    "- Recipe files for 'frontend' and 'missing_recipe' not found!"
+                    "[UNREFERENCED]"
                 }
             },
         },
@@ -170,14 +166,11 @@ return {
                     "Recipes:",
                     "frontend                               [NOT FOUND]",
                     "missing_recipe                         [NOT FOUND]",
-                    "recipe_001_empty                       [OK]",
-                    "Validation Summary:",
-                    "- Recipe files for 'frontend' and 'missing_recipe' not found!"
+                    "recipe_001_empty                       [OK]"
                 },
                 not_contains = {
                     "Unlinked Recipe Files:",
-                    "[UNREFERENCED]",
-                    "- Potentially unreferenced recipe file"
+                    "[UNREFERENCED]"
                 }
             },
         },

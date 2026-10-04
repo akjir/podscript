@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added cross-check to `recipe list` showing unconfigured files via `--all`.
 
+### Removed
+
+- Removed `--orphans` flag alias from `recipe list` command.
+
 ## [1.5.0] - 2026-10-04
 
 ### Added

@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "235.9dad5ca.dev"
+local BUILD <const> = "236.23233de.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1580,7 +1580,7 @@ local function mode_recipe__help()
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
     log.print("OPTIONS:")
-    log.print("  --all, --orphans   include unconfigured recipes found on disk")
+    log.print("  --all              include unconfigured recipes found on disk")
     log.print("  --config=NAME      use config with given name or path")
     log.print("  --debug            enable debug output\n")
     log.print("ACTIONS:")
@@ -1601,7 +1601,7 @@ local function mode_recipe__list(context)
     local recipes = config.recipes or {}
     local flags = context.flags or {}
 
-    local show_all = flags.all or flags.orphans
+    local show_all = flags.all
 
     local recipe_map = {}
     local recipe_list = {}
@@ -1643,7 +1643,6 @@ local function mode_recipe__list(context)
         return
     end
 
-    local missing_list = {}
     local total_count = #recipe_list
     if show_all then
         total_count = total_count + #unreferenced
@@ -1685,7 +1684,6 @@ local function mode_recipe__list(context)
             local status = "[OK]"
             if not system.file_exists(path) then
                 status = "[NOT FOUND]"
-                table.insert(missing_list, target)
             end
 
             log.print(util.format_line(line, status))
@@ -1709,34 +1707,6 @@ local function mode_recipe__list(context)
         end
     end
 
-    table.sort(missing_list)
-
-    if #missing_list > 0 or (show_all and #unreferenced > 0) then
-        log.print("")
-        log.print("Validation Summary:")
-        if #missing_list > 0 then
-            if #missing_list == 1 then
-                log.print("- Recipe file for '" .. missing_list[1] .. "' not found!")
-            else
-                local formatted = {}
-                for i = 1, #missing_list - 1 do
-                    table.insert(formatted, "'" .. missing_list[i] .. "'")
-                end
-                log.print("- Recipe files for " .. table.concat(formatted, ", ") .. " and '" .. missing_list[#missing_list] .. "' not found!")
-            end
-        end
-        if show_all and #unreferenced > 0 then
-            if #unreferenced == 1 then
-                log.print("- Potentially unreferenced recipe file '" .. unreferenced[1] .. "' found!")
-            else
-                local formatted = {}
-                for i = 1, #unreferenced - 1 do
-                    table.insert(formatted, "'" .. unreferenced[i] .. "'")
-                end
-                log.print("- Potentially unreferenced recipe files " .. table.concat(formatted, ", ") .. " and '" .. unreferenced[#unreferenced] .. "' found!")
-            end
-        end
-    end
 end
 
 ---Show recipe content.
