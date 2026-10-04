@@ -99,7 +99,7 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "PodScript v1.4.0",
+                    "PodScript v1.5.0",
                     "Display the runtime status of pods and containers."
                 }
             },

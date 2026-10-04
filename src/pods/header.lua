@@ -29,7 +29,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 ---@build const:
-global VERSION<const> = "1.4.0"
+global VERSION<const> = "1.5.0"
 ---@build const:
 global BUILD<const> = "dev"
 
