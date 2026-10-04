@@ -140,7 +140,7 @@ local function mode_config__show(context)
                         local status = "[OK]"
                         referenced_recipes[sub_el] = true
                         if validation_cache[sub_el] == nil then
-                            local path = util.build_full_path(sub_el, recipes_path, ".lua")
+                            local path = util.build_full_path(recipes_path, sub_el, ".lua")
                             validation_cache[sub_el] = system.file_exists(path)
                         end
                         if not validation_cache[sub_el] then
@@ -156,7 +156,7 @@ local function mode_config__show(context)
                 local status = "[OK]"
                 referenced_recipes[el] = true
                 if validation_cache[el] == nil then
-                    local path = util.build_full_path(el, recipes_path, ".lua")
+                    local path = util.build_full_path(recipes_path, el, ".lua")
                     validation_cache[el] = system.file_exists(path)
                 end
                 if not validation_cache[el] then
@@ -191,11 +191,27 @@ local function mode_config__show(context)
     if #missing_list > 0 or #unreferenced > 0 then
         log.print("")
         log.print("Validation Summary:")
-        for _, m in ipairs(missing_list) do
-            log.print("- Recipe file for '" .. m .. "' not found!")
+        if #missing_list > 0 then
+            if #missing_list == 1 then
+                log.print("- Recipe file for '" .. missing_list[1] .. "' not found!")
+            else
+                local formatted = {}
+                for i = 1, #missing_list - 1 do
+                    table.insert(formatted, "'" .. missing_list[i] .. "'")
+                end
+                log.print("- Recipe files for " .. table.concat(formatted, ", ") .. " and '" .. missing_list[#missing_list] .. "' not found!")
+            end
         end
         if #unreferenced > 0 then
-            log.print("- Potentially unreferenced recipe files found: " .. table.concat(unreferenced, ", "))
+            if #unreferenced == 1 then
+                log.print("- Potentially unreferenced recipe file '" .. unreferenced[1] .. "' found!")
+            else
+                local formatted = {}
+                for i = 1, #unreferenced - 1 do
+                    table.insert(formatted, "'" .. unreferenced[i] .. "'")
+                end
+                log.print("- Potentially unreferenced recipe files " .. table.concat(formatted, ", ") .. " and '" .. unreferenced[#unreferenced] .. "' found!")
+            end
         end
     end
 end

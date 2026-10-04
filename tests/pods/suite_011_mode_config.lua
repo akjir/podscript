@@ -61,7 +61,8 @@ return {
                     "Groups:",
                     "  • all"
                 }
-            },
+            }
+        },
         [s .. "06"] = {
             description = "Show config with validation warnings.",
             config = "config_013_validation",
@@ -82,12 +83,10 @@ return {
                     "  • web",
                     "    └── frontend                            [NOT FOUND]",
                     "Validation Summary:",
-                    "- Recipe file for 'frontend' not found!",
-                    "- Recipe file for 'missing_recipe' not found!",
-                    "- Potentially unreferenced recipe files found: recipe_002_no_pod.lua"
+                    "- Recipe files for 'frontend' and 'missing_recipe' not found!",
+                    "- Potentially unreferenced recipe files 'recipe_002_no_pod.lua'"
                 }
             }
-        },
+        }
     }
-}
 }
