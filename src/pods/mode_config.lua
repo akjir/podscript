@@ -93,7 +93,8 @@ local function mode_config__show(context)
     if system.directory_exists(pods_path) then
         pods_status = "[OK]"
     end
-    log.print(util.format_line(string.format("  %-14s%s", "Pods:", pods_path), pods_status))
+    local abs_pods_path = system.get_absolute_path(pods_path)
+    log.print(util.format_line(string.format("  %-14s%s", "Pods:", abs_pods_path), pods_status))
 
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
@@ -102,7 +103,8 @@ local function mode_config__show(context)
         local count = recipes_files and #recipes_files or 0
         recipes_status = string.format("[OK, %d recipes found]", count)
     end
-    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", recipes_path), recipes_status))
+    local abs_recipes_path = system.get_absolute_path(recipes_path)
+    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", abs_recipes_path), recipes_status))
     log.print("")
 
     log.print("Groups:")

@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "206.72cabd4.dev"
+local BUILD <const> = "207.37d8e9f.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -501,6 +501,23 @@ function system.directory_exists(full_path)
     local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
     local success = os.execute("test -d " .. safe_path)
     return success == true or success == 0
+end
+
+---Get the absolute path of a given path.
+---@param full_path string
+---@return string
+function system.get_absolute_path(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    if string.is_nil_or_empty(full_path) then return "" end
+    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
+    if not handle then return full_path end
+    local result = handle:read("*a")
+    handle:close()
+    if result and not string.is_nil_or_empty(string.trim(result)) then
+        return string.trim(result)
+    end
+    return full_path
 end
 
 ---Execute a command.
@@ -1563,7 +1580,8 @@ local function mode_config__show(context)
     if system.directory_exists(pods_path) then
         pods_status = "[OK]"
     end
-    log.print(util.format_line(string.format("  %-14s%s", "Pods:", pods_path), pods_status))
+    local abs_pods_path = system.get_absolute_path(pods_path)
+    log.print(util.format_line(string.format("  %-14s%s", "Pods:", abs_pods_path), pods_status))
 
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
@@ -1572,7 +1590,8 @@ local function mode_config__show(context)
         local count = recipes_files and #recipes_files or 0
         recipes_status = string.format("[OK, %d recipes found]", count)
     end
-    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", recipes_path), recipes_status))
+    local abs_recipes_path = system.get_absolute_path(recipes_path)
+    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", abs_recipes_path), recipes_status))
     log.print("")
 
     log.print("Groups:")

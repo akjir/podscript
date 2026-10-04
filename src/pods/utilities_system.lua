@@ -77,6 +77,23 @@ function system.directory_exists(full_path)
     return success == true or success == 0
 end
 
+---Get the absolute path of a given path.
+---@param full_path string
+---@return string
+function system.get_absolute_path(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    if string.is_nil_or_empty(full_path) then return "" end
+    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
+    if not handle then return full_path end
+    local result = handle:read("*a")
+    handle:close()
+    if result and not string.is_nil_or_empty(string.trim(result)) then
+        return string.trim(result)
+    end
+    return full_path
+end
+
 ---Execute a command.
 ---Only executes a command, if simulate is set to false.
 ---@param command string
