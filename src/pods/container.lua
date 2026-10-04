@@ -170,5 +170,5 @@ global function container__update(container, pod, simulate)
     if type(pod) ~= "table" then error("pod must be a table", 2) end
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate })
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate, interactive = true })
 end

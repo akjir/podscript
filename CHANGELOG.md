@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Fixed missing interactive progress bar during container image updates.
 - Fixed `pods command` to allow `list` as the first parameter.
 - Fixed crash during command validation by passing missing recipe argument.
 - Fixed missing nil-safety and early validation across all mode handlers and core functions.

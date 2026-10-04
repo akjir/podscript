@@ -137,5 +137,14 @@ return {
             end,
             expected = true,
         },
+        [s .. "13"] = {
+            description = "system.exec works with interactive=true.",
+            run = function()
+                -- Execute a basic command interactively. It should succeed.
+                local success, _, exit_code = system.exec("echo 'test' > /dev/null", { interactive = true, silent = true })
+                return success == true and exit_code == 0
+            end,
+            expected = true,
+        },
     }
 }

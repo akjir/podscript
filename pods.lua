@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "217.1d9d18d.dev"
+local BUILD <const> = "219.2a36e9b.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -859,7 +859,7 @@ local function container__update(container, pod, simulate)
     if type(pod) ~= "table" then error("pod must be a table", 2) end
     local registry = table.get_or_default(container, "registry", pod.registry)
     log.print("Update container '" .. container.name .. "' ...")
-    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate })
+    system.exec("podman pull " .. string.escape_shell(registry .. "/" .. container.image), { simulate = simulate, interactive = true })
 end
 -- ------------------------------------------------------------------------- --
 --
