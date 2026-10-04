@@ -134,6 +134,8 @@ local function mode_recipe__list(context)
 
     if #recipe_list > 0 then
         log.print("Recipes:")
+        local entries = {}
+        local max_length = 0
         for i = 1, #recipe_list do
             local target = recipe_list[i]
             local prefix = i .. ")"
@@ -170,7 +172,17 @@ local function mode_recipe__list(context)
                 status = "[NOT FOUND]"
             end
 
-            log.print(util.format_line(line, status))
+            local len = string.visible_length(line)
+            if len > max_length then
+                max_length = len
+            end
+
+            table.insert(entries, {line = line, status = status})
+        end
+
+        local target_column = math.max(44, max_length + 1)
+        for _, entry in ipairs(entries) do
+            log.print(util.format_line(entry.line, entry.status, target_column))
         end
     end
 
@@ -179,6 +191,8 @@ local function mode_recipe__list(context)
             log.print("")
         end
         log.print("Unlinked Recipe Files:")
+        local unref_entries = {}
+        local max_length = 0
         for i = 1, #unreferenced do
             local file = unreferenced[i]
             local index = #recipe_list + i
@@ -187,10 +201,18 @@ local function mode_recipe__list(context)
                 prefix = " " .. prefix
             end
             local line = "  " .. prefix .. " " .. file
-            log.print(util.format_line(line, "[UNREFERENCED]"))
+            local len = string.visible_length(line)
+            if len > max_length then
+                max_length = len
+            end
+            table.insert(unref_entries, {line = line, status = "[UNREFERENCED]"})
+        end
+
+        local target_column = math.max(44, max_length + 1)
+        for _, entry in ipairs(unref_entries) do
+            log.print(util.format_line(entry.line, entry.status, target_column))
         end
     end
-
 end
 
 ---Show recipe content.

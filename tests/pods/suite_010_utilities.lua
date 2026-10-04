@@ -62,5 +62,34 @@ return {
             end,
             expected = true
         },
+        [s .. "10"] = {
+            description = "util.format_line with default target column (44)",
+            run = function()
+                return util.format_line("short_line", "[OK]")
+            end,
+            expected = "short_line                                  [OK]"
+        },
+        [s .. "11"] = {
+            description = "util.format_line with dynamic target column",
+            run = function()
+                return util.format_line("short_line", "[OK]", 20)
+            end,
+            expected = "short_line          [OK]"
+        },
+        [s .. "12"] = {
+            description = "util.format_line when line is longer than target column",
+            run = function()
+                return util.format_line("this_is_a_very_long_line", "[OK]", 10)
+            end,
+            expected = "this_is_a_very_long_line [OK]"
+        },
+        [s .. "13"] = {
+            description = "util.format_line with utf-8 chars",
+            run = function()
+                -- "überlänge" is 9 visible chars
+                return util.format_line("überlänge", "[OK]", 14)
+            end,
+            expected = "überlänge     [OK]"
+        },
     }
 }

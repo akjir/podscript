@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "236.23233de.dev"
+local BUILD <const> = "237.5e4cd94.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -163,6 +163,21 @@ function string.split(str, sep)
     end
     result[#result + 1] = str:sub(last_end)
     return result
+end
+
+---Calculates the visible length of a string (ignoring UTF-8 continuation bytes).
+---@param str string
+---@return integer
+function string.visible_length(str)
+    if str == nil then return 0 end
+    local extra = 0
+    for i = 1, #str do
+        local b = str:byte(i)
+        if b >= 0x80 and b <= 0xBF then
+            extra = extra + 1
+        end
+    end
+    return #str - extra
 end
 -- ------------------------------------------------------------------------- --
 --
@@ -338,19 +353,14 @@ function util.build_full_path(path, file_name, file_extension)
     end
 end
 
----Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
----@param line string The input string to be normalized.
----@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
-function util.format_line(line, status)
-    local extra = 0
-    for i = 1, #line do
-        local b = line:byte(i)
-        if b >= 0x80 and b <= 0xBF then
-            extra = extra + 1
-        end
-    end
-    local visible = #line - extra
-    local pad = 44 - visible
+---Formats a line by padding it with spaces until the target column is reached, then appending the status.
+---@param line string The line content.
+---@param status string The status to append.
+---@param target_column integer|nil The target column for alignment (default: 44).
+---@return string # The fully formatted line.
+function util.format_line(line, status, target_column)
+    local visible = string.visible_length(line)
+    local pad = (target_column or 44) - visible
     if pad < 1 then pad = 1 end
     return line .. string.rep(" ", pad) .. status
 end
@@ -1650,6 +1660,8 @@ local function mode_recipe__list(context)
 
     if #recipe_list > 0 then
         log.print("Recipes:")
+        local entries = {}
+        local max_length = 0
         for i = 1, #recipe_list do
             local target = recipe_list[i]
             local prefix = i .. ")"
@@ -1686,7 +1698,17 @@ local function mode_recipe__list(context)
                 status = "[NOT FOUND]"
             end
 
-            log.print(util.format_line(line, status))
+            local len = string.visible_length(line)
+            if len > max_length then
+                max_length = len
+            end
+
+            table.insert(entries, {line = line, status = status})
+        end
+
+        local target_column = math.max(44, max_length + 1)
+        for _, entry in ipairs(entries) do
+            log.print(util.format_line(entry.line, entry.status, target_column))
         end
     end
 
@@ -1695,6 +1717,8 @@ local function mode_recipe__list(context)
             log.print("")
         end
         log.print("Unlinked Recipe Files:")
+        local unref_entries = {}
+        local max_length = 0
         for i = 1, #unreferenced do
             local file = unreferenced[i]
             local index = #recipe_list + i
@@ -1703,7 +1727,16 @@ local function mode_recipe__list(context)
                 prefix = " " .. prefix
             end
             local line = "  " .. prefix .. " " .. file
-            log.print(util.format_line(line, "[UNREFERENCED]"))
+            local len = string.visible_length(line)
+            if len > max_length then
+                max_length = len
+            end
+            table.insert(unref_entries, {line = line, status = "[UNREFERENCED]"})
+        end
+
+        local target_column = math.max(44, max_length + 1)
+        for _, entry in ipairs(unref_entries) do
+            log.print(util.format_line(entry.line, entry.status, target_column))
         end
     end
 
@@ -1850,13 +1883,19 @@ local function mode_config__show(context)
 
     log.print("Directories:")
 
+    local dir_entries = {}
+    local dir_max = 0
+
     local pods_path = context.config.pods.path or ""
     local pods_status = "[NOT FOUND]"
     if system.directory_exists(pods_path) then
         pods_status = "[OK]"
     end
     local abs_pods_path = system.get_absolute_path(pods_path)
-    log.print(util.format_line(string.format("  %-14s%s", "Pods:", abs_pods_path), pods_status))
+    local pods_line = string.format("  %-14s%s", "Pods:", abs_pods_path)
+    local pods_len = string.visible_length(pods_line)
+    if pods_len > dir_max then dir_max = pods_len end
+    table.insert(dir_entries, {line = pods_line, status = pods_status})
 
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
@@ -1866,7 +1905,15 @@ local function mode_config__show(context)
         recipes_status = string.format("[OK, %d recipes found]", count)
     end
     local abs_recipes_path = system.get_absolute_path(recipes_path)
-    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", abs_recipes_path), recipes_status))
+    local recipes_line = string.format("  %-14s%s", "Recipes:", abs_recipes_path)
+    local recipes_len = string.visible_length(recipes_line)
+    if recipes_len > dir_max then dir_max = recipes_len end
+    table.insert(dir_entries, {line = recipes_line, status = recipes_status})
+
+    local dir_target = math.max(44, dir_max + 1)
+    for _, entry in ipairs(dir_entries) do
+        log.print(util.format_line(entry.line, entry.status, dir_target))
+    end
     log.print("")
 
     log.print("Groups:")
@@ -1882,8 +1929,11 @@ local function mode_config__show(context)
     local validation_cache = {}
     local missing_recipes = {}
 
+    local print_queue = {}
+    local max_len = 0
+
     for i, g in ipairs(group_names) do
-        log.print("  • " .. g)
+        table.insert(print_queue, { text = "  • " .. g })
         local elements = groups[g]
         for j, el in ipairs(elements) do
             local is_last = (j == #elements)
@@ -1891,11 +1941,11 @@ local function mode_config__show(context)
 
             if string.begins_with(el, "@") then
                 local subgroup_name = string.sub(el, 2)
-                log.print("    " .. branch .. el)
+                table.insert(print_queue, { text = "    " .. branch .. el })
 
                 local sub_elements = groups[subgroup_name]
                 if not sub_elements then
-                    log.print("    " .. (is_last and "    " or "│   ") .. "└── [MISSING GROUP]")
+                    table.insert(print_queue, { text = "    " .. (is_last and "    " or "│   ") .. "└── [MISSING GROUP]" })
                 else
                     for k, sub_el in ipairs(sub_elements) do
                         local is_sub_last = (k == #sub_elements)
@@ -1913,7 +1963,9 @@ local function mode_config__show(context)
                         end
 
                         local line = string.format("    %s%s%s", (is_last and "    " or "│   "), sub_branch, sub_el)
-                        log.print(util.format_line(line, status))
+                        local len = string.visible_length(line)
+                        if len > max_len then max_len = len end
+                        table.insert(print_queue, { line = line, status = status })
                     end
                 end
             else
@@ -1929,11 +1981,22 @@ local function mode_config__show(context)
                 end
 
                 local line = string.format("    %s%s", branch, el)
-                log.print(util.format_line(line, status))
+                local len = string.visible_length(line)
+                if len > max_len then max_len = len end
+                table.insert(print_queue, { line = line, status = status })
             end
         end
         if i < #group_names then
-            log.print("    ")
+            table.insert(print_queue, { text = "    " })
+        end
+    end
+
+    local target_column = math.max(44, max_len + 1)
+    for _, item in ipairs(print_queue) do
+        if item.text then
+            log.print(item.text)
+        else
+            log.print(util.format_line(item.line, item.status, target_column))
         end
     end
 

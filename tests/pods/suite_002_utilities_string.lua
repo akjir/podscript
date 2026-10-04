@@ -158,5 +158,26 @@ return {
             end,
             expected = nil
         },
+        [s .. "23"] = {
+            description = "string.visible_length - ascii string",
+            run = function()
+                return string.visible_length("hello world")
+            end,
+            expected = 11
+        },
+        [s .. "24"] = {
+            description = "string.visible_length - string with utf-8 chars (umlauts)",
+            run = function()
+                return string.visible_length("überlänge")
+            end,
+            expected = 9
+        },
+        [s .. "25"] = {
+            description = "string.visible_length - nil value",
+            run = function()
+                return string.visible_length(nil)
+            end,
+            expected = 0
+        },
     },
 }

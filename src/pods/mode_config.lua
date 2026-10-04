@@ -91,13 +91,19 @@ local function mode_config__show(context)
 
     log.print("Directories:")
 
+    local dir_entries = {}
+    local dir_max = 0
+
     local pods_path = context.config.pods.path or ""
     local pods_status = "[NOT FOUND]"
     if system.directory_exists(pods_path) then
         pods_status = "[OK]"
     end
     local abs_pods_path = system.get_absolute_path(pods_path)
-    log.print(util.format_line(string.format("  %-14s%s", "Pods:", abs_pods_path), pods_status))
+    local pods_line = string.format("  %-14s%s", "Pods:", abs_pods_path)
+    local pods_len = string.visible_length(pods_line)
+    if pods_len > dir_max then dir_max = pods_len end
+    table.insert(dir_entries, {line = pods_line, status = pods_status})
 
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
@@ -107,7 +113,15 @@ local function mode_config__show(context)
         recipes_status = string.format("[OK, %d recipes found]", count)
     end
     local abs_recipes_path = system.get_absolute_path(recipes_path)
-    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", abs_recipes_path), recipes_status))
+    local recipes_line = string.format("  %-14s%s", "Recipes:", abs_recipes_path)
+    local recipes_len = string.visible_length(recipes_line)
+    if recipes_len > dir_max then dir_max = recipes_len end
+    table.insert(dir_entries, {line = recipes_line, status = recipes_status})
+
+    local dir_target = math.max(44, dir_max + 1)
+    for _, entry in ipairs(dir_entries) do
+        log.print(util.format_line(entry.line, entry.status, dir_target))
+    end
     log.print("")
 
     log.print("Groups:")
@@ -123,8 +137,11 @@ local function mode_config__show(context)
     local validation_cache = {}
     local missing_recipes = {}
 
+    local print_queue = {}
+    local max_len = 0
+
     for i, g in ipairs(group_names) do
-        log.print("  • " .. g)
+        table.insert(print_queue, { text = "  • " .. g })
         local elements = groups[g]
         for j, el in ipairs(elements) do
             local is_last = (j == #elements)
@@ -132,11 +149,11 @@ local function mode_config__show(context)
 
             if string.begins_with(el, "@") then
                 local subgroup_name = string.sub(el, 2)
-                log.print("    " .. branch .. el)
+                table.insert(print_queue, { text = "    " .. branch .. el })
 
                 local sub_elements = groups[subgroup_name]
                 if not sub_elements then
-                    log.print("    " .. (is_last and "    " or "│   ") .. "└── [MISSING GROUP]")
+                    table.insert(print_queue, { text = "    " .. (is_last and "    " or "│   ") .. "└── [MISSING GROUP]" })
                 else
                     for k, sub_el in ipairs(sub_elements) do
                         local is_sub_last = (k == #sub_elements)
@@ -154,7 +171,9 @@ local function mode_config__show(context)
                         end
 
                         local line = string.format("    %s%s%s", (is_last and "    " or "│   "), sub_branch, sub_el)
-                        log.print(util.format_line(line, status))
+                        local len = string.visible_length(line)
+                        if len > max_len then max_len = len end
+                        table.insert(print_queue, { line = line, status = status })
                     end
                 end
             else
@@ -170,11 +189,22 @@ local function mode_config__show(context)
                 end
 
                 local line = string.format("    %s%s", branch, el)
-                log.print(util.format_line(line, status))
+                local len = string.visible_length(line)
+                if len > max_len then max_len = len end
+                table.insert(print_queue, { line = line, status = status })
             end
         end
         if i < #group_names then
-            log.print("    ")
+            table.insert(print_queue, { text = "    " })
+        end
+    end
+
+    local target_column = math.max(44, max_len + 1)
+    for _, item in ipairs(print_queue) do
+        if item.text then
+            log.print(item.text)
+        else
+            log.print(util.format_line(item.line, item.status, target_column))
         end
     end
 

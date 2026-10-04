@@ -93,3 +93,18 @@ function string.split(str, sep)
     result[#result + 1] = str:sub(last_end)
     return result
 end
+
+---Calculates the visible length of a string (ignoring UTF-8 continuation bytes).
+---@param str string
+---@return integer
+function string.visible_length(str)
+    if str == nil then return 0 end
+    local extra = 0
+    for i = 1, #str do
+        local b = str:byte(i)
+        if b >= 0x80 and b <= 0xBF then
+            extra = extra + 1
+        end
+    end
+    return #str - extra
+end

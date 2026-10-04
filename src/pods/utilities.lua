@@ -54,19 +54,14 @@ function util.build_full_path(path, file_name, file_extension)
     end
 end
 
----Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
----@param line string The input string to be normalized.
----@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
-function util.format_line(line, status)
-    local extra = 0
-    for i = 1, #line do
-        local b = line:byte(i)
-        if b >= 0x80 and b <= 0xBF then
-            extra = extra + 1
-        end
-    end
-    local visible = #line - extra
-    local pad = 44 - visible
+---Formats a line by padding it with spaces until the target column is reached, then appending the status.
+---@param line string The line content.
+---@param status string The status to append.
+---@param target_column integer|nil The target column for alignment (default: 44).
+---@return string # The fully formatted line.
+function util.format_line(line, status, target_column)
+    local visible = string.visible_length(line)
+    local pad = (target_column or 44) - visible
     if pad < 1 then pad = 1 end
     return line .. string.rep(" ", pad) .. status
 end
