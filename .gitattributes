@@ -1,0 +1,2 @@
+*.lua filter=trim-whitespace
+*.md filter=trim-whitespace
