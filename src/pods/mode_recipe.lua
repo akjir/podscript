@@ -18,6 +18,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 --]]
 ---@diagnostic disable: lowercase-global
 
+require "src.pods.config"
 require "src.pods.header"
 require "src.pods.log"
 require "src.pods.recipe"
@@ -288,6 +289,11 @@ global function mode_recipe__handle(context)
 
     if string.find(name, "/") then
         log.error("Pod/container targeting is not supported in recipe mode.")
+        return
+    end
+
+    if not config__has_recipe(context, name) then
+        log.error("Recipe '" .. name .. "' not found in configuration!")
         return
     end
 

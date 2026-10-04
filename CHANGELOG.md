@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Fixed cryptic file open error when showing missing recipes in `recipe` mode.
 - Fixed status column alignment for items exceeding default padding limit.
 
 ### Removed

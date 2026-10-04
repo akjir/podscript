@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "238.edf4213.dev"
+local BUILD <const> = "239.e2b12f1.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -384,80 +384,6 @@ function util.split_argument(argument)
     return clean_argument, true
 end
 
-function util.untangle(context, list)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if log.debug_enabled and not table.is_nil_or_empty(list) then
-        log.debug("Targets   - " .. table.concat(list, " "))
-    end
-
-    local targets = list
-    local groups = {}
-    if context.config and context.config.recipes and context.config.recipes.groups then
-        groups = context.config.recipes.groups
-    end
-
-    local untangled = {}
-
-    for i = 1, #targets do
-        local target = targets[i]
-
-        -- 1. Handle group targeting (e.g., @group_name)
-        if string.begins_with(target, "@") then
-
-            if string.find(target, "/") or string.find(target, ":") then
-                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
-                return false
-            end
-
-            local group_name = string.sub(target, 2)
-            local group_recipes = groups[group_name]
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return false
-            end
-
-            table.append(untangled, group_recipes)
-
-        -- 2. Handle specific edge cases (help or empty string)
-        elseif (target == "help" or target == "") then
-            table.insert(untangled, target)
-
-        -- 3. Handle individual recipe targeting
-        else
-            local target_recipe = target
-
-            -- Verify that the target recipe exists in the configuration groups
-            local is_valid_recipe = false
-            for _, group_targets in pairs(groups) do
-                if table.contains(group_targets, target_recipe) then
-                    is_valid_recipe = true
-                    break
-                end
-            end
-
-            if not is_valid_recipe then
-                log.error("Recipe '" .. target_recipe .. "' not found in config.")
-                return false
-            end
-
-            table.insert(untangled, target)
-        end
-    end
-
-    local final_untangled = table.remove_duplicates(untangled)
-
-    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
-        log.debug("Untangled - " .. table.concat(final_untangled, " "))
-    end
-
-    return final_untangled
-end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION System
@@ -1147,6 +1073,99 @@ local function pod__update(recipe, simulate)
 end
 -- ------------------------------------------------------------------------- --
 --
+--    SECTION Config
+--
+-- ------------------------------------------------------------------------- --
+
+---Check if a recipe is defined in the configuration.
+---@param context table
+---@param recipe_name string
+---@return boolean
+local function config__has_recipe(context, recipe_name)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.recipes = context.config.recipes or {}
+    local groups = context.config.recipes.groups or {}
+
+    for _, group_targets in pairs(groups) do
+        if type(group_targets) == "table" then
+            if table.contains(group_targets, recipe_name) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+---Untangle targets from configuration groups.
+---@param context table
+---@param list table
+---@return table|boolean
+local function config__untangle(context, list)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    context.config = context.config or {}
+    context.config.pods = context.config.pods or {}
+    context.config.recipes = context.config.recipes or {}
+    context.flags = context.flags or {}
+    context.parameters = context.parameters or {}
+    if log.debug_enabled and not table.is_nil_or_empty(list) then
+        log.debug("Targets   - " .. table.concat(list, " "))
+    end
+
+    local targets = list
+    local groups = {}
+    if context.config and context.config.recipes and context.config.recipes.groups then
+        groups = context.config.recipes.groups
+    end
+
+    local untangled = {}
+
+    for i = 1, #targets do
+        local target = targets[i]
+
+        -- 1. Handle group targeting (e.g., @group_name)
+        if string.begins_with(target, "@") then
+
+            if string.find(target, "/") or string.find(target, ":") then
+                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+                return false
+            end
+
+            local group_name = string.sub(target, 2)
+            local group_recipes = groups[group_name]
+
+            if group_recipes == nil then
+                log.error("Unknown recipe group '" .. target .. "'.")
+                return false
+            end
+
+            table.append(untangled, group_recipes)
+
+        -- 2. Handle specific edge cases (help or empty string)
+        elseif (target == "help" or target == "") then
+            table.insert(untangled, target)
+
+        -- 3. Handle individual recipe targeting
+        else
+            if not config__has_recipe(context, target) then
+                log.error("Recipe '" .. target .. "' not found in config.")
+                return false
+            end
+
+            table.insert(untangled, target)
+        end
+    end
+
+    local final_untangled = table.remove_duplicates(untangled)
+
+    if log.debug_enabled and not table.is_nil_or_empty(final_untangled) then
+        log.debug("Untangled - " .. table.concat(final_untangled, " "))
+    end
+
+    return final_untangled
+end
+-- ------------------------------------------------------------------------- --
+--
 --    SECTION Mode Command
 --
 -- ------------------------------------------------------------------------- --
@@ -1817,6 +1836,11 @@ local function mode_recipe__handle(context)
         return
     end
 
+    if not config__has_recipe(context, name) then
+        log.error("Recipe '" .. name .. "' not found in configuration!")
+        return
+    end
+
     execute(context, name)
 end
 -- ------------------------------------------------------------------------- --
@@ -2338,7 +2362,7 @@ local function mode_default__handle(context)
         return
     end
 
-    local untangled_targets = util.untangle(context, targets)
+    local untangled_targets = config__untangle(context, targets)
     if not untangled_targets then return end
 
     -- handle recipes

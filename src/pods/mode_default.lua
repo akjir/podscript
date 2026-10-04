@@ -17,6 +17,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
 
+require "src.pods.config"
 require "src.pods.recipe"
 require "src.pods.utilities"
 
@@ -288,7 +289,7 @@ global function mode_default__handle(context)
         return
     end
 
-    local untangled_targets = util.untangle(context, targets)
+    local untangled_targets = config__untangle(context, targets)
     if not untangled_targets then return end
 
     -- handle recipes

@@ -258,6 +258,7 @@ local pods_files = {
     "container",
     "recipe",
     "pod",
+    "config",
     "mode_command",
     "mode_connect",
     "mode_recipe",
