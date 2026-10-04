@@ -213,7 +213,7 @@ pods create my-web-server
 pods recreate @production-apps
 
 # Remove multiple pods and groups in sequence
-pods remove frontend @backend-services redis
+pods remove frontend @backend-services cache-server
 
 # Preview pod creation without executing
 pods simulate create my-web-server
@@ -382,13 +382,13 @@ pod = {
         migrate = {
             description = "Run database migrations.",
             container   = "*db",
-            user        = "postgres",
-            execute     = "psql -U postgres -d app -f /migrations/run.sql",
+            user        = "dbuser",
+            execute     = "db-cli -U dbuser -d app -f /migrations/run.sql",
         },
         cache_clear = {
             description = "Clear application cache.",
             container   = 2,
-            execute     = "php /var/www/artisan cache:clear",
+            execute     = "app-cli cache:clear",
         },
     },
 }
@@ -579,16 +579,16 @@ return {
             all = {
                 "recipe",
             },
-            database = {
-                "postgres",
-                "redis",
+            backend = {
+                "db-server",
+                "cache-server",
             },
             web = {
                 "api-server",
                 "frontend",
             },
             stack = {
-                "@database",
+                "@backend",
                 "@web",
             },
         },
@@ -601,17 +601,17 @@ See [config.lua](config.lua) for the repository configuration template and [reci
 ### Basic Pod Lifecycle
 
 ```bash
-# Create a pod and its containers from recipe 'nextcloud'
-pods create nextcloud
+# Create a pod and its containers from recipe 'example-app'
+pods create example-app
 
 # Check the running status of the pod
-pods status nextcloud
+pods status example-app
 
 # Recreate the entire pod stack (reverse teardown, forward startup)
-pods recreate nextcloud
+pods recreate example-app
 
 # Stop and remove the pod and all associated containers
-pods remove nextcloud
+pods remove example-app
 
 # Query the status of all managed containers across all recipes
 pods status
@@ -623,13 +623,13 @@ Simulation allows you to verify generated Podman commands before making any chan
 
 ```bash
 # Simulate creating a pod
-pods simulate create nextcloud
+pods simulate create example-app
 
 # Simulate recreation with verbose debug logging
-pods simulate --debug recreate nextcloud
+pods simulate --debug recreate example-app
 
 # Simulate maintenance command execution
-pods simulate command exec nextcloud migrate
+pods simulate command exec example-app migrate
 ```
 
 ### Recipe Group Targeting
@@ -640,41 +640,41 @@ Assuming `config.lua` defines the following groups:
 return {
     recipes = {
         groups = {
-            database = { "postgres", "redis" },
-            apps     = { "api-service", "frontend" },
-            stack    = { "@database", "@apps" },
+            backend = { "db-server", "cache-server" },
+            apps    = { "api-service", "frontend" },
+            stack   = { "@backend", "@apps" },
         },
     },
 }
 ```
 
 ```bash
-# Deploy all database containers in sequence
-pods create @database
+# Deploy all backend containers in sequence
+pods create @backend
 
 # Deploy the entire stack
 pods create @stack
 
 # Target both groups and individual recipes (duplicates automatically deduplicated)
-pods update postgres @stack frontend
+pods update db-server @stack frontend
 ```
 
 ### Container Maintenance Tasks
 
 ```bash
 # Show available maintenance commands for the database recipe
-pods command list postgres
+pods command list db-server
 
 # Output:
-# Commands for recipe 'postgres':
+# Commands for recipe 'db-server':
 #   1) backup: Creates a database backup dump.
 #   2) reindex: Rebuilds missing search indices.
 
 # Run the backup command by name
-pods command exec postgres backup
+pods command exec db-server backup
 
 # Run the reindex command by numeric index
-pods command exec postgres 2
+pods command exec db-server 2
 ```
 
 ### Configuration Overrides & Debugging

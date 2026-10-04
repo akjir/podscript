@@ -147,6 +147,7 @@ return {
             run = function()
                 local old_execute = os.execute
                 local captured_cmd = nil
+                ---@diagnostic disable-next-line: duplicate-set-field
                 os.execute = function(cmd)
                     captured_cmd = cmd
                     return true, "exit", 0

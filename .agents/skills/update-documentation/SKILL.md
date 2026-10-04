@@ -22,10 +22,11 @@ High-level entry point focusing on "What is it?" and "What can it do?".
 Comprehensive manual for CLI operations.
 * **Hierarchy:** Maintain existing structure (`## Mode Name`, `### Actions`, `### Options`, `### Usage`).
 * **Tables:** Use aligned markdown tables for Modes, Actions, and Options.
-* **Content:** Clear, single-sentence description for every new action/option. Include at least one concrete example under `### Usage` or `## Examples`.
+* **Content:** Clear, single-sentence description for every new action/option. Include at least one example (using abstract placeholders) under `### Usage` or `## Examples`.
 * **Formatting:** Backtick all CLI commands, flags, modes, and options (e.g. `--debug`).
 
 ## 4. Execution Rules
 * **No Speculation:** Only document verified, implemented features.
+* **Abstract Examples Only:** Never use real-world applications (like `nextcloud`, `postgres`, `php`) in examples. Always use abstract, generic placeholders (like `example-app`, `db-server`, `app-cli`) to keep the documentation universally applicable.
 * **Consistency:** Match tone and terminology of existing entries.
 * **Completeness:** If a feature or flag spans multiple modes, update all relevant sections.

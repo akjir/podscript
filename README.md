@@ -149,7 +149,7 @@ Configure recipe collections in `config.lua` to manage multiple applications sim
 return {
     recipes = {
         groups = {
-            core = { "database", "redis" },
+            core = { "db-server", "cache-server" },
             web  = { "api-server", "frontend" },
             all  = { "@core", "@web" },
         },
