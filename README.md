@@ -141,19 +141,43 @@ Source files are located in `src/pods/`. Never edit `pods.lua` directly.
 Execute tests and build the release script:
 
 ```bash
+# Verify (complete cycle: dev tests -> build -> release tests)
 ./task verify
 ```
 
-Run tests only:
+Run tests only (defaults to both dev and release environments):
 
 ```bash
 ./task test
+```
+
+Execute tests for a specific environment:
+
+```bash
+./task test dev
+./task test release
+```
+
+Execute a specific test by ID and apply test flags (e.g., `--fail-fast`):
+
+```bash
+./task verify 01001
+./task verify 01001 --fail-fast
+./task test dev 01001 --fail-fast
+```
+
+Run the internal test script directly for advanced test flags (e.g., JSON output):
+
+```bash
+lua test.lua --fail-fast
+lua test.lua --json
 ```
 
 Build `pods.lua`:
 
 ```bash
 ./task build
+lua build.lua --release
 ```
 
 ## Disclaimer
