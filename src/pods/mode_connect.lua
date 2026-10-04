@@ -133,7 +133,7 @@ local function mode_connect__shell(context, target)
     end
 
     local escaped_name = string.escape_shell(abs_container_name)
-    local command_str = "podman exec -it " .. escaped_name .. " sh -c 'bash || sh'"
+    local command_str = "podman exec -it " .. escaped_name .. " sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
 
     local success = system.exec(command_str, {
         simulate = context.flags.simulate,
