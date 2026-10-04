@@ -1,7 +1,7 @@
 ---
 id: PSP-017
 title: Human-Readable Configuration Output & Validation
-status: review
+status: completed
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
@@ -34,7 +34,6 @@ When a user runs `pods config` or `pods config show`, the system will load the a
 
 ```text
 Configuration: /home/user/project/config.lua
-============================================================
 
 Settings:
   Editor:       vim
@@ -62,7 +61,7 @@ Groups:
 
 Validation Summary:
 - Recipe file for 'frontend' not found!
-- Potentially unreferenced recipe files found: test.lua, old_stack.lua
+- Potentially unreferenced recipe files 'old_stack.lua' and 'test.lua' found!
 ```
 
 ### 1.5 Alternatives
@@ -121,10 +120,13 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
 - [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [x] Add entry to `CHANGELOG.md`.
 - [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [x] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-10-04:** Initial concept drafted combining Doctor and Tree View functionality with strict alignment and summary warnings.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `src/pods/utilities_system.lua`
+* `src/pods/mode_config.lua`
+* `tests/pods/suite_009_utilities_system.lua`
+* `tests/pods/test_mode_config.lua`

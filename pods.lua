@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "209.522d934.dev"
+local BUILD <const> = "210.8ad4c29.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1567,8 +1567,11 @@ local function mode_config__show(context)
         error("mode_config__show requires a valid context object", 2)
     end
 
-    log.print("Configuration: " .. tostring(context.config.path))
-    log.print("============================================================")
+    local config_path_str = tostring(context.config.path)
+    if not string.is_nil_or_empty(context.config.path) then
+        config_path_str = system.get_absolute_path(context.config.path)
+    end
+    log.print("Configuration: " .. config_path_str)
     log.print("")
 
     log.print("Settings:")
