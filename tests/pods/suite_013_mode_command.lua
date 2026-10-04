@@ -9,13 +9,13 @@ return {
             parameters = { "command", "help" },
             expectations = {
                 sequence = {
-                    "Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]"
+                    "Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]"
                 }
             },
         },
         [s .. "02"] = {
             description = "Print command list.",
-            parameters = { "command", "recipe_006_commands", "list" },
+            parameters = { "command", "list", "recipe_006_commands" },
             expectations = {
                 sequence = {
                     "WARNING: Command 'missing_container' has no description.",
@@ -122,7 +122,7 @@ return {
         },
         [s .. "11"] = {
             description = "Print command list for recipe without commands.",
-            parameters = { "command", "recipe_011_simple_container", "list" },
+            parameters = { "command", "list", "recipe_011_simple_container" },
             expectations = {
                 sequence = {
                     "There are no commands defined in recipe 'recipe_011_simple_container'."
@@ -131,7 +131,7 @@ return {
         },
         [s .. "12"] = {
             description = "Print command list for recipe with commands without description.",
-            parameters = { "command", "recipe_021_no_description_commands", "list" },
+            parameters = { "command", "list", "recipe_021_no_description_commands" },
             expectations = {
                 sequence = {
                     "WARNING: Command 'cmd1' has no description.",
@@ -192,6 +192,59 @@ return {
             expectations = {
                 sequence = {
                     "ERROR: Couldn't load recipe './tests/pods/recipes/unknown.lua'!"
+                }
+            },
+        },
+        [s .. "17"] = {
+            description = "Print command list (list recipe).",
+            parameters = { "command", "list", "recipe_006_commands" },
+            expectations = {
+                sequence = {
+                    "WARNING: Command 'missing_container' has no description.",
+                    "WARNING: Command 'missing_execute' has no description.",
+                    "WARNING: Command 'run_absolute' has no description.",
+                    "WARNING: Command 'run_int_container' has no description.",
+                    "WARNING: Command 'run_int_container_2' has no description.",
+                    "WARNING: Command 'run_int_user' has no description.",
+                    "Commands for recipe 'recipe_006_commands':",
+                    "  1) add_index: Adds missing database indices.",
+                    "  2) missing_container",
+                    "  3) missing_execute",
+                    "  4) run_absolute",
+                    "  5) run_int_container",
+                    "  6) run_int_container_2",
+                    "  7) run_int_user"
+                }
+            },
+        },
+        [s .. "18"] = {
+            description = "Simulate exec action explicitly with relative container name.",
+            simulate = true,
+            parameters = { "command", "exec", "recipe_006_commands", "add_index" },
+            expectations = {
+                sequence = {
+                    "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                }
+            },
+        },
+        [s .. "19"] = {
+            description = "Simulate exec action explicitly with numeric index.",
+            simulate = true,
+            parameters = { "command", "exec", "recipe_006_commands", "1" },
+            expectations = {
+                sequence = {
+                    "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                }
+            },
+        },
+        [s .. "20"] = {
+            description = "Missing command name for exec action.",
+            parameters = { "command", "exec", "recipe_006_commands" },
+            expectations = {
+                sequence = {
+                    "ERROR: Missing command for recipe 'recipe_006_commands'."
                 }
             },
         },

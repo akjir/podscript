@@ -66,7 +66,7 @@ _pods_completions() {
                 COMPREPLY=( $(compgen -W "help" -- "${cur}") )
                 ;;
             command)
-                COMPREPLY=( $(compgen -W "list help" -- "${cur}") )
+                COMPREPLY=( $(compgen -W "exec list help" -- "${cur}") )
                 ;;
             config)
                 COMPREPLY=( $(compgen -W "show edit help" -- "${cur}") )

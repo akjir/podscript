@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "211.630cadf.dev"
+local BUILD <const> = "216.0d4ac3b.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -356,10 +356,12 @@ function util.format_line(line, status)
     return line .. string.rep(" ", pad) .. status
 end
 
+---Normalizes a name by converting it to lowercase, trimming whitespace, and replacing internal spaces with underscores.
+---@param str string The name to normalize.
+---@return string # The normalized name.
 function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
-
 
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
@@ -1175,23 +1177,26 @@ local function mode_command__help(context)
     if context.flags.simulate then
         log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
         log.print("Simulate the execution of a command defined in a recipe for a container.")
-        log.print("Usage: pods simulate command [OPTIONS] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua simulate command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
+        log.print("Usage: pods simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
     else
         log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
         log.print("Execute a command defined in a recipe for a container.")
-        log.print("Usage: pods command [OPTIONS] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua command [OPTIONS] RECIPE [COMMAND|INDEX]\n")
+        log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
+        log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
     end
+    log.print("ACTIONS:")
+    log.print("  exec               execute a command defined in a recipe (default when COMMAND is provided)")
+    log.print("  list               list all valid commands for a recipe (default)")
+    log.print("  help               display this help text\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
     log.print("  --debug            enable debug output\n")
     log.print("RECIPE:")
-    log.print("  *                  name of the recipe")
+    log.print("  *                  name of the recipe\n")
     log.print("COMMAND|INDEX:")
     log.print("  *                  command by name defined in recipe to execute")
     log.print("  <number>           command by numeric index defined in recipe to execute")
-    log.print("  list               list all valid commands for a recipe (default)")
 end
 
 ---Get a list of valid commands for a recipe.
@@ -1279,39 +1284,66 @@ local function mode_command__handle(context)
     context.flags = context.flags or {}
     context.parameters = context.parameters or {}
     log.debug("Command mode is used.")
-    local name = context.parameters[1]
-    local command = context.parameters[2]
 
-    if string.is_nil_or_empty(name) or name == "help" then
+    local p1 = context.parameters[1]
+    local p2 = context.parameters[2]
+    local p3 = context.parameters[3]
+
+    if string.is_nil_or_empty(p1) or p1 == "help" then
         mode_command__help(context)
         return
     end
 
-    if string.is_nil_or_empty(command) then
-        command = "list"
+    local action, target, command_name
+
+    if p1 == "list" or p1 == "exec" then
+        action = p1
+        target = p2
+        command_name = p3
+    else
+        target = p1
+        if string.is_nil_or_empty(p2) then
+            action = "list"
+        else
+            action = "exec"
+            command_name = p2
+        end
     end
 
-    local target = name
+    if string.is_nil_or_empty(target) then
+        if action == "list" then
+            log.error("Missing recipe name for command list.")
+        elseif action == "exec" then
+            log.error("Missing recipe name for command exec.")
+        end
+        return
+    end
+
     local recipe = recipe__load(context.config.recipes.path, target)
     if recipe ~= nil and recipe__validate(context, recipe, target) then
-        if command == "list" then
+        if action == "list" then
             mode_command__list(context, recipe, target)
-        else
+        elseif action == "exec" then
+            if string.is_nil_or_empty(command_name) then
+                log.error("Missing command for recipe '" .. target .. "'.")
+                return
+            end
+
             local command_table = nil
-            local command_num = tonumber(command)
+            local command_num = tonumber(command_name)
             
             if command_num ~= nil then
                 local valid_commands = mode_command__get_valid_commands(recipe, true)
                 if command_num > 0 and command_num <= #valid_commands then
                     command_table = valid_commands[command_num].table
-                    command = valid_commands[command_num].name
+                    command_name = valid_commands[command_num].name
                 end
             elseif not table.is_nil_or_empty(recipe.pod.commands) then
-                command_table = recipe.pod.commands[command]
+                command_table = recipe.pod.commands[command_name]
             end
 
             if command_table == nil then
-                log.error("Command '" .. command .. "' not found in recipe '" .. target .. "'.")
+                log.error("Command '" .. command_name .. "' not found in recipe '" .. target .. "'.")
                 return
             end
             if mode_command__validate(command_table, recipe) then

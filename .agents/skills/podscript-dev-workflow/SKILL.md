@@ -12,7 +12,7 @@ description: >-
 3. **Test & Build:** Run `./task verify [testID]` (or simply `./task [testID]`) to automatically run dev tests, build `pods.lua`, and run release tests.
    * *Alternative:* Use `./task test dev [testID]` to only run dev tests without building.
    * *Alternative:* Use `./task build --release` for a clean release build without the `.dev` suffix.
-4. **Docs:** Update `CHANGELOG.md`, `AGENTS.md`, and `USAGE.md` as needed.
+4. **Docs:** Update `CHANGELOG.md` and `AGENTS.md`. If CLI syntax changes, follow **`update-documentation`** skill for `USAGE.md`, `README.md`, and `.pods-completion.bash`.
 
 ## 2. Build System Annotations (`build.lua`)
 * `---@build block:`: Starts included code block (ignores preceding dev `require`s).

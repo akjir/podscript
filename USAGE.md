@@ -351,18 +351,17 @@ pods logs --tail=50 recipe_name/app
 The `command` mode executes ad-hoc maintenance and administration tasks defined in a recipe inside a running container via `podman exec -it`.
 
 ```bash
-pods command [OPTIONS] <recipe> [ACTION]
+pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX]
 # or in simulation:
-pods simulate command [OPTIONS] <recipe> [ACTION]
+pods simulate command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX]
 ```
 
 ### Actions
 
 | Action | Description |
 | :--- | :--- |
+| `exec` | Execute the specified command name or index. (Default when a command is provided). |
 | `list` | List all valid maintenance commands defined in the recipe. (Default when omitted). |
-| `<name>` | Execute the command matching the specified name defined in the recipe. |
-| `<index>` | Execute the command by its 1-based numeric index as listed by `list`. |
 | `help` | Display command-line help for command mode. |
 
 ### Options
@@ -403,18 +402,21 @@ pod = {
 ### Usage
 
 ```bash
-# List all available commands for a recipe (default action)
+# List all available commands for a recipe
+pods command list web-stack
+# or using the backward-compatible alias
 pods command web-stack
-pods command web-stack list
 
 # Execute a command by name
+pods command exec web-stack migrate
+# or using the backward-compatible alias
 pods command web-stack migrate
 
 # Execute a command by numeric index
-pods command web-stack 1
+pods command exec web-stack 1
 
 # Simulate command execution
-pods simulate command web-stack migrate
+pods simulate command exec web-stack migrate
 ```
 
 ---
@@ -627,7 +629,7 @@ pods simulate create nextcloud
 pods simulate --debug recreate nextcloud
 
 # Simulate maintenance command execution
-pods simulate command nextcloud migrate
+pods simulate command exec nextcloud migrate
 ```
 
 ### Recipe Group Targeting
@@ -661,7 +663,7 @@ pods update postgres @stack frontend
 
 ```bash
 # Show available maintenance commands for the database recipe
-pods command postgres list
+pods command list postgres
 
 # Output:
 # Commands for recipe 'postgres':
@@ -669,10 +671,10 @@ pods command postgres list
 #   2) reindex: Rebuilds missing search indices.
 
 # Run the backup command by name
-pods command postgres backup
+pods command exec postgres backup
 
 # Run the reindex command by numeric index
-pods command postgres 2
+pods command exec postgres 2
 ```
 
 ### Configuration Overrides & Debugging

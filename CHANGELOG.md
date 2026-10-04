@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added `logs` mode to fetch and tail logs from pods and containers.
+- Added explicit `exec` action to `command` mode to run container commands.
 - Added `status` action to query and display runtime status of managed containers.
 - Added `--all` and `--full` flags for the `status` command.
 - Added `task` shell script to simplify the development and testing workflow.
@@ -25,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Fixed `pods command` to allow `list` as the first parameter.
 - Fixed crash during command validation by passing missing recipe argument.
 - Fixed missing nil-safety and early validation across all mode handlers and core functions.
 - Fixed `recipe__load` global error in `status` by correcting module build order.
