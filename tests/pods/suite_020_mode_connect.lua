@@ -65,6 +65,10 @@ return {
                 sequence = {
                     "Execute connect command: ",
                     "podman exec -it my_absolute_container sh -c 'bash || sh';"
+                },
+                not_contains = {
+                    "cannot open",
+                    "Couldn't load recipe"
                 }
             },
         },
@@ -190,6 +194,20 @@ return {
                     "ERROR: Groups are not supported for connect. Please specify a single target."
                 }
             },
+        },
+        [s .. "15"] = {
+            description = "Error when missing target is not a recipe and not a running container.",
+            parameters = { "connect", "missing_target" },
+            expectations = {
+                sequence = {
+                    "ERROR: Target 'missing_target' does not exist."
+                },
+                not_contains = {
+                    "cannot open",
+                    "Couldn't load recipe",
+                    "is not running or does not exist"
+                }
+            }
         }
     }
 }

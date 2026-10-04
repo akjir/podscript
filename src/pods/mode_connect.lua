@@ -78,9 +78,20 @@ local function mode_connect__shell(context, target)
 
     local abs_container_name
 
-    -- Try to load recipe
-    local loaded_recipe = recipe__load(context.config.recipes.path, recipe_name)
-    if loaded_recipe then
+    local recipe_file = util.build_full_path(context.config.recipes.path, recipe_name, ".lua")
+    local recipe_exists = system.file_exists(recipe_file)
+
+    local loaded_recipe
+    if recipe_exists then
+        loaded_recipe = recipe__load(context.config.recipes.path, recipe_name)
+    end
+
+    if recipe_exists then
+        if not loaded_recipe then
+            log.error("Recipe '" .. recipe_name .. "' could not be loaded.")
+            return false
+        end
+
         if not recipe__validate(context, loaded_recipe, recipe_name) then
             log.error("Recipe '" .. recipe_name .. "' is invalid.")
             return false
@@ -105,14 +116,18 @@ local function mode_connect__shell(context, target)
             -- Fallback to absolute container name if no recipe matches
             abs_container_name = recipe_name
         else
-            log.error("Recipe '" .. recipe_name .. "' could not be loaded.")
+            log.error("Recipe '" .. recipe_name .. "' does not exist.")
             return false
         end
     end
 
     if not context.flags.simulate then
         if not system.container_exists(abs_container_name) then
-            log.error("Container '" .. abs_container_name .. "' is not running or does not exist.")
+            if not recipe_exists and (not container_spec or container_spec == "") then
+                log.error("Target '" .. abs_container_name .. "' does not exist.")
+            else
+                log.error("Container '" .. abs_container_name .. "' is not running or does not exist.")
+            end
             return false
         end
     end

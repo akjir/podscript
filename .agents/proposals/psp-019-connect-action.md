@@ -66,15 +66,15 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
    * Check for `help` and redirect to `mode_connect__help(context)`.
    * Split the target by `/` into `recipe_name` and `container_spec`. (Similar logic to `mode_logs__execute`). If no `/` is found, `recipe_name` is the full target and `container_spec` is nil.
 2. **Validation & Resolution**:
-   * Try to load the recipe using `recipe__load(context.config.recipes.path, recipe_name)`.
+   * Check if the recipe file exists using `system.file_exists`. If it does, load it using `recipe__load(context.config.recipes.path, recipe_name)`.
    * **If the recipe exists and is valid:**
        * If `container_spec` is omitted, check `#loaded_recipe.containers`. If `== 1`, assign `container_spec = "1"`. If `> 1`, throw a fatal error.
        * Resolve the absolute container name using: `recipe__resolve_container_name(loaded_recipe, container_spec)`.
    * **If the recipe does not exist:**
        * If `container_spec` is omitted (i.e., no `/` was provided), treat `recipe_name` as an `<absolute_container_name>`.
-       * Validate it directly by proceeding to the Early Validation step. If it fails, report that neither a valid recipe nor a running container by that name could be found.
+       * Validate it directly by proceeding to the Early Validation step. If it fails, report a generic target missing error (`Target '<name>' does not exist.`) to avoid confusing the user with container-specific errors when a recipe was likely intended.
 3. **Early Validation (Status Check)**:
-   * Before executing the command, use `system.container_exists(abs_container_name)` to ensure the container is currently running. If not, cleanly abort with `log.error(...)` to prevent messy raw Podman errors. This check should be skipped in `simulate` mode to allow successful command string generation during dry-run tests.
+   * Before executing the command, use `system.container_exists(abs_container_name)` to ensure the container is currently running. If not, cleanly abort with `log.error(...)` (using the specific messages defined above) to prevent messy raw Podman errors. This check should be skipped in `simulate` mode to allow successful command string generation during dry-run tests.
 4. **Command Construction & Security**:
    * Escape the absolute container name using `string.escape_shell(abs_container_name)`.
    * Construct the command: `podman exec -it " .. escaped_name .. " sh -c 'bash || sh'`.
