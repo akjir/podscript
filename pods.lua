@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "237.5e4cd94.dev"
+local BUILD <const> = "238.edf4213.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -1739,7 +1739,6 @@ local function mode_recipe__list(context)
             log.print(util.format_line(entry.line, entry.status, target_column))
         end
     end
-
 end
 
 ---Show recipe content.
@@ -1778,7 +1777,11 @@ local function mode_recipe__handle(context)
     context.parameters = context.parameters or {}
     log.debug("Recipe mode is used.")
     local action = context.parameters[1]
-    if string.is_nil_or_empty(action) or action == "help" then
+    if string.is_nil_or_empty(action) then
+        mode_recipe__list(context)
+        return
+    end
+    if action == "help" then
         mode_recipe__help()
         return
     end

@@ -67,11 +67,14 @@ return {
             },
         },
         [s .. "07"] = {
-            description = "Show recipe help without action.",
+            description = "List recipes implicitly without action.",
+            config = "config_016_recipe_list",
             parameters = { "recipe" },
             expectations = {
                 sequence = {
-                    "Usage: pods recipe [OPTIONS] ACTION NAME"
+                    "Recipes:",
+                    "  1) recipe_011_simple_container (Simple Container)",
+                    "  2) recipe_022_description (Super Pod): Super Pod is great"
                 }
             },
         },

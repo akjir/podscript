@@ -564,8 +564,8 @@ pods recipe [OPTIONS] [ACTION] [RECIPE]
 | Action | Description |
 | :--- | :--- |
 | `edit` | Open the specified recipe file in the configured external editor. |
-| `help` | Display command-line help for recipe mode. (Default when omitted). |
-| `list` | List all available recipes defined in configuration groups. |
+| `help` | Display command-line help for recipe mode. |
+| `list` | List all available recipes defined in configuration groups. (Default when omitted). |
 | `show` | Display the contents of the specified recipe file with line numbers. |
 
 ### Options

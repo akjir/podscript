@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added cross-check to `recipe list` showing unconfigured files via `--all`.
 
+### Changed
+
+- Changed default action for `recipe` mode from `help` to `list`.
+
 ### Fixed
 
 - Fixed status column alignment for items exceeding default padding limit.

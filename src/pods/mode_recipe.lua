@@ -251,7 +251,11 @@ global function mode_recipe__handle(context)
     context.parameters = context.parameters or {}
     log.debug("Recipe mode is used.")
     local action = context.parameters[1]
-    if string.is_nil_or_empty(action) or action == "help" then
+    if string.is_nil_or_empty(action) then
+        mode_recipe__list(context)
+        return
+    end
+    if action == "help" then
         mode_recipe__help()
         return
     end
