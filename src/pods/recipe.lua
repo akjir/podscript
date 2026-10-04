@@ -36,7 +36,7 @@ global<const> *
 ---@param suppress_errors boolean|nil
 ---@return table|nil
 global function recipe__load(recipe_path, recipe_name, suppress_errors)
-    local full_path = build_full_path(recipe_path, recipe_name, ".lua")
+    local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
         if not suppress_errors then
@@ -74,9 +74,9 @@ global function recipe__validate(context, recipe, file_name)
     -- test for pod name
     -- pod name is optional
     if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = normalize_name(recipe.name)
+        recipe.pod.name = util.normalize_name(recipe.name)
     else
-        recipe.pod.name = normalize_name(recipe.pod.name)
+        recipe.pod.name = util.normalize_name(recipe.pod.name)
     end
 
     -- test for commands
@@ -98,7 +98,7 @@ global function recipe__validate(context, recipe, file_name)
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
+            local path = util.build_full_path(context.config.pods.path, recipe.pod.name, "")
             log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -135,7 +135,7 @@ global function recipe__resolve_container_name(recipe, container_spec)
     end
 
     local spec_str = tostring(container_spec)
-    local container_name = normalize_name(spec_str)
+    local container_name = util.normalize_name(spec_str)
     local alternate_container_name
 
     if string.begins_with(container_name, "*") then

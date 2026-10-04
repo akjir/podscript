@@ -17,12 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Changed `config show` output to a structured, hierarchical diagnostic tree.
 - Renamed `print` action to `show` in `config` and `recipe` modes.
 - Changed default container `detach` option to `true`.
 - Downgraded default pod path fallback log to debug.
 
 ### Fixed
 
+- Fixed missing nil-safety and early validation in config mode.
 - Fixed `recipe__load` global error in `status` by correcting module build order.
 - Fixed a crash in `string.trim` when providing a `nil` value.
 - Fixed column shifting in `status` action by using robust delimiters.

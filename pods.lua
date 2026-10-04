@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.4.0"
-local BUILD <const> = "203.d0887a2.dev"
+local BUILD <const> = "204.8bf232c"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -313,12 +313,14 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+global util <const> = {}
+
 ---Build a full path with given parts.
 ---@param path string
 ---@param file_name string
 ---@param file_extension string
 ---@return string
-local function build_full_path(path, file_name, file_extension)
+function util.build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
     then
@@ -340,7 +342,21 @@ end
 ---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
-local function normalize_name(str)
+function util.format_line(line, status)
+    local extra = 0
+    for i = 1, #line do
+        local b = line:byte(i)
+        if b >= 0x80 and b <= 0xBF then
+            extra = extra + 1
+        end
+    end
+    local visible = #line - extra
+    local pad = 44 - visible
+    if pad < 1 then pad = 1 end
+    return line .. string.rep(" ", pad) .. status
+end
+
+function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
@@ -348,7 +364,7 @@ end
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
 ---@return string, string|boolean # The key and value.
-local function split_argument(argument)
+function util.split_argument(argument)
     local clean_argument = string.gsub(argument, "^%-+", "")
     local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
     if parameter then
@@ -357,7 +373,7 @@ local function split_argument(argument)
     return clean_argument, true
 end
 
-local function untangle(context, list)
+function util.untangle(context, list)
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end
@@ -431,194 +447,232 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
-global system <const> = {
-    ---Check if the current Lua version is 5.5 or higher.
-    ---@return boolean
-    check_lua_version = function()
-        local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
-        if not major_string or not minor_string then return false end
-        local major = tonumber(major_string)
-        local minor = tonumber(minor_string)
-        return major > 5 or (major == 5 and minor >= 5)
-    end,
+global system <const> = {}
 
-    ---Check if the current operating system is Linux.
-    ---@return boolean
-    check_os = function()
-        local handle = io.popen("uname -s")
-        if not handle then return false end
-        local result = handle:read("*a")
-        handle:close()
+---Check if the current Lua version is 5.5 or higher.
+---@return boolean
+function system.check_lua_version()
+    local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
+    if not major_string or not minor_string then return false end
+    local major = tonumber(major_string)
+    local minor = tonumber(minor_string)
+    return major > 5 or (major == 5 and minor >= 5)
+end
 
-        -- we need to trim the result, because uname -s returns a newline
-        return "Linux" == string.trim(result)
-    end,
+---Check if the current operating system is Linux.
+---@return boolean
+function system.check_os()
+    local handle = io.popen("uname -s")
+    if not handle then return false end
+    local result = handle:read("*a")
+    handle:close()
 
-    ---Check if the current Podman version is 5.8.0 or higher.
-    ---@return boolean
-    check_podman_version = function()
-        local handle = io.popen("podman --version 2>&1")
-        if not handle then return false end
-        local result = handle:read("*a")
-        handle:close()
+    -- we need to trim the result, because uname -s returns a newline
+    return "Linux" == string.trim(result)
+end
 
-        -- podman --version returns something like "podman version 5.8.1"
-        local major_string, minor_string = result:match("version%s*(%d+)%.(%d+)%.%d+")
-        if not major_string or not minor_string then return false end
-        local major = tonumber(major_string)
-        local minor = tonumber(minor_string)
-        return major > 5 or (major == 5 and minor >= 8)
-    end,
+---Check if the current Podman version is 5.8.0 or higher.
+---@return boolean
+function system.check_podman_version()
+    local handle = io.popen("podman --version 2>&1")
+    if not handle then return false end
+    local result = handle:read("*a")
+    handle:close()
 
-    ---Execute a command.
-    ---Only executes a command, if simulate is set to false.
-    ---@param command string
-    ---@param prefix string
-    ---@param simulate boolean
-    ---@param direct boolean
-    exec = function(command, prefix, simulate, direct)
-        if not string.ends_with(command, ";") then
-            command = command .. ";"
+    -- podman --version returns something like "podman version 5.8.1"
+    local major_string, minor_string = result:match("version%s*(%d+)%.(%d+)%.%d+")
+    if not major_string or not minor_string then return false end
+    local major = tonumber(major_string)
+    local minor = tonumber(minor_string)
+    return major > 5 or (major == 5 and minor >= 8)
+end
+
+---Check if a directory exists.
+---@param full_path string
+---@return boolean
+function system.directory_exists(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+    local success = os.execute("test -d " .. safe_path)
+    return success == true or success == 0
+end
+
+---Execute a command.
+---Only executes a command, if simulate is set to false.
+---@param command string
+---@param prefix string
+---@param simulate boolean
+---@param direct boolean
+function system.exec(command, prefix, simulate, direct)
+    if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
+    if not string.ends_with(command, ";") then
+        command = command .. ";"
+    end
+
+    if simulate then
+        if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
+            log.print(prefix)
         end
+        log.print(command)
+        return
+    end
 
-        if simulate then
-            if not string.is_nil_or_empty(prefix) then
-                log.print(prefix)
-            end
-            log.print(command)
-            return
-        end
+    log.debug("Execute: " .. command)
 
-        log.debug("Execute: " .. command)
-
-        if direct then
-            local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
-            if not success then
-                log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
-            end
-            return
-        end
-
-        -- combine STDOUT and STDERR using 2>&1
-        local handle = io.popen("( " .. command .. " ) 2>&1")
-        if not handle then
-            log.error("Failed to execute command '" .. command .. "'!")
-            return
-        end
-
-        local safe_prefix = ""
-        if not string.is_nil_or_empty(prefix) then
-            safe_prefix = prefix
-        end
-
-        local output_captured = false
-        for line in handle:lines() do
-            if not output_captured then
-                log.print(safe_prefix .. line)
-                output_captured = true
-            else
-                log.print(line)
-            end
-        end
-
-        if not output_captured then
-            log.print(safe_prefix .. "...")
-        end
-
-        local success, _, exit_code = handle:close()
-
-        -- check if the command actually succeeded
+    if direct then
+        local success, _, exit_code = os.execute("( " .. command .. " ) 2>/dev/null")
         if not success then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
         end
-    end,
+        return
+    end
 
-    ---Execute a command and capture its standard output as a list of lines.
-    ---@param command string
-    ---@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
-    exec_capture = function(command)
-        local handle = io.popen(command)
-        if not handle then return nil end
+    -- combine STDOUT and STDERR using 2>&1
+    local handle = io.popen("( " .. command .. " ) 2>&1")
+    if not handle then
+        log.error("Failed to execute command '" .. command .. "'!")
+        return
+    end
 
-        local lines = {}
-        for line in handle:lines() do
-            lines[#lines + 1] = line
-        end
-        handle:close()
-        return lines
-    end,
+    local safe_prefix = ""
+    if type(prefix) == "string" and not string.is_nil_or_empty(prefix) then
+        safe_prefix = prefix
+    end
 
-    ---Check if a file exists.
-    ---@param full_path string
-    ---@return boolean
-    file_exists = function(full_path)
-        local file = io.open(full_path, "r")
-        if file then
-            file:close()
-            return true
+    local output_captured = false
+    for line in handle:lines() do
+        if not output_captured then
+            log.print(safe_prefix .. line)
+            output_captured = true
+        else
+            log.print(line)
         end
-        return false
-    end,
+    end
 
-    ---Loads a Lua file and returns the result.
-    ---@param full_path string
-    ---@return table|nil result The object returned by the file (usually a table).
-    ---@return string|nil error Error message if something went wrong.
-    ---@return string|nil error_type The type of error ("load" or "execution").
-    load_lua_file = function(full_path)
-        local chunk, err = loadfile(full_path)
-        if not chunk then
-            return nil, err, "load"
-        end
-        local success, result = pcall(chunk)
-        if not success then
-            return nil, result, "execution"
-        end
-        return result, nil, nil
-    end,
+    if not output_captured then
+        log.print(safe_prefix .. "...")
+    end
 
-    ---Read file content line by line and return as a table.
-    ---@param full_path string
-    ---@return table|nil
-    read_file_content_by_line = function(full_path)
-        local file = io.open(full_path, "r")
-        if not file then
-            log.error("Could not open file '" .. full_path .. "'!")
-            return nil
-        end
-        local lines = {}
-        for line in file:lines() do
-            lines[#lines + 1] = line
-        end
-        file:close()
-        return lines
-    end,
+    local success, _, exit_code = handle:close()
 
-    ---Check if the program is run with elevated execution rights (sudo).
-    ---@return boolean
-    runs_elevated = function()
-        local handle = io.popen("id -u")
-        if not handle then return false end
-        local result = handle:read("*a")
-        handle:close()
-        return "0" == string.trim(result)
-    end,
+    -- check if the command actually succeeded
+    if not success then
+        log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
+    end
+end
 
-    ---Write content to a file.
-    ---@param full_path string
-    ---@param content string
-    ---@return boolean
-    write_file = function(full_path, content)
-        local file = io.open(full_path, "w")
-        if not file then
-            log.error("Could not write to file '" .. full_path .. "'!")
-            return false
-        end
-        file:write(content)
+---Execute a command and capture its standard output as a list of lines.
+---@param command string
+---@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
+function system.exec_capture(command)
+    if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
+    local handle = io.popen(command)
+    if not handle then return nil end
+
+    local lines = {}
+    for line in handle:lines() do
+        lines[#lines + 1] = line
+    end
+    handle:close()
+    return lines
+end
+
+---Check if a file exists.
+---@param full_path string
+---@return boolean
+function system.file_exists(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    local file = io.open(full_path, "r")
+    if file then
         file:close()
         return true
-    end,
-}
+    end
+    return false
+end
+
+---List files in a directory matching a pattern.
+---@param full_path string
+---@param pattern string|nil
+---@return table|nil files The list of filenames.
+function system.list_directory(full_path, pattern)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
+    if not system.directory_exists(full_path) then return nil end
+    local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"
+    local handle = io.popen("ls -1 " .. safe_path .. " 2>/dev/null")
+    if not handle then return nil end
+    local files = {}
+    for line in handle:lines() do
+        if not pattern or string.match(line, pattern) then
+            files[#files + 1] = line
+        end
+    end
+    handle:close()
+    return files
+end
+
+---Loads a Lua file and returns the result.
+---@param full_path string
+---@return table|nil result The object returned by the file (usually a table).
+---@return string|nil error Error message if something went wrong.
+---@return string|nil error_type The type of error ("load" or "execution").
+function system.load_lua_file(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    local chunk, err = loadfile(full_path)
+    if not chunk then
+        return nil, err, "load"
+    end
+    local success, result = pcall(chunk)
+    if not success then
+        return nil, result, "execution"
+    end
+    return result, nil, nil
+end
+
+---Read file content line by line and return as a table.
+---@param full_path string
+---@return table|nil
+function system.read_file_content_by_line(full_path)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    local file = io.open(full_path, "r")
+    if not file then
+        log.error("Could not open file '" .. full_path .. "'!")
+        return nil
+    end
+    local lines = {}
+    for line in file:lines() do
+        lines[#lines + 1] = line
+    end
+    file:close()
+    return lines
+end
+
+---Check if the program is run with elevated execution rights (sudo).
+---@return boolean
+function system.runs_elevated()
+    local handle = io.popen("id -u")
+    if not handle then return false end
+    local result = handle:read("*a")
+    handle:close()
+    return "0" == string.trim(result)
+end
+
+---Write content to a file.
+---@param full_path string
+---@param content string
+---@return boolean
+function system.write_file(full_path, content)
+    if type(full_path) ~= "string" then error("Expected string for full_path, got " .. type(full_path), 2) end
+    if type(content) ~= "string" then error("Expected string for content, got " .. type(content), 2) end
+    local file = io.open(full_path, "w")
+    if not file then
+        log.error("Could not write to file '" .. full_path .. "'!")
+        return false
+    end
+    file:write(content)
+    file:close()
+    return true
+end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Container
@@ -671,7 +725,7 @@ local function container__create(container, pod, simulate)
                         if string.begins_with(host_dir, "./") then
                             host_dir = string.sub(host_dir, 2)
                         end
-                        host_dir = build_full_path(pod.path, host_dir, "")
+                        host_dir = util.build_full_path(pod.path, host_dir, "")
                     end
                     command = host_dir .. ":" .. container_dir
                 end
@@ -716,7 +770,7 @@ local function container__ensure_name(container, pod_name, container_alternate_n
     if string.is_nil_or_empty(container.name) then
         container.name = pod_name .. "-" .. container_alternate_name
     else
-        container.name = normalize_name(container.name)
+        container.name = util.normalize_name(container.name)
         if string.begins_with(container.name, "*") then
             container.name = pod_name .. "-" .. container.name:sub(2)
         end
@@ -770,7 +824,7 @@ end
 ---@param suppress_errors boolean|nil
 ---@return table|nil
 local function recipe__load(recipe_path, recipe_name, suppress_errors)
-    local full_path = build_full_path(recipe_path, recipe_name, ".lua")
+    local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
     if recipe == nil then
         if not suppress_errors then
@@ -808,9 +862,9 @@ local function recipe__validate(context, recipe, file_name)
     -- test for pod name
     -- pod name is optional
     if string.is_nil_or_empty(recipe.pod.name) then
-        recipe.pod.name = normalize_name(recipe.name)
+        recipe.pod.name = util.normalize_name(recipe.name)
     else
-        recipe.pod.name = normalize_name(recipe.pod.name)
+        recipe.pod.name = util.normalize_name(recipe.pod.name)
     end
 
     -- test for commands
@@ -832,7 +886,7 @@ local function recipe__validate(context, recipe, file_name)
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = build_full_path(context.config.pods.path, recipe.pod.name, "")
+            local path = util.build_full_path(context.config.pods.path, recipe.pod.name, "")
             log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -869,7 +923,7 @@ local function recipe__resolve_container_name(recipe, container_spec)
     end
 
     local spec_str = tostring(container_spec)
-    local container_name = normalize_name(spec_str)
+    local container_name = util.normalize_name(spec_str)
     local alternate_container_name
 
     if string.begins_with(container_name, "*") then
@@ -1193,7 +1247,7 @@ local function mode_recipe__edit(context, name)
     end
 
     local recipe_path = context.config.recipes.path
-    local full_path = build_full_path(recipe_path, name, ".lua")
+    local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
     system.exec(command, "", context.flags.simulate, true)
@@ -1289,7 +1343,7 @@ local function mode_recipe__show(context, name)
     if found == nil then return end
 
     local recipe_path = context.config.recipes.path
-    local full_path = build_full_path(recipe_path, name, ".lua")
+    local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local lines = system.read_file_content_by_line(full_path)
     if not lines then return end
@@ -1352,6 +1406,9 @@ end
 ---Edit config.
 ---@param context table
 local function mode_config__edit(context)
+    if type(context) ~= "table" or type(context.config) ~= "table" then
+        error("mode_config__edit requires a valid context object", 2)
+    end
     local editor = context.config.editor
     if editor == "" then
         log.error("No editor configured.")
@@ -1377,18 +1434,139 @@ end
 ---Show config.
 ---@param context table
 local function mode_config__show(context)
-    local lines = system.read_file_content_by_line(context.config.path)
-    if not lines then return end
+    if type(context) ~= "table" or type(context.config) ~= "table" then
+        error("mode_config__show requires a valid context object", 2)
+    end
 
-    for i = 1, #lines do
-        local prefix = string.format("%3d: ", i)
-        log.print(prefix .. lines[i])
+    log.print("Configuration: " .. tostring(context.config.path))
+    log.print("============================================================")
+    log.print("")
+
+    log.print("Settings:")
+    log.print("  Editor:       " .. tostring(context.config.editor))
+    log.print("  Simulate:     " .. tostring(context.config.simulate))
+    log.print("")
+
+    log.print("Directories:")
+
+    local pods_path = context.config.pods.path or ""
+    local pods_status = "[NOT FOUND]"
+    if system.directory_exists(pods_path) then
+        pods_status = "[OK]"
+    end
+    log.print(util.format_line(string.format("  %-14s%s", "Pods:", pods_path), pods_status))
+
+    local recipes_path = context.config.recipes.path or ""
+    local recipes_status = "[NOT FOUND]"
+    local recipes_files = system.list_directory(recipes_path, "%.lua$")
+    if system.directory_exists(recipes_path) then
+        local count = recipes_files and #recipes_files or 0
+        recipes_status = string.format("[OK, %d recipes found]", count)
+    end
+    log.print(util.format_line(string.format("  %-14s%s", "Recipes:", recipes_path), recipes_status))
+    log.print("")
+
+    log.print("Groups:")
+
+    local groups = context.config.recipes.groups or {}
+    local group_names = {}
+    for g, _ in pairs(groups) do
+        table.insert(group_names, g)
+    end
+    table.sort(group_names)
+
+    local referenced_recipes = {}
+    local validation_cache = {}
+    local missing_recipes = {}
+
+    for i, g in ipairs(group_names) do
+        log.print("  • " .. g)
+        local elements = groups[g]
+        for j, el in ipairs(elements) do
+            local is_last = (j == #elements)
+            local branch = is_last and "└── " or "├── "
+
+            if string.begins_with(el, "@") then
+                local subgroup_name = string.sub(el, 2)
+                log.print("    " .. branch .. el)
+
+                local sub_elements = groups[subgroup_name]
+                if not sub_elements then
+                    log.print("    " .. (is_last and "    " or "│   ") .. "└── [MISSING GROUP]")
+                else
+                    for k, sub_el in ipairs(sub_elements) do
+                        local is_sub_last = (k == #sub_elements)
+                        local sub_branch = is_sub_last and "└── " or "├── "
+
+                        local status = "[OK]"
+                        referenced_recipes[sub_el] = true
+                        if validation_cache[sub_el] == nil then
+                            local path = util.build_full_path(sub_el, recipes_path, ".lua")
+                            validation_cache[sub_el] = system.file_exists(path)
+                        end
+                        if not validation_cache[sub_el] then
+                            status = "[NOT FOUND]"
+                            missing_recipes[sub_el] = true
+                        end
+
+                        local line = string.format("    %s%s%s", (is_last and "    " or "│   "), sub_branch, sub_el)
+                        log.print(util.format_line(line, status))
+                    end
+                end
+            else
+                local status = "[OK]"
+                referenced_recipes[el] = true
+                if validation_cache[el] == nil then
+                    local path = util.build_full_path(el, recipes_path, ".lua")
+                    validation_cache[el] = system.file_exists(path)
+                end
+                if not validation_cache[el] then
+                    status = "[NOT FOUND]"
+                    missing_recipes[el] = true
+                end
+
+                local line = string.format("    %s%s", branch, el)
+                log.print(util.format_line(line, status))
+            end
+        end
+        if i < #group_names then
+            log.print("    ")
+        end
+    end
+
+    local unreferenced = {}
+    if recipes_files then
+        for _, file in ipairs(recipes_files) do
+            local name = string.gsub(file, "%.lua$", "")
+            if not referenced_recipes[name] then
+                table.insert(unreferenced, file)
+            end
+        end
+    end
+
+    local missing_list = {}
+    for m, _ in pairs(missing_recipes) do table.insert(missing_list, m) end
+    table.sort(missing_list)
+    table.sort(unreferenced)
+
+    if #missing_list > 0 or #unreferenced > 0 then
+        log.print("")
+        log.print("Validation Summary:")
+        for _, m in ipairs(missing_list) do
+            log.print("- Recipe file for '" .. m .. "' not found!")
+        end
+        if #unreferenced > 0 then
+            log.print("- Potentially unreferenced recipe files found: " .. table.concat(unreferenced, ", "))
+        end
     end
 end
 
 ---Handle config mode.
 ---@param context table
 local function mode_config__handle(context)
+    if type(context) ~= "table" or type(context.parameters) ~= "table" then
+        error("mode_config__handle requires a valid context object", 2)
+    end
     log.debug("Config mode is used.")
     local action = context.parameters[1]
     if string.is_nil_or_empty(action) then
@@ -1650,7 +1828,7 @@ local function mode_default__handle(context)
         return
     end
 
-    local untangled_targets = untangle(context, targets)
+    local untangled_targets = util.untangle(context, targets)
     if not untangled_targets then return end
 
     -- handle recipes
@@ -1879,8 +2057,8 @@ end
 ---Create initial recipe and config files.
 ---@param context table
 local function mode_init__create(context)
-    local recipe_path = build_full_path(".", "recipe", ".lua")
-    local config_path = context.config.path or build_full_path("config", "", ".lua")
+    local recipe_path = util.build_full_path(".", "recipe", ".lua")
+    local config_path = context.config.path or util.build_full_path("config", "", ".lua")
 
     if system.file_exists(recipe_path) then
         log.error("File '" .. recipe_path .. "' already exists!")
@@ -2051,7 +2229,7 @@ local function main__parse_arguments(context, arguments, modes)
             elseif argument == "--debug" then
                 log.debug_enabled = true
             else
-                local parameter, value = split_argument(argument)
+                local parameter, value = util.split_argument(argument)
                 context.flags[parameter] = value
             end
             -- check if argument is a mode
@@ -2135,15 +2313,15 @@ global function main(arguments)
     -- normalize config name
     local config_name = context.config.name
     if config_name ~= "config" and config_name ~= "" then
-        config_name = normalize_name(config_name)
+        config_name = util.normalize_name(config_name)
     end
 
     -- build full config path
     local config_full_path = context.config.path
     if config_full_path == "" then
-        config_full_path = build_full_path(config_name, "", ".lua")
+        config_full_path = util.build_full_path(config_name, "", ".lua")
     else
-        config_full_path = build_full_path(context.config.path, "", ".lua")
+        config_full_path = util.build_full_path(context.config.path, "", ".lua")
     end
 
     -- print debug message if non-default-configuration is used

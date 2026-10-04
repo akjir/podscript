@@ -46,7 +46,7 @@ local function mode_recipe__edit(context, name)
     end
 
     local recipe_path = context.config.recipes.path
-    local full_path = build_full_path(recipe_path, name, ".lua")
+    local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local command = editor .. " " .. string.escape_shell(full_path)
     system.exec(command, "", context.flags.simulate, true)
@@ -142,7 +142,7 @@ local function mode_recipe__show(context, name)
     if found == nil then return end
 
     local recipe_path = context.config.recipes.path
-    local full_path = build_full_path(recipe_path, name, ".lua")
+    local full_path = util.build_full_path(recipe_path, name, ".lua")
 
     local lines = system.read_file_content_by_line(full_path)
     if not lines then return end

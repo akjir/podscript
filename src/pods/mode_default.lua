@@ -269,7 +269,7 @@ global function mode_default__handle(context)
         return
     end
 
-    local untangled_targets = untangle(context, targets)
+    local untangled_targets = util.untangle(context, targets)
     if not untangled_targets then return end
 
     -- handle recipes

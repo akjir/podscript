@@ -35,8 +35,8 @@ global<const> *
 ---Create initial recipe and config files.
 ---@param context table
 local function mode_init__create(context)
-    local recipe_path = build_full_path(".", "recipe", ".lua")
-    local config_path = context.config.path or build_full_path("config", "", ".lua")
+    local recipe_path = util.build_full_path(".", "recipe", ".lua")
+    local config_path = context.config.path or util.build_full_path("config", "", ".lua")
 
     if system.file_exists(recipe_path) then
         log.error("File '" .. recipe_path .. "' already exists!")

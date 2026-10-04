@@ -120,7 +120,7 @@ local function main__parse_arguments(context, arguments, modes)
             elseif argument == "--debug" then
                 log.debug_enabled = true
             else
-                local parameter, value = split_argument(argument)
+                local parameter, value = util.split_argument(argument)
                 context.flags[parameter] = value
             end
             -- check if argument is a mode
@@ -205,15 +205,15 @@ global function main(arguments)
     -- normalize config name
     local config_name = context.config.name
     if config_name ~= "config" and config_name ~= "" then
-        config_name = normalize_name(config_name)
+        config_name = util.normalize_name(config_name)
     end
 
     -- build full config path
     local config_full_path = context.config.path
     if config_full_path == "" then
-        config_full_path = build_full_path(config_name, "", ".lua")
+        config_full_path = util.build_full_path(config_name, "", ".lua")
     else
-        config_full_path = build_full_path(context.config.path, "", ".lua")
+        config_full_path = util.build_full_path(context.config.path, "", ".lua")
     end
 
     -- print debug message if non-default-configuration is used

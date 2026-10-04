@@ -26,12 +26,14 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
+global util <const> = {}
+
 ---Build a full path with given parts.
 ---@param path string
 ---@param file_name string
 ---@param file_extension string
 ---@return string
-global function build_full_path(path, file_name, file_extension)
+function util.build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
     then
@@ -53,7 +55,21 @@ end
 ---Normalizes a string by trimming outer whitespace, replacing internal spaces with underscores, and converting to lowercase.
 ---@param str string The input string to be normalized.
 ---@return string # The fully formatted string (e.g., " My  Name " becomes "my_name").
-global function normalize_name(str)
+function util.format_line(line, status)
+    local extra = 0
+    for i = 1, #line do
+        local b = line:byte(i)
+        if b >= 0x80 and b <= 0xBF then
+            extra = extra + 1
+        end
+    end
+    local visible = #line - extra
+    local pad = 44 - visible
+    if pad < 1 then pad = 1 end
+    return line .. string.rep(" ", pad) .. status
+end
+
+function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
@@ -61,7 +77,7 @@ end
 ---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
 ---@param argument string The input string to be split.
 ---@return string, string|boolean # The key and value.
-global function split_argument(argument)
+function util.split_argument(argument)
     local clean_argument = string.gsub(argument, "^%-+", "")
     local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
     if parameter then
@@ -70,7 +86,7 @@ global function split_argument(argument)
     return clean_argument, true
 end
 
-global function untangle(context, list)
+function util.untangle(context, list)
     if log.debug_enabled and not table.is_nil_or_empty(list) then
         log.debug("Targets   - " .. table.concat(list, " "))
     end

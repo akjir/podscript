@@ -18,14 +18,12 @@ return {
             parameters = { "config", "show" },
             expectations = {
                 sequence = {
-                    "  1: return {",
-                    "  2:     simulate = true,",
-                    "  3:     recipes = {",
-                    "  4:         groups = {",
-                    "  5:             all = {}",
-                    "  6:         },",
-                    "  7:     },",
-                    "  8: }"
+                    "Configuration:",
+                    "Settings:",
+                    "  Simulate:     true",
+                    "Directories:",
+                    "Groups:",
+                    "  • all"
                 }
             },
         },
@@ -56,16 +54,40 @@ return {
             parameters = { "config" },
             expectations = {
                 sequence = {
-                    "  1: return {",
-                    "  2:     simulate = true,",
-                    "  3:     recipes = {",
-                    "  4:         groups = {",
-                    "  5:             all = {}",
-                    "  6:         },",
-                    "  7:     },",
-                    "  8: }"
+                    "Configuration:",
+                    "Settings:",
+                    "  Simulate:     true",
+                    "Directories:",
+                    "Groups:",
+                    "  • all"
                 }
             },
+        [s .. "06"] = {
+            description = "Show config with validation warnings.",
+            config = "config_013_validation",
+            parameters = { "config", "show" },
+            expectations = {
+                sequence = {
+                    "[NOT FOUND]",
+                    "[OK",
+                    "  • all",
+                    "    └── missing_recipe                      [NOT FOUND]",
+                    "  • database",
+                    "    └── recipe_001_empty                    [OK]",
+                    "  • stack",
+                    "    ├── @database",
+                    "    │   └── recipe_001_empty                [OK]",
+                    "    └── @web",
+                    "        └── frontend                        [NOT FOUND]",
+                    "  • web",
+                    "    └── frontend                            [NOT FOUND]",
+                    "Validation Summary:",
+                    "- Recipe file for 'frontend' not found!",
+                    "- Recipe file for 'missing_recipe' not found!",
+                    "- Potentially unreferenced recipe files found: recipe_002_no_pod.lua"
+                }
+            }
         },
     }
+}
 }

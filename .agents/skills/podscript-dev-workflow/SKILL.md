@@ -36,3 +36,7 @@ description: >-
 * **Scope:** Focus on feature/user impact. Avoid sprawling explanations or internal function lists.
 * **Exclusions:** Do not document pure code refactorings, test additions, test changes, or test updates.
 * **Formatting:** Wrap code symbols, CLI flags, modes, keys, and function names in backticks (`--debug`, `table.create`).
+
+## 5. Coding Guidelines
+* **Early Validation**: Always validate function arguments upfront. For example, handlers receiving a `context` object should immediately verify it (e.g., `if type(context) ~= "table" or type(context.config) ~= "table" then error("...", 2) end`) to prevent cascading nil errors.
+* **Nil-Safety**: Always provide defaults for optional or deeply nested structures (e.g., `local groups = context.config.recipes.groups or {}`) before iteration.

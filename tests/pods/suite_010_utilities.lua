@@ -6,7 +6,7 @@ return {
             description = "Normalize name: trim, spaces to underscores, lowercase.",
             dev_only = true,
             run = function()
-                return normalize_name("  My  Name  ")
+                return util.normalize_name("  My  Name  ")
             end,
             expected = "my_name"
         },
@@ -14,7 +14,7 @@ return {
             description = "Build full path: relative path, name, extension.",
             dev_only = true,
             run = function()
-                return build_full_path("test/path", "file", ".lua")
+                return util.build_full_path("test/path", "file", ".lua")
             end,
             expected = "./test/path/file.lua"
         },
@@ -22,7 +22,7 @@ return {
             description = "Build full path: absolute path.",
             dev_only = true,
             run = function()
-                return build_full_path("/test/path", "file", ".lua")
+                return util.build_full_path("/test/path", "file", ".lua")
             end,
             expected = "/test/path/file.lua"
         },
@@ -30,7 +30,7 @@ return {
             description = "Build full path: path ends with slash.",
             dev_only = true,
             run = function()
-                return build_full_path("./test/path/", "file", ".lua")
+                return util.build_full_path("./test/path/", "file", ".lua")
             end,
             expected = "./test/path/file.lua"
         },
@@ -38,7 +38,7 @@ return {
             description = "Split argument: key=value.",
             dev_only = true,
             run = function()
-                local k, v = split_argument("--config=my_config")
+                local k, v = util.split_argument("--config=my_config")
                 return k .. "=" .. v
             end,
             expected = "config=my_config"
@@ -47,7 +47,7 @@ return {
             description = "Split argument: flag (no value).",
             dev_only = true,
             run = function()
-                local k, v = split_argument("--dry-run")
+                local k, v = util.split_argument("--dry-run")
                 return k .. "=" .. tostring(v)
             end,
             expected = "dry-run=true"

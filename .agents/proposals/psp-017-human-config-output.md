@@ -1,7 +1,7 @@
 ---
 id: PSP-017
 title: Human-Readable Configuration Output & Validation
-status: concept
+status: review
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
@@ -112,15 +112,15 @@ No changes to the actual `config.lua` schema. The changes are strictly confined 
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Add `directory_exists` and `list_directory` to `src/pods/utilities_system.lua` with tests.
-- [ ] Rewrite `mode_config__show` in `src/pods/mode_config.lua`.
-- [ ] Align tags using fixed-width string formatting.
-- [ ] Add summary warnings for missing recipes and unreferenced `.lua` files.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Add `directory_exists` and `list_directory` to `src/pods/utilities_system.lua` with tests.
+- [x] Rewrite `mode_config__show` in `src/pods/mode_config.lua`.
+- [x] Align tags using fixed-width string formatting.
+- [x] Add summary warnings for missing recipes and unreferenced `.lua` files.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Add entry to `CHANGELOG.md`.
+- [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
