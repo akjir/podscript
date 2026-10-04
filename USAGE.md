@@ -7,6 +7,7 @@ This document provides a comprehensive command-line reference for PodScript, cov
 ## Table of Contents
 
 - [Command Syntax](#command-syntax)
+- [Updating PodScript](#updating-podscript)
 - [Quick Start](#quick-start)
 - [Modes Overview](#modes-overview)
 - [Global Options](#global-options)
@@ -70,12 +71,29 @@ lua pods.lua [MODE] [OPTIONS] [ACTION] [TARGETS...]
 
 ### Shell Autocompletion
 
-To enable terminal autocompletion for the `pods` and `./pods` commands, source the provided completion script:
+To enable terminal autocompletion for the `pods` and `./pods` commands, first download or update the completion script:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/akjir/podscript/main/.pods-completion.bash -o .pods-completion.bash
+```
+
+Then, source the script to apply it to your current session:
 
 ```bash
 source .pods-completion.bash
 ```
-*(You can add this command to your `~/.bashrc` to make it permanent.)*
+
+*(You can add the `source` command to your `~/.bashrc` to make it permanent.)*
+
+---
+
+## Updating PodScript
+
+To update the standalone `pods.lua` script to the latest version via `curl`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/pods.lua -o pods.lua
+```
 
 ---
 
