@@ -22,7 +22,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-014` | Command Mode Syntax Alignment | `feature` | `concept` | [psp-014-command-syntax-alignment.md](psp-014-command-syntax-alignment.md) |
 | `PSP-015` | Docker Compose to PodScript Converter | `feature` | `concept` | [psp-015-docker-compose-converter.md](psp-015-docker-compose-converter.md) |
 | `PSP-018` | Human-Readable Recipe Output | `feature` | `concept` | [psp-018-human-recipe-output.md](psp-018-human-recipe-output.md) |
-| `PSP-019` | Interactive Container Shell Access (`connect` action) | `feature` | `concept` | [psp-019-connect-action.md](psp-019-connect-action.md) |
+| `PSP-019` | Interactive Container Shell Access (`connect` action) | `feature` | `planned` | [psp-019-connect-action.md](psp-019-connect-action.md) |
 
 ### Completed Proposals
 

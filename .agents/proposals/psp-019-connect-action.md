@@ -1,7 +1,7 @@
 ---
 id: PSP-019
 title: Interactive Container Shell Access (`connect` mode)
-status: concept
+status: planned
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
@@ -19,7 +19,7 @@ Developers frequently need to enter a running container for debugging, manual in
 
 ### 1.3 Goals & Non-Goals
 * **Goals:**
-    * Add `pods connect <target>` as a top-level mode (analogous to `logs`).
+    * Add `pods connect [ACTION] <target>` as a top-level mode (analogous to `logs`). The default action is `shell`.
     * Target an individual container using the same string parsing mechanism utilized by `mode_logs.lua` (`<recipe>[/<container>]`).
     * Allow omitting the container name if the recipe contains only a single container.
     * Alternatively, allow connecting directly to a container using its full, absolute name.
@@ -29,12 +29,12 @@ Developers frequently need to enter a running container for debugging, manual in
     * Executing detached/background commands.
 
 ### 1.4 Description
-Users will use `pods connect <target>` to open an interactive shell session inside a container. The system attempts to launch `bash` by default, falling back to `/bin/sh` if `bash` is unavailable (e.g., in Alpine Linux).
+Users will use `pods connect shell <target>` (or just `pods connect <target>`, defaulting to `shell`) to open an interactive shell session inside a container. The system attempts to launch `bash` by default, falling back to `/bin/sh` if `bash` is unavailable (e.g., in Alpine Linux).
 
 **Syntax rules:**
-* `pods connect <recipe>`: If the recipe has exactly 1 container, it connects to it. If it has multiple, it aborts with an error prompting the user to specify the container.
-* `pods connect <recipe>/<container>`: Connects directly to the specified container defined in the recipe.
-* `pods connect <absolute_container_name>`: Connects directly to the container matching the exact absolute name provided, bypassing recipe parsing if no matching recipe exists.
+* `pods connect shell <recipe>`: If the recipe has exactly 1 container, it connects to it. If it has multiple, it aborts with an error prompting the user to specify the container.
+* `pods connect shell <recipe>/<container>`: Connects directly to the specified container defined in the recipe.
+* `pods connect shell <absolute_container_name>`: Connects directly to the container matching the exact absolute name provided, bypassing recipe parsing if no matching recipe exists.
 * Supports standard parameters like `--config=NAME` and `--debug`. `--simulate` will print the target command instead of executing.
 
 **Execution:**
@@ -53,10 +53,11 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
 * `src/pods/main.lua` (Register `connect = mode_connect__handle` in the global `modes` dictionary).
 * `src/pods/mode_simulate.lua` (Add `connect` logic or simply rely on standard simulation flags as done in other modes).
 * `src/pods/mode_help.lua` (Add `connect` to the main help menu).
+* `.pods-completion.bash` (Add `connect` to autocompletion).
 
 ### 2.2 Schema & Syntax Changes
 * No config schema changes.
-* CLI syntax addition: `pods connect [OPTIONS] <target>`. `target` can be `<recipe>[/<container>]` or `<absolute_container_name>`.
+* CLI syntax addition: `pods connect [OPTIONS] [ACTION] <target>`. `ACTION` defaults to `shell`. `target` can be `<recipe>[/<container>]` or `<absolute_container_name>`.
 
 ### 2.3 Implementation Details
 1. **Target Parsing (`mode_connect.lua`)**:
@@ -94,6 +95,7 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
 - [ ] Implement `src/pods/mode_connect.lua` with help menu and execution logic.
 - [ ] Register `connect` mode in `src/pods/main.lua` and `src/pods/mode_simulate.lua`.
 - [ ] Update `src/pods/mode_help.lua` to document the new `connect` mode.
+- [ ] Update `.pods-completion.bash` to support the new `connect` mode.
 - [ ] Add tests in `tests/pods/suite_015_mode_connect.lua` to verify target resolution and command construction.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
