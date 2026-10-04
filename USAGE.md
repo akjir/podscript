@@ -572,6 +572,7 @@ pods recipe [OPTIONS] [ACTION] [RECIPE]
 
 | Option | Description |
 | :--- | :--- |
+| `--all`, `--orphans` | Included unconfigured (orphaned) recipes found on disk when listing recipes. |
 | `--config=<name>` | Load a specific configuration file to resolve recipe search paths and editor. |
 | `--debug` | Enable verbose debug output. |
 
@@ -584,6 +585,9 @@ pods recipe help
 
 # List all available recipes
 pods recipe list
+
+# List all configured recipes and unconfigured recipes on disk
+pods recipe list --all
 
 # Print a recipe file with line numbers
 pods recipe show web-service

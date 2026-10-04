@@ -42,6 +42,9 @@ _pods_completions() {
             logs)
                 opts+=" --tail --since --until --timestamps"
                 ;;
+            recipe)
+                opts+=" --all --orphans"
+                ;;
         esac
         COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
         return 0

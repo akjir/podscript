@@ -57,15 +57,12 @@ end
 ---@param file_name string
 ---@return boolean
 global function recipe__validate(context, recipe, file_name)
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
+    local config = context.config or {}
+    local pods = config.pods or {}
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -102,12 +99,12 @@ global function recipe__validate(context, recipe, file_name)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(context.config.pods.path) then
+        if string.is_nil_or_empty(pods.path) then
             log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = util.build_full_path(context.config.pods.path, recipe.pod.name, "")
+            local path = util.build_full_path(pods.path, recipe.pod.name, "")
             log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end

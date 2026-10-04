@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "233.678423c"
+local BUILD <const> = "235.9dad5ca.dev"
 
 ---Get the full version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string
@@ -909,15 +909,12 @@ end
 ---@param file_name string
 ---@return boolean
 local function recipe__validate(context, recipe, file_name)
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    recipe.pod = recipe.pod or {}
-    recipe.containers = recipe.containers or {}
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
+    local config = context.config or {}
+    local pods = config.pods or {}
+    recipe.pod = recipe.pod or {}
+    recipe.containers = recipe.containers or {}
     -- test for pod config name
     if string.is_nil_or_empty(recipe.name) then
         log.error("No recipe name in recipe '" .. file_name .. "' set!")
@@ -954,12 +951,12 @@ local function recipe__validate(context, recipe, file_name)
     -- test for valid pod path
     if string.is_nil_or_empty(recipe.pod.path) then
         -- if no pod path set in recipe use default path from config
-        if string.is_nil_or_empty(context.config.pods.path) then
+        if string.is_nil_or_empty(pods.path) then
             log.error("No default pod path and pod path in recipe '" .. file_name .. "' set or empty!")
             return false
         else
             -- if pod path not set use default path with pod name as folder name
-            local path = util.build_full_path(context.config.pods.path, recipe.pod.name, "")
+            local path = util.build_full_path(pods.path, recipe.pod.name, "")
             log.debug("No pod path in recipe '" .. file_name .. "' set. Path '" .. path .. "' used.")
             recipe.pod.path = path
         end
@@ -1583,6 +1580,7 @@ local function mode_recipe__help()
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
     log.print("   or: lua pods.lua recipe [OPTIONS] ACTION NAME\n")
     log.print("OPTIONS:")
+    log.print("  --all, --orphans   include unconfigured recipes found on disk")
     log.print("  --config=NAME      use config with given name or path")
     log.print("  --debug            enable debug output\n")
     log.print("ACTIONS:")
@@ -1598,70 +1596,146 @@ end
 ---@param context table
 local function mode_recipe__list(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    context.config = context.config or {}
-    context.config.pods = context.config.pods or {}
-    context.config.recipes = context.config.recipes or {}
-    context.flags = context.flags or {}
-    context.parameters = context.parameters or {}
-    if table.is_nil_or_empty(context.config.recipes) or table.is_nil_or_empty(context.config.recipes.groups) then
-        log.print("There are no recipes defined in config.")
-        return
-    end
+
+    local config = context.config or {}
+    local recipes = config.recipes or {}
+    local flags = context.flags or {}
+
+    local show_all = flags.all or flags.orphans
 
     local recipe_map = {}
     local recipe_list = {}
 
-    for _, group_targets in pairs(context.config.recipes.groups) do
-        if type(group_targets) == "table" then
-            for _, target in ipairs(group_targets) do
-                if type(target) == "string" and not string.begins_with(target, "@") then
-                    local clean_target = string.trim(target)
-                    if clean_target ~= "" and not recipe_map[clean_target] then
-                        recipe_map[clean_target] = true
-                        recipe_list[#recipe_list + 1] = clean_target
+    local groups = recipes.groups or {}
+    if not table.is_nil_or_empty(groups) then
+        for _, group_targets in pairs(groups) do
+            if type(group_targets) == "table" then
+                for _, target in ipairs(group_targets) do
+                    if type(target) == "string" and not string.begins_with(target, "@") then
+                        local clean_target = string.trim(target)
+                        if clean_target ~= "" and not recipe_map[clean_target] then
+                            recipe_map[clean_target] = true
+                            recipe_list[#recipe_list + 1] = clean_target
+                        end
                     end
                 end
             end
         end
     end
 
-    if #recipe_list == 0 then
+    table.sort(recipe_list)
+
+    local unreferenced = {}
+    local recipes_path = recipes.path or ""
+    local recipes_files = system.list_directory(recipes_path, "%.lua$")
+    if recipes_files then
+        for _, file in ipairs(recipes_files) do
+            local name = string.gsub(file, "%.lua$", "")
+            if not recipe_map[name] then
+                table.insert(unreferenced, file)
+            end
+        end
+    end
+    table.sort(unreferenced)
+
+    if #recipe_list == 0 and (not show_all or #unreferenced == 0) then
         log.print("There are no recipes defined in config.")
         return
     end
 
-    table.sort(recipe_list)
+    local missing_list = {}
+    local total_count = #recipe_list
+    if show_all then
+        total_count = total_count + #unreferenced
+    end
 
-    log.print("Recipes:")
-    for i = 1, #recipe_list do
-        local target = recipe_list[i]
-        local prefix = i .. ")"
-        if #recipe_list > 9 and i < 10 then
-            prefix = " " .. prefix
-        end
-
-        local recipe = recipe__load(context.config.recipes.path, target, true)
-        local recipe_name = ""
-        local description = ""
-
-        if type(recipe) == "table" then
-            if not string.is_nil_or_empty(recipe.name) then
-                recipe_name = string.trim(tostring(recipe.name))
+    if #recipe_list > 0 then
+        log.print("Recipes:")
+        for i = 1, #recipe_list do
+            local target = recipe_list[i]
+            local prefix = i .. ")"
+            if total_count > 9 and i < 10 then
+                prefix = " " .. prefix
             end
-            if not string.is_nil_or_empty(recipe.description) then
-                description = string.trim(tostring(recipe.description))
+
+            local recipe = recipe__load(recipes_path, target, true)
+            local recipe_name = ""
+            local description = ""
+
+            if type(recipe) == "table" then
+                if not string.is_nil_or_empty(recipe.name) then
+                    recipe_name = string.trim(tostring(recipe.name))
+                end
+                if not string.is_nil_or_empty(recipe.description) then
+                    description = string.trim(tostring(recipe.description))
+                end
+            end
+
+            local entry = target
+            if recipe_name ~= "" then
+                entry = entry .. " (" .. recipe_name .. ")"
+            end
+            if description ~= "" then
+                entry = entry .. ": " .. description
+            end
+
+            local line = "  " .. prefix .. " " .. entry
+
+            local path = util.build_full_path(recipes_path, target, ".lua")
+            local status = "[OK]"
+            if not system.file_exists(path) then
+                status = "[NOT FOUND]"
+                table.insert(missing_list, target)
+            end
+
+            log.print(util.format_line(line, status))
+        end
+    end
+
+    if show_all and #unreferenced > 0 then
+        if #recipe_list > 0 then
+            log.print("")
+        end
+        log.print("Unlinked Recipe Files:")
+        for i = 1, #unreferenced do
+            local file = unreferenced[i]
+            local index = #recipe_list + i
+            local prefix = index .. ")"
+            if total_count > 9 and index < 10 then
+                prefix = " " .. prefix
+            end
+            local line = "  " .. prefix .. " " .. file
+            log.print(util.format_line(line, "[UNREFERENCED]"))
+        end
+    end
+
+    table.sort(missing_list)
+
+    if #missing_list > 0 or (show_all and #unreferenced > 0) then
+        log.print("")
+        log.print("Validation Summary:")
+        if #missing_list > 0 then
+            if #missing_list == 1 then
+                log.print("- Recipe file for '" .. missing_list[1] .. "' not found!")
+            else
+                local formatted = {}
+                for i = 1, #missing_list - 1 do
+                    table.insert(formatted, "'" .. missing_list[i] .. "'")
+                end
+                log.print("- Recipe files for " .. table.concat(formatted, ", ") .. " and '" .. missing_list[#missing_list] .. "' not found!")
             end
         end
-
-        local entry = target
-        if recipe_name ~= "" then
-            entry = entry .. " (" .. recipe_name .. ")"
+        if show_all and #unreferenced > 0 then
+            if #unreferenced == 1 then
+                log.print("- Potentially unreferenced recipe file '" .. unreferenced[1] .. "' found!")
+            else
+                local formatted = {}
+                for i = 1, #unreferenced - 1 do
+                    table.insert(formatted, "'" .. unreferenced[i] .. "'")
+                end
+                log.print("- Potentially unreferenced recipe files " .. table.concat(formatted, ", ") .. " and '" .. unreferenced[#unreferenced] .. "' found!")
+            end
         end
-        if description ~= "" then
-            entry = entry .. ": " .. description
-        end
-
-        log.print("  " .. prefix .. " " .. entry)
     end
 end
 

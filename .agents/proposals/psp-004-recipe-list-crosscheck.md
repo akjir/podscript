@@ -1,7 +1,7 @@
 ---
 id: PSP-004
 title: Recipe List Cross-Check (Config vs. Filesystem)
-status: planned
+status: review
 type: feature
 created: 2026-09-25
 updated: 2026-10-04
@@ -87,18 +87,18 @@ Currently, `pods recipe list` only enumerates recipes declared in `config.lua`. 
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Implement the cross-check logic in `src/pods/mode_recipe.lua` using `system.list_directory` from PSP-017.
-- [ ] Apply consistent tag alignment (`[OK]`, `[NOT FOUND]`, `[UNREFERENCED]`) and print summary warnings.
-- [ ] Add list cross-check edge cases and validation formatting assertions to `tests/pods/test_mode_recipe.lua`.
-- [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with the new CLI syntax for `pods recipe list`.
-- [ ] Update CLI help menu (`mode_help.lua` or action-specific help) for the new `--all` / `--orphans` flags.
-- [ ] Update `.pods-completion.bash` for the new `--all` and `--orphans` flags.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Implement the cross-check logic in `src/pods/mode_recipe.lua` using `system.list_directory` from PSP-017.
+- [x] Apply consistent tag alignment (`[OK]`, `[NOT FOUND]`, `[UNREFERENCED]`) and print summary warnings.
+- [x] Add list cross-check edge cases and validation formatting assertions to `tests/pods/test_mode_recipe.lua`.
+- [x] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Update `USAGE.md` with the new CLI syntax for `pods recipe list`.
+- [x] Update CLI help menu (`mode_help.lua` or action-specific help) for the new `--all` / `--orphans` flags.
+- [x] Update `.pods-completion.bash` for the new `--all` and `--orphans` flags.
+- [x] Add entry to `CHANGELOG.md`.
+- [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
