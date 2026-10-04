@@ -28,10 +28,10 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "240.99b8092.dev"
+local BUILD <const> = "242.1794a46.dev"
 
----Get the full version string formatted as 'v<VERSION>+<BUILD>'.
----@return string
+---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
+---@return string The formatted version string.
 local function get_version_string()
     return "v" .. VERSION .. "+" .. BUILD
 end
@@ -47,77 +47,77 @@ global log<const> = {
 
     -- Proxy to handle output, defaults to standard print
     print = print,
-
-    ---Print debug message if debug is enabled.
-    ---@param ... any
-    debug = function(... args)
-        if log.debug_enabled then
-            log.print("DEBUG: " .. log.format_args(...))
-        end
-    end,
-
-    ---Print error message.
-    ---@param ... any
-    error = function(... args)
-        log.print("ERROR: " .. log.format_args(...))
-    end,
-
-    ---Format variable arguments into a single string separated by spaces.
-    ---@param ... any
-    ---@return string
-    format_args = function(... args)
-        local count = args.n
-        if count == 0 then
-            return ""
-        elseif count == 1 then
-            return tostring(args[1])
-        end
-
-        local parts = table.create(count)
-        for i = 1, count do
-            parts[i] = tostring(args[i])
-        end
-        return table.concat(parts, " ")
-    end,
-
-    ---Print info message.
-    ---@param ... any
-    info = function(... args)
-        log.print("INFO: " .. log.format_args(...))
-    end,
-
-    ---Print warning message.
-    ---@param ... any
-    warning = function(... args)
-        log.print("WARNING: " .. log.format_args(...))
-    end,
 }
+
+---Outputs a debug-level message if verbose logging is enabled.
+---@param ... any The variable arguments to format and print.
+function log.debug(... args)
+    if log.debug_enabled then
+        log.print("DEBUG: " .. log.format_args(...))
+    end
+end
+
+---Outputs an error-level message.
+---@param ... any The variable arguments to format and print.
+function log.error(... args)
+    log.print("ERROR: " .. log.format_args(...))
+end
+
+---Formats variable arguments into a single string separated by spaces.
+---@param ... any The variable arguments to format.
+---@return string The formatted string.
+function log.format_args(... args)
+    local count = args.n
+    if count == 0 then
+        return ""
+    elseif count == 1 then
+        return tostring(args[1])
+    end
+
+    local parts = table.create(count)
+    for i = 1, count do
+        parts[i] = tostring(args[i])
+    end
+    return table.concat(parts, " ")
+end
+
+---Outputs an info-level message.
+---@param ... any The variable arguments to format and print.
+function log.info(... args)
+    log.print("INFO: " .. log.format_args(...))
+end
+
+---Outputs a warning-level message.
+---@param ... any The variable arguments to format and print.
+function log.warning(... args)
+    log.print("WARNING: " .. log.format_args(...))
+end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION String
 --
 -- ------------------------------------------------------------------------- --
 
----Test if a string begins with another string.
----@param str string
----@param prefix string
----@return boolean
+---Evaluates whether a string starts with a specified prefix.
+---@param str string The source string to evaluate.
+---@param prefix string The prefix to search for.
+---@return boolean True if the string starts with the prefix, false otherwise.
 function string.begins_with(str, prefix)
     return str:sub(1, #prefix) == prefix
 end
 
----Test if a string ends with another string.
----@param str string
----@param suffix string
----@return boolean
+---Evaluates whether a string ends with a specified suffix.
+---@param str string The source string to evaluate.
+---@param suffix string The suffix to search for.
+---@return boolean True if the string ends with the suffix, false otherwise.
 function string.ends_with(str, suffix)
     return str:sub(- #suffix) == suffix
 end
 
----Escapes a string for safe use in shell commands.
----@param str string|nil
----@param always_quote boolean|nil
----@return string
+---Escapes a string securely for injection into shell commands.
+---@param str string|nil The string to escape.
+---@param always_quote boolean|nil True to wrap the string in single quotes unconditionally.
+---@return string The safely escaped shell string.
 function string.escape_shell(str, always_quote)
     if str == nil then
         return "''"
@@ -129,26 +129,26 @@ function string.escape_shell(str, always_quote)
     return str
 end
 
----Test if string is empty or nil.
----@param str string|nil
----@return boolean
+---Evaluates whether a string is nil or strictly empty.
+---@param str string|nil The string to evaluate.
+---@return boolean True if the string is nil or empty, false otherwise.
 function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
----Removes leading and trailing whitespaces.
----@param str string|nil
----@return string
+---Strips leading and trailing whitespace characters from a string.
+---@param str string|nil The string to trim.
+---@return string The trimmed string, or an empty string if nil.
 function string.trim(str)
     if str == nil then return "" end
     -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
     return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
----Splits a string by a given separator.
----@param str string
----@param sep string
----@return table
+---Partitions a string into a table of substrings divided by a given separator.
+---@param str string The string to partition.
+---@param sep string The separator substring.
+---@return table An array of resulting substrings.
 function string.split(str, sep)
     if sep == nil or sep == "" then
         return {str}
@@ -165,9 +165,9 @@ function string.split(str, sep)
     return result
 end
 
----Calculates the visible length of a string (ignoring UTF-8 continuation bytes).
----@param str string
----@return integer
+---Computes the visible character count of a string, accounting for multi-byte UTF-8 sequences.
+---@param str string The string to measure.
+---@return integer The visible character length.
 function string.visible_length(str)
     if str == nil then return 0 end
     local extra = 0
@@ -185,10 +185,9 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Appends one or more sequential tables to another.
----Example: {1,2,3} and {4,5,6} will be {1,2,3,4,5,6}.
----@param target table|nil
----@param ... table|nil
+---Appends elements from one or more sequential tables into a target table.
+---@param target table|nil The destination table.
+---@param ... table|nil The source tables to append.
 function table.append(target, ...sources)
     if target == nil then return end
     for i = 1, sources.n do
@@ -199,11 +198,10 @@ function table.append(target, ...sources)
     end
 end
 
----Test if a table contains a value. Only works with sequential tables.
----Returns false if table is nil or value is not found.
----@param target table|nil
----@param value any
----@return boolean
+---Evaluates whether a sequential table contains a specific value.
+---@param target table|nil The table to search.
+---@param value any The value to locate.
+---@return boolean True if the value is found, false otherwise.
 function table.contains(target, value)
     if target == nil then return false end
     for i = 1, #target do
@@ -212,11 +210,11 @@ function table.contains(target, value)
     return false
 end
 
----Get value from table or default if key not found.
----You can use "table and table[key] or default" instead, if there is no false value in table.
----@param target table
----@param key any
----@param default any
+---Retrieves a value from a table by key, returning a fallback if missing.
+---@param target table The table to query.
+---@param key any The key to lookup.
+---@param default any The fallback value.
+---@return any The resolved value.
 function table.get_or_default(target, key, default)
     if target == nil then return default end
     local value = target[key]
@@ -226,26 +224,25 @@ function table.get_or_default(target, key, default)
     return default
 end
 
----Check if a key exists in a table.
----@param target table
----@param key any
----@return boolean
+---Evaluates whether a table contains a specific key.
+---@param target table The table to inspect.
+---@param key any The key to locate.
+---@return boolean True if the key exists, false otherwise.
 function table.has_key(target, key)
     return target ~= nil and target[key] ~= nil
 end
 
----Test if a table is nil or empty.
----@param target table
----@return boolean
+---Evaluates whether a table is nil or contains no elements.
+---@param target table The table to inspect.
+---@return boolean True if nil or empty, false otherwise.
 function table.is_nil_or_empty(target)
     return target == nil or next(target) == nil
 end
 
----Merges two or more tables by adding key-value pairs from sources to target.
----If a key from a source table already exists in the target table, its value will be overwritten.
----@param target table
----@param ... table
----@return table
+---Merges key-value pairs from multiple source tables into a target table, overwriting existing keys.
+---@param target table The destination table.
+---@param ... table The source tables.
+---@return table The merged target table.
 function table.merge(target, ...sources)
     if target == nil then return sources[1] end
     for i = 1, sources.n do
@@ -259,9 +256,9 @@ function table.merge(target, ...sources)
     return target
 end
 
----Remove duplicates from a table. Returns a new table and don't modify the original.
----@param target table
----@return table
+---Creates a new sequential table containing only unique values from the source.
+---@param target table The source table.
+---@return table A new table free of duplicates.
 function table.remove_duplicates(target)
     if target == nil then return {} end
     local count = #target
@@ -284,9 +281,9 @@ function table.remove_duplicates(target)
     return result
 end
 
----Get table size, including non-numeric keys.
----@param table table
----@return integer
+---Counts the total number of key-value pairs in a table, including non-numeric keys.
+---@param table table The table to measure.
+---@return integer The total element count.
 function table.size(table)
     if table == nil then return 0 end
     local count = 0
@@ -296,11 +293,11 @@ function table.size(table)
     return count
 end
 
----Returns a sub-sequence of a sequential table, similar to string.sub.
----@param target table
----@param i integer|nil
----@param j integer|nil
----@return table
+---Extracts a sub-sequence from a sequential table, utilizing 1-based indexing.
+---@param target table The source table.
+---@param i integer|nil The starting index (inclusive, defaults to 1).
+---@param j integer|nil The ending index (inclusive, defaults to -1).
+---@return table A new table containing the extracted slice.
 function table.sub(target, i, j)
     if type(target) ~= "table" then
         error("table.sub expects a table as target, got " .. type(target), 2)
@@ -329,11 +326,11 @@ end
 
 global util <const> = {}
 
----Build a full path with given parts.
----@param path string
----@param file_name string
----@param file_extension string
----@return string
+---Constructs a complete file path from a base directory, filename, and extension.
+---@param path string The base directory path.
+---@param file_name string The name of the file.
+---@param file_extension string The extension to append (e.g., '.lua').
+---@return string The fully resolved file path.
 function util.build_full_path(path, file_name, file_extension)
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
@@ -392,8 +389,8 @@ end
 
 global system <const> = {}
 
----Check if the current Lua version is 5.5 or higher.
----@return boolean
+---Evaluates whether the executing Lua runtime is version 5.5 or higher.
+---@return boolean True if the version requirement is met, false otherwise.
 function system.check_lua_version()
     local major_string, minor_string = _VERSION:match("Lua (%d+)%.(%d+)")
     if not major_string or not minor_string then return false end
@@ -402,8 +399,8 @@ function system.check_lua_version()
     return major > 5 or (major == 5 and minor >= 5)
 end
 
----Check if the current operating system is Linux.
----@return boolean
+---Evaluates whether the host operating system is Linux via uname.
+---@return boolean True if running on Linux, false otherwise.
 function system.check_os()
     local handle = io.popen("uname -s")
     if not handle then return false end
@@ -414,8 +411,8 @@ function system.check_os()
     return "Linux" == string.trim(result)
 end
 
----Check if the current Podman version is 5.8.0 or higher.
----@return boolean
+---Evaluates whether the installed Podman CLI is version 5.8.0 or higher.
+---@return boolean True if the version requirement is met, false otherwise.
 function system.check_podman_version()
     local handle = io.popen("podman --version 2>&1")
     if not handle then return false end
@@ -430,9 +427,9 @@ function system.check_podman_version()
     return major > 5 or (major == 5 and minor >= 8)
 end
 
----Check if a directory exists.
----@param path string
----@return boolean
+---Evaluates whether a directory exists at the specified path.
+---@param path string The directory path to verify.
+---@return boolean True if the directory exists, false otherwise.
 function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
@@ -440,9 +437,9 @@ function system.directory_exists(path)
     return success == true
 end
 
----Check if a container exists and is running.
----@param container_name string
----@return boolean
+---Evaluates whether a specific Podman container is currently running.
+---@param container_name string The name of the container to inspect.
+---@return boolean True if the container is running, false otherwise.
 function system.container_exists(container_name)
     if type(container_name) ~= "string" then error("Expected string for container_name, got " .. type(container_name), 2) end
     local escaped_name = string.escape_shell(container_name)
@@ -454,9 +451,9 @@ function system.container_exists(container_name)
     return false
 end
 
----Get the absolute path of a given path.
----@param path string
----@return string
+---Resolves the absolute path for a given file system path using realpath.
+---@param path string The path to resolve.
+---@return string The absolute path.
 function system.get_absolute_path(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if string.is_nil_or_empty(path) then return "" end
@@ -474,10 +471,12 @@ function system.get_absolute_path(path)
     return path
 end
 
----Execute a command.
----@param command string
----@param options table|nil Options for execution.
----@return boolean success, string|nil exit_reason, number|nil exit_code
+---Executes a shell command synchronously, optionally buffering output or running interactively.
+---@param command string The shell command to execute.
+---@param options table|nil Configuration options (simulate, interactive, silent, prefix).
+---@return boolean success True if the command exited with code 0.
+---@return string|nil exit_reason The reason for termination (e.g., 'exit').
+---@return number|nil exit_code The numeric exit status.
 function system.exec(command, options)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
     options = options or {}
@@ -551,9 +550,9 @@ function system.exec(command, options)
     return success, exit_reason, exit_code
 end
 
----Execute a command and capture its standard output as a list of lines.
----@param command string
----@return table|nil lines The lines captured from STDOUT, or nil if execution failed.
+---Executes a shell command and captures standard output into an array of lines.
+---@param command string The shell command to execute.
+---@return table|nil An array of output lines, or nil if execution failed.
 function system.exec_capture(command)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
     local handle = io.popen(command)
@@ -567,9 +566,9 @@ function system.exec_capture(command)
     return lines
 end
 
----Check if a file exists.
----@param path string
----@return boolean
+---Evaluates whether a file exists and is readable at the specified path.
+---@param path string The file path to verify.
+---@return boolean True if the file is readable, false otherwise.
 function system.file_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local file = io.open(path, "r")
@@ -580,10 +579,10 @@ function system.file_exists(path)
     return false
 end
 
----List files in a directory matching a pattern.
----@param path string
----@param pattern string|nil
----@return table|nil files The list of filenames.
+---Retrieves a list of files within a directory, optionally filtered by a Lua pattern.
+---@param path string The directory to scan.
+---@param pattern string|nil A Lua pattern to filter filenames.
+---@return table|nil An array of matching filenames, or nil if the directory is unreadable.
 function system.list_directory(path, pattern)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
@@ -601,11 +600,11 @@ function system.list_directory(path, pattern)
     return files
 end
 
----Loads a Lua file and returns the result.
----@param path string
----@return table|nil result The object returned by the file (usually a table).
----@return string|nil error Error message if something went wrong.
----@return string|nil error_type The type of error ("load" or "execution").
+---Loads and executes a Lua script, capturing any compilation or runtime errors.
+---@param path string The path to the Lua file.
+---@return table|nil result The value returned by the executed chunk.
+---@return string|nil error The error message, if any.
+---@return string|nil error_type The error phase ('load' or 'execution').
 function system.load_lua_file(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local chunk, err = loadfile(path)
@@ -619,9 +618,9 @@ function system.load_lua_file(path)
     return result, nil, nil
 end
 
----Read file content line by line and return as a table.
----@param path string
----@return table|nil
+---Reads a file and returns its contents as an array of lines.
+---@param path string The path to the file.
+---@return table|nil An array of lines, or nil if the file could not be opened.
 function system.read_file_content_by_line(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     local file = io.open(path, "r")
@@ -637,8 +636,8 @@ function system.read_file_content_by_line(path)
     return lines
 end
 
----Check if the program is run with elevated execution rights (sudo).
----@return boolean
+---Evaluates whether the current process is running with root privileges (UID 0).
+---@return boolean True if elevated, false otherwise.
 function system.runs_elevated()
     local handle = io.popen("id -u")
     if not handle then return false end
@@ -647,10 +646,10 @@ function system.runs_elevated()
     return "0" == string.trim(result)
 end
 
----Write content to a file.
----@param path string
----@param content string
----@return boolean
+---Writes string content to a file, overwriting any existing data.
+---@param path string The destination file path.
+---@param content string The data to write.
+---@return boolean True upon successful write, false otherwise.
 function system.write_file(path, content)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if type(content) ~= "string" then error("Expected string for content, got " .. type(content), 2) end
@@ -669,10 +668,10 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Create a container.
----@param container table
----@param pod table
----@param simulate boolean
+---Creates and starts a container within a specified pod using Podman.
+---@param container table Container configuration table.
+---@param pod table Pod configuration table.
+---@param simulate boolean True to simulate the creation command without executing it.
 local function container__create(container, pod, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if type(pod) ~= "table" then error("pod must be a table", 2) end
@@ -755,11 +754,11 @@ local function container__create(container, pod, simulate)
     })
 end
 
----Ensure container name.
----@param container table
----@param pod_name string
----@param container_alternate_name string
----@return boolean
+---Ensures a container has a valid name, generating one from the pod name and an alternate if omitted or prefixed with an asterisk.
+---@param container table Container configuration table to update.
+---@param pod_name string The name of the parent pod.
+---@param container_alternate_name string A fallback name to append if the container name is missing.
+---@return boolean True upon successful name resolution.
 local function container__ensure_name(container, pod_name, container_alternate_name)
     if type(container) ~= "table" then error("container must be a table", 2) end
     -- container name is optional
@@ -774,10 +773,10 @@ local function container__ensure_name(container, pod_name, container_alternate_n
     return true
 end
 
----Test if container is valid. Container.name is optional.
----@param container table
----@param pod_name string
----@return boolean
+---Validates the configuration of a container, verifying required fields like the image.
+---@param container table Container configuration table to validate.
+---@param pod_name string The name of the parent pod.
+---@return boolean True if the container is valid, false otherwise.
 local function container__is_valid(container, pod_name)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if table.is_nil_or_empty(container) then
@@ -792,19 +791,19 @@ local function container__is_valid(container, pod_name)
     return true
 end
 
----Stop and removes a container.
----@param container table
----@param simulate boolean
+---Stops and removes a specified container via Podman.
+---@param container table Container configuration table containing the container name.
+---@param simulate boolean True to simulate the stop and remove commands without executing them.
 local function container__remove(container, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     system.exec("podman stop " .. string.escape_shell(container.name), { prefix = "Stop container '" .. container.name .. "': ", simulate = simulate })
     system.exec("podman rm " .. string.escape_shell(container.name), { prefix = "Remove container '" .. container.name .. "': ", simulate = simulate })
 end
 
----Update a container image.
----@param container table
----@param pod table
----@param simulate boolean
+---Pulls the latest image for a specified container from its registry using Podman.
+---@param container table Container configuration table containing image details.
+---@param pod table Pod configuration table used for fallback registry resolution.
+---@param simulate boolean True to simulate the pull command without executing it.
 local function container__update(container, pod, simulate)
     if type(container) ~= "table" then error("container must be a table", 2) end
     if type(pod) ~= "table" then error("pod must be a table", 2) end
@@ -818,11 +817,11 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Load PodScript recipe.
----@param recipe_path string
----@param recipe_name string
----@param suppress_errors boolean|nil
----@return table|nil
+---Loads and evaluates a PodScript recipe file, returning the resulting configuration table.
+---@param recipe_path string The base directory path containing the recipes.
+---@param recipe_name string The specific name of the recipe to load.
+---@param suppress_errors boolean|nil True to suppress error logging if the recipe fails to load.
+---@return table|nil The loaded recipe table, or nil if an error occurred.
 local function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
     local recipe, error, _ = system.load_lua_file(full_path)
@@ -839,11 +838,11 @@ local function recipe__load(recipe_path, recipe_name, suppress_errors)
     end
 end
 
----Validate recipe.
----@param context table
----@param recipe table
----@param file_name string
----@return boolean
+---Validates a loaded recipe, ensuring all required fields, pod properties, and containers are properly configured.
+---@param context table Application context providing default configuration values.
+---@param recipe table The recipe table to validate and normalize.
+---@param file_name string The name of the recipe file (used for error reporting).
+---@return boolean True if the recipe is valid, false otherwise.
 local function recipe__validate(context, recipe, file_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -912,10 +911,10 @@ local function recipe__validate(context, recipe, file_name)
     return true
 end
 
----Resolve a container name from a user specification (index, name, *relative).
----@param recipe table
----@param container_spec string|number
----@return string|nil name
+---Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
+---@param recipe table The recipe containing the container definitions.
+---@param container_spec string|number The container identifier to resolve.
+---@return string|nil The resolved absolute container name, or nil if not found.
 local function recipe__resolve_container_name(recipe, container_spec)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if type(container_spec) == "number" or tonumber(container_spec) then
@@ -961,9 +960,9 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Create pod and containers.
----@param recipe table
----@param simulate boolean
+---Constructs and executes Podman commands to create a pod and its defined containers.
+---@param recipe table The recipe containing the pod and container configurations.
+---@param simulate boolean True to simulate the creation commands without executing them.
 local function pod__create(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     local commands = table.create(8)
@@ -1017,9 +1016,9 @@ local function pod__create(recipe, simulate)
     end
 end
 
----Remove pod and containers.
----@param recipe table
----@param simulate boolean
+---Stops and removes all containers associated with a pod, followed by the pod itself, via Podman.
+---@param recipe table The recipe defining the pod and containers to remove.
+---@param simulate boolean True to simulate the removal commands without executing them.
 local function pod__remove(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     -- remove containers
@@ -1037,18 +1036,18 @@ local function pod__remove(recipe, simulate)
     })
 end
 
----Remove and create pod and containers.
----@param recipe table
----@param simulate boolean
+---Removes an existing pod and its containers, then sequentially recreates them.
+---@param recipe table The recipe defining the pod and containers to recreate.
+---@param simulate boolean True to simulate the recreation commands without executing them.
 local function pod__recreate(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     pod__remove(recipe, simulate)
     pod__create(recipe, simulate)
 end
 
----Update containers of the pod.
----@param recipe table
----@param simulate boolean
+---Iterates over a pod's containers and pulls their respective latest images from their registries.
+---@param recipe table The recipe defining the pod and its containers.
+---@param simulate boolean True to simulate the update commands without executing them.
 local function pod__update(recipe, simulate)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     log.print("Update pod '" .. recipe.name .. "' ('" .. recipe.pod.name .. "') ...")
@@ -1067,10 +1066,10 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Check if a recipe is defined in the configuration.
----@param context table
----@param recipe_name string
----@return boolean
+---Checks if a specific recipe is defined within the application configuration.
+---@param context table Application context containing configuration data.
+---@param recipe_name string Name of the recipe to search for.
+---@return boolean True if the recipe exists in a group, false otherwise.
 local function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local groups = context.config.recipes.groups or {}
@@ -1085,10 +1084,10 @@ local function config__has_recipe(context, recipe_name)
     return false
 end
 
----Untangle targets from configuration groups.
----@param context table
----@param list table
----@return table|boolean
+---Resolves group aliases and expands targets into a unique list of individual recipe names.
+---@param context table Application context containing configuration data.
+---@param list table List of target strings (recipe names or @group aliases).
+---@return table|boolean A deduplicated array of recipe names, or false if an error occurred.
 local function config__untangle(context, list)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if log.debug_enabled and not table.is_nil_or_empty(list) then
@@ -1153,7 +1152,10 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Validates command_table.
+---Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
+---@param command_table table The command table to validate.
+---@param recipe table The recipe containing the command.
+---@return boolean True if the command is valid, false otherwise.
 local function mode_command__validate(command_table, recipe)
     if type(command_table) ~= "table" then error("command_table must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -1169,10 +1171,10 @@ local function mode_command__validate(command_table, recipe)
     return true
 end
 
----Build and execute command.
----@param context table
----@param recipe table
----@param command_table table
+---Constructs and executes a Podman command to run a predefined command within a recipe's container.
+---@param context table Application context.
+---@param recipe table The recipe containing the command and container definitions.
+---@param command_table table The specific command configuration to execute.
 local function mode_command__execute(context, recipe, command_table)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -1200,7 +1202,8 @@ local function mode_command__execute(context, recipe, command_table)
     })
 end
 
----Print command help.
+---Displays the help text for the command mode, outlining usage, actions, and options.
+---@param context table Application context.
 local function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -1228,10 +1231,10 @@ local function mode_command__help(context)
     log.print("  <number>           command by numeric index defined in recipe to execute")
 end
 
----Get a list of valid commands for a recipe.
----@param recipe table
----@param suppress_warnings boolean|nil
----@return table
+---Retrieves and sorts all valid commands defined within a recipe's pod configuration.
+---@param recipe table The recipe to inspect.
+---@param suppress_warnings boolean|nil True to suppress warnings for commands missing descriptions.
+---@return table An array of valid command tables, each containing the command name, description, and original table.
 local function mode_command__get_valid_commands(recipe, suppress_warnings)
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if table.is_nil_or_empty(recipe.pod.commands) then
@@ -1261,10 +1264,10 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
     return valid_commands
 end
 
----List all commands for a recipe.
----@param context table
----@param recipe table
----@param target string
+---Lists all predefined commands available for a specified recipe, formatting them for display.
+---@param context table Application context.
+---@param recipe table The loaded recipe containing the commands.
+---@param target string The name of the target recipe.
 local function mode_command__list(context, recipe, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
@@ -1294,8 +1297,8 @@ local function mode_command__list(context, recipe, target)
     end
 end
 
----Handle recipe mode.
----@param context table
+---Handles the command mode, parsing arguments to list or execute predefined recipe commands.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_command__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Command mode is used.")
@@ -1373,6 +1376,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the connect mode, outlining usage, actions, and target formatting.
+---@param context table Application context.
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -1398,6 +1403,10 @@ local function mode_connect__help(context)
     log.print("  <absolute_name>      connect directly to an absolute container name\n")
 end
 
+---Resolves the target container and spawns an interactive shell connection via Podman.
+---@param context table Application context.
+---@param target string The target container identifier (recipe name or absolute container name).
+---@return boolean True if the connection command succeeds, false otherwise.
 local function mode_connect__shell(context, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -1475,6 +1484,8 @@ local function mode_connect__shell(context, target)
     return success
 end
 
+---Handles the connect mode, parsing arguments and invoking the shell connection.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_connect__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local action = context.parameters[1]
@@ -1517,9 +1528,9 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Edit recipe.
----@param context table
----@param name string
+---Opens a designated recipe file in the configured text editor.
+---@param context table Application context defining the editor and paths.
+---@param name string The name of the recipe to edit.
 local function mode_recipe__edit(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local found = name
@@ -1538,7 +1549,7 @@ local function mode_recipe__edit(context, name)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
 
----Print config help.
+---Displays the help text for the recipe mode, outlining usage, actions, and options.
 local function mode_recipe__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods recipe [OPTIONS] ACTION NAME")
@@ -1556,8 +1567,8 @@ local function mode_recipe__help()
     log.print("  *                  name of the recipe")
 end
 
----List recipes defined in config.
----@param context table
+---Discovers and formats all mapped recipes (and optionally unlinked recipe files) for display.
+---@param context table Application context containing configuration paths and flags.
 local function mode_recipe__list(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -1695,9 +1706,9 @@ local function mode_recipe__list(context)
     end
 end
 
----Show recipe content.
----@param context table
----@param name string
+---Reads and outputs the content of a specified recipe file directly to the console.
+---@param context table Application context containing configuration paths.
+---@param name string The name of the recipe file to display.
 local function mode_recipe__show(context, name)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local found = name
@@ -1715,8 +1726,8 @@ local function mode_recipe__show(context, name)
     end
 end
 
----Handle recipe mode.
----@param context table
+---Handles the recipe mode, dispatching execution to list, edit, show, or display help.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_recipe__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Recipe mode is used.")
@@ -1774,8 +1785,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Edit config.
----@param context table
+---Opens the configuration file in the user's preferred editor.
+---@param context table Application context containing the configured editor and file path.
 local function mode_config__edit(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -1787,7 +1798,7 @@ local function mode_config__edit(context)
     local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
----Print config help.
+---Displays the help text for the config mode, detailing available actions and options.
 local function mode_config__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods config [OPTIONS] ACTION")
@@ -1801,8 +1812,8 @@ local function mode_config__help()
     log.print("  show               show config")
 end
 
----Show config.
----@param context table
+---Displays the current configuration, including settings, validated directories, and recipe groups.
+---@param context table Application context containing the configuration data.
 local function mode_config__show(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -1980,8 +1991,8 @@ local function mode_config__show(context)
     end
 end
 
----Handle config mode.
----@param context table
+---Handles the config mode, dispatching to the appropriate sub-action (show, edit, help).
+---@param context table Application context containing parsed flags and parameters.
 local function mode_config__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
 
@@ -2006,9 +2017,9 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Print status of containers.
----@param context table
----@param targets table
+---Queries Podman and formats the runtime status of managed pods and containers for display.
+---@param context table Application context.
+---@param targets table Array of recipe names to filter the status output.
 local function mode_default__status(context, targets)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(targets) ~= "table" then error("targets must be a table", 2) end
@@ -2200,8 +2211,8 @@ local function mode_default__status(context, targets)
     end
 end
 
----Print help for status action.
----@param context table
+---Displays the help text for the status action within the default mode.
+---@param context table Application context.
 local function mode_default__status_help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.print("PodScript " .. get_version_string() .. " - Status\n")
@@ -2216,8 +2227,8 @@ local function mode_default__status_help(context)
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
 end
----Handle default mode.
----@param context table
+---Handles the default mode, orchestrating lifecycle actions (create, recreate, remove, update) or displaying status.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_default__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Default mode is used.")
@@ -2278,6 +2289,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the logs mode, detailing usage, actions, and available flags.
+---@param context table Application context.
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if context.flags.simulate then
@@ -2307,6 +2320,11 @@ local function mode_logs__help(context)
     log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
+---Executes the podman log command for a target recipe's pod or specific container.
+---@param context table Application context containing flags (e.g., since, tail).
+---@param action string The logging action (e.g., 'show' or 'follow').
+---@param target string The recipe and optional container specification to fetch logs for.
+---@return boolean True if the logging command is successfully dispatched, false otherwise.
 local function mode_logs__execute(context, action, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if string.is_nil_or_empty(target) then
@@ -2382,6 +2400,8 @@ local function mode_logs__execute(context, action, target)
     return success
 end
 
+---Handles the logs mode, processing commands to display or stream podman logs.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_logs__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local action = context.parameters[1]
@@ -2420,8 +2440,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Handle simulate mode.
----@param context table
+---Activates global simulation mode, forwarding execution to the underlying command with the simulation flag enabled.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_simulate__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.info("Simulate mode is active.")
@@ -2449,8 +2469,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Handle help mode. Prints help.
----@param context table
+---Handles the help mode, outputting global usage, available modes, actions, and options.
+---@param context table Application context.
 local function mode_help__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.print("PodScript " .. get_version_string() .. "\n")
@@ -2486,8 +2506,8 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Create initial recipe and config files.
----@param context table
+---Generates an initial example recipe and configuration file in the current working directory.
+---@param context table Application context defining output paths.
 local function mode_init__create(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local recipe_path = util.build_full_path(".", "recipe", ".lua")
@@ -2547,7 +2567,7 @@ local function mode_init__create(context)
     log.info("Created '" .. config_path .. "'.")
 end
 
----Print init help.
+---Displays the help text for the init mode, outlining usage, actions, and options.
 local function mode_init__help()
     log.print("PodScript " .. get_version_string() .. "\n")
     log.print("Usage: pods init [OPTIONS]")
@@ -2559,8 +2579,8 @@ local function mode_init__help()
     log.print("  help               display this help and exit")
 end
 
----Handle init mode.
----@param context table
+---Handles the init mode, determining whether to display help or create initialization files.
+---@param context table Application context containing parsed flags and parameters.
 local function mode_init__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Init mode is used.")
@@ -2584,10 +2604,9 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Loads PodScript config. Sets default values if missing.
----Returns false if fails to load a file or no recipes are defined.
----@param context table
----@return boolean
+---Loads the PodScript configuration file and populates the application context. Sets default values for missing fields.
+---@param context table The application context object to modify.
+---@return boolean True if the configuration was successfully loaded and contains recipes, false otherwise.
 local function main__config_load_and_set(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local config_path = context.config.path
@@ -2639,10 +2658,10 @@ local function main__config_load_and_set(context)
     return true
 end
 
----Parse arguments and retuns true if error.
----@param context table
----@param arguments string[]
----@param modes table
+---Parses command-line arguments and populates the context with flags, parameters, and the selected mode.
+---@param context table The application context object.
+---@param arguments string[] Array of command-line arguments.
+---@param modes table Dictionary mapping mode names to their handler functions.
 local function main__parse_arguments(context, arguments, modes)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(arguments) ~= "table" then error("arguments must be a table", 2) end
@@ -2683,8 +2702,8 @@ local function main__parse_arguments(context, arguments, modes)
     end
 end
 
----Main function.
----@param arguments string[]
+---The main entry point for PodScript. Initializes the context, parses arguments, and dispatches to the appropriate mode handler.
+---@param arguments string[] Array of command-line arguments passed to the application.
 global function main(arguments)
     local modes = {
         command = mode_command__handle,

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --]]
----@diagnostic disable: lowercase-global
+---@diagnostic disable: duplicate-set-field
 
 require "src.pods.header"
 
@@ -35,48 +35,48 @@ global log<const> = {
 
     -- Proxy to handle output, defaults to standard print
     print = print,
-
-    ---Print debug message if debug is enabled.
-    ---@param ... any
-    debug = function(... args)
-        if log.debug_enabled then
-            log.print("DEBUG: " .. log.format_args(...))
-        end
-    end,
-
-    ---Print error message.
-    ---@param ... any
-    error = function(... args)
-        log.print("ERROR: " .. log.format_args(...))
-    end,
-
-    ---Format variable arguments into a single string separated by spaces.
-    ---@param ... any
-    ---@return string
-    format_args = function(... args)
-        local count = args.n
-        if count == 0 then
-            return ""
-        elseif count == 1 then
-            return tostring(args[1])
-        end
-
-        local parts = table.create(count)
-        for i = 1, count do
-            parts[i] = tostring(args[i])
-        end
-        return table.concat(parts, " ")
-    end,
-
-    ---Print info message.
-    ---@param ... any
-    info = function(... args)
-        log.print("INFO: " .. log.format_args(...))
-    end,
-
-    ---Print warning message.
-    ---@param ... any
-    warning = function(... args)
-        log.print("WARNING: " .. log.format_args(...))
-    end,
 }
+
+---Outputs a debug-level message if verbose logging is enabled.
+---@param ... any The variable arguments to format and print.
+function log.debug(... args)
+    if log.debug_enabled then
+        log.print("DEBUG: " .. log.format_args(...))
+    end
+end
+
+---Outputs an error-level message.
+---@param ... any The variable arguments to format and print.
+function log.error(... args)
+    log.print("ERROR: " .. log.format_args(...))
+end
+
+---Formats variable arguments into a single string separated by spaces.
+---@param ... any The variable arguments to format.
+---@return string The formatted string.
+function log.format_args(... args)
+    local count = args.n
+    if count == 0 then
+        return ""
+    elseif count == 1 then
+        return tostring(args[1])
+    end
+
+    local parts = table.create(count)
+    for i = 1, count do
+        parts[i] = tostring(args[i])
+    end
+    return table.concat(parts, " ")
+end
+
+---Outputs an info-level message.
+---@param ... any The variable arguments to format and print.
+function log.info(... args)
+    log.print("INFO: " .. log.format_args(...))
+end
+
+---Outputs a warning-level message.
+---@param ... any The variable arguments to format and print.
+function log.warning(... args)
+    log.print("WARNING: " .. log.format_args(...))
+end
