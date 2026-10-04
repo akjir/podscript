@@ -23,6 +23,7 @@ require "src.pods.utilities_string"
 require "src.pods.utilities_table"
 require "src.pods.utilities"
 require "src.pods.mode_command"
+require "src.pods.mode_connect"
 require "src.pods.mode_recipe"
 require "src.pods.mode_config"
 require "src.pods.mode_default"
@@ -157,6 +158,7 @@ global function main(arguments)
     local modes = {
         command = mode_command__handle,
         config = mode_config__handle,
+        connect = mode_connect__handle,
         default = mode_default__handle,
         help = mode_help__handle,
         init = mode_init__handle,

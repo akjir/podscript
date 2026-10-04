@@ -19,6 +19,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 ---@diagnostic disable: lowercase-global
 
 require "src.pods.mode_command"
+require "src.pods.mode_connect"
 require "src.pods.mode_default"
 require "src.pods.mode_logs"
 
@@ -51,6 +52,10 @@ global function mode_simulate__handle(context)
         -- remove "logs" from parameters
         context.parameters = table.sub(parameters, 2)
         mode_logs__handle(context)
+    elseif parameters[1] == "connect" then
+        -- remove "connect" from parameters
+        context.parameters = table.sub(parameters, 2)
+        mode_connect__handle(context)
     else
         mode_default__handle(context)
     end

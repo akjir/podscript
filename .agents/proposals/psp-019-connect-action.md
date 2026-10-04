@@ -1,7 +1,7 @@
 ---
 id: PSP-019
 title: Interactive Container Shell Access (`connect` mode)
-status: planned
+status: review
 type: feature
 created: 2026-10-04
 updated: 2026-10-04
@@ -35,6 +35,7 @@ Users will use `pods connect shell <target>` (or just `pods connect <target>`, d
 * `pods connect shell <recipe>`: If the recipe has exactly 1 container, it connects to it. If it has multiple, it aborts with an error prompting the user to specify the container.
 * `pods connect shell <recipe>/<container>`: Connects directly to the specified container defined in the recipe.
 * `pods connect shell <absolute_container_name>`: Connects directly to the container matching the exact absolute name provided, bypassing recipe parsing if no matching recipe exists.
+* Groups (e.g., `@all`) are not supported for the `connect` command and will result in an error. Multiple targets are also rejected.
 * Supports standard parameters like `--config=NAME` and `--debug`. `--simulate` will print the target command instead of executing.
 
 **Execution:**
@@ -73,7 +74,7 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
        * If `container_spec` is omitted (i.e., no `/` was provided), treat `recipe_name` as an `<absolute_container_name>`.
        * Validate it directly by proceeding to the Early Validation step. If it fails, report that neither a valid recipe nor a running container by that name could be found.
 3. **Early Validation (Status Check)**:
-   * Before executing the command, use `system.container_exists(abs_container_name)` to ensure the container is currently running. If not, cleanly abort with `log.error(...)` to prevent messy raw Podman errors.
+   * Before executing the command, use `system.container_exists(abs_container_name)` to ensure the container is currently running. If not, cleanly abort with `log.error(...)` to prevent messy raw Podman errors. This check should be skipped in `simulate` mode to allow successful command string generation during dry-run tests.
 4. **Command Construction & Security**:
    * Escape the absolute container name using `string.escape_shell(abs_container_name)`.
    * Construct the command: `podman exec -it " .. escaped_name .. " sh -c 'bash || sh'`.
@@ -81,7 +82,7 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
    * Execute the constructed command using `system.exec(command_str, { interactive = true, simulate = context.flags.simulate, silent = true })`.
 
 ### 2.4 Testing Strategy
-* Create `tests/pods/suite_015_mode_connect.lua`.
+* Create `tests/pods/suite_020_mode_connect.lua`.
 * Use `--simulate` (dry-run mode) to verify command construction for single-container fallback, explicit `/container` targets, and fallback to absolute container names.
 * Test error paths: missing target, invalid recipe, missing container, missing specification for multi-container recipes, and non-existent absolute container names.
 * Fully automated tests for the interactive TTY are generally impractical, so string construction and simulation verification is the critical focus.
@@ -96,7 +97,7 @@ Under the hood, it constructs and runs `podman exec -it <absolute_container_name
 - [ ] Register `connect` mode in `src/pods/main.lua` and `src/pods/mode_simulate.lua`.
 - [ ] Update `src/pods/mode_help.lua` to document the new `connect` mode.
 - [ ] Update `.pods-completion.bash` to support the new `connect` mode.
-- [ ] Add tests in `tests/pods/suite_015_mode_connect.lua` to verify target resolution and command construction.
+- [ ] Add tests in `tests/pods/suite_020_mode_connect.lua` to verify target resolution and command construction.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` to detail the new `connect` syntax and behavior.

@@ -5,7 +5,7 @@ _pods_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Basic modes and default actions
-    local modes="simulate logs init command config recipe help"
+    local modes="simulate logs connect init command config recipe help"
     local default_actions="create recreate remove status update"
 
     # Find mode and action in the preceding words to determine context
@@ -57,7 +57,10 @@ _pods_completions() {
     if [[ -z "$action" ]]; then
         case "$mode" in
             simulate)
-                COMPREPLY=( $(compgen -W "create recreate remove status update command" -- "${cur}") )
+                COMPREPLY=( $(compgen -W "create recreate remove status update command logs connect" -- "${cur}") )
+                ;;
+            connect)
+                COMPREPLY=( $(compgen -W "shell help" -- "${cur}") )
                 ;;
             logs)
                 COMPREPLY=( $(compgen -W "show follow" -- "${cur}") )
@@ -75,7 +78,7 @@ _pods_completions() {
                 COMPREPLY=( $(compgen -W "edit help list show" -- "${cur}") )
                 ;;
             help)
-                COMPREPLY=( $(compgen -W "${modes} config recipe command init logs" -- "${cur}") )
+                COMPREPLY=( $(compgen -W "${modes} config recipe command init logs connect" -- "${cur}") )
                 ;;
         esac
     fi

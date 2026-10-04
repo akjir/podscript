@@ -24,6 +24,10 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Actions](#actions-2)
   - [Options](#options-2)
   - [Usage](#usage-2)
+- [Connect Mode](#connect-mode)
+  - [Actions](#actions-3)
+  - [Options](#options-3)
+  - [Usage](#usage-3)
 - [Command Mode](#command-mode)
   - [Actions](#actions-2)
   - [Options](#options-2)
@@ -145,6 +149,7 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | `(empty)` | **Default Mode**: Executes lifecycle actions on pods and containers defined in recipe files. |
 | `simulate` | **Simulate Mode**: Previews all generated Podman commands without executing them. |
 | `logs`     | **Logs Mode**: Fetches and tails logs from pods and individual containers. |
+| `connect`  | **Connect Mode**: Opens an interactive shell inside a running container for ad-hoc debugging. |
 | `init`     | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
 | `command`  | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
 | `config`   | **Config Mode**: Displays or modifies the active PodScript configuration file. |
@@ -345,6 +350,61 @@ pods logs --tail=50 recipe_name/app
 ```
 
 ---
+
+## Connect Mode
+
+The `connect` mode opens an interactive shell (defaulting to `bash`, falling back to `/bin/sh`) inside a running container via `podman exec -it`. It is intended for ad-hoc debugging and manual inspection.
+
+```bash
+pods connect [OPTIONS] [ACTION] <target>
+# or in simulation:
+pods simulate connect [OPTIONS] [ACTION] <target>
+```
+
+### Actions
+
+*   `shell`: Open an interactive shell inside the container (default).
+*   `help`: Display help for the connect mode.
+
+### Options
+
+*   `--config=NAME`: Use config with given name or path.
+*   `--debug`: Enable debug output.
+
+### Targets
+
+The connect mode acts on a single container target. Supported syntax:
+
+*   `<recipe>`: Connects to the container if the recipe has exactly 1 container. Aborts if there are multiple containers.
+*   `<recipe>/<container>`: Connects to a specific container by explicit index, relative name, or absolute name.
+*   `<absolute_name>`: Connects directly to the given absolute container name, bypassing recipe validation.
+
+### Usage
+
+Connect to a single-container recipe (implicitly uses `shell`):
+```bash
+pods connect my_webapp
+```
+
+Connect to the second container defined in the recipe:
+```bash
+pods connect my_stack/2
+```
+
+Connect to a container matching a relative suffix (e.g., `-db`):
+```bash
+pods connect my_stack/db
+```
+
+Connect using an absolute container name (bypasses recipes):
+```bash
+pods connect custom_container_name
+```
+
+Simulate the connection command:
+```bash
+pods simulate connect my_webapp
+```
 
 ## Command Mode
 

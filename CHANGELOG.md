@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added `connect` mode for interactive shell access to running containers.
 - Added `logs` mode to fetch and tail logs from pods and containers.
 - Added explicit `exec` action to `command` mode to run container commands.
 - Added `status` action to query and display runtime status of managed containers.

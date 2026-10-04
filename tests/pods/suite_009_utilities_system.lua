@@ -146,5 +146,37 @@ return {
             end,
             expected = true,
         },
+        [s .. "14"] = {
+            description = "system.container_exists returns true when container is running.",
+            run = function()
+                local old_exec_capture = system.exec_capture
+                system.exec_capture = function(cmd)
+                    if string.match(cmd, "podman container inspect") then
+                        return {"running"}
+                    end
+                    return {}
+                end
+                local exists = system.container_exists("my_container")
+                system.exec_capture = old_exec_capture
+                return exists
+            end,
+            expected = true,
+        },
+        [s .. "15"] = {
+            description = "system.container_exists returns false when container is not running.",
+            run = function()
+                local old_exec_capture = system.exec_capture
+                system.exec_capture = function(cmd)
+                    if string.match(cmd, "podman container inspect") then
+                        return {"exited"}
+                    end
+                    return {}
+                end
+                local exists = system.container_exists("my_container")
+                system.exec_capture = old_exec_capture
+                return exists
+            end,
+            expected = false,
+        },
     }
 }

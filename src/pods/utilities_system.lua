@@ -77,6 +77,20 @@ function system.directory_exists(path)
     return success == true
 end
 
+---Check if a container exists and is running.
+---@param container_name string
+---@return boolean
+function system.container_exists(container_name)
+    if type(container_name) ~= "string" then error("Expected string for container_name, got " .. type(container_name), 2) end
+    local escaped_name = string.escape_shell(container_name)
+    local command = "podman container inspect -f '{{.State.Status}}' " .. escaped_name .. " 2>/dev/null"
+    local lines = system.exec_capture(command)
+    if lines and #lines > 0 and lines[1] == "running" then
+        return true
+    end
+    return false
+end
+
 ---Get the absolute path of a given path.
 ---@param path string
 ---@return string
