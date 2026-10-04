@@ -18,7 +18,7 @@ PodScript CLI syntax currently follows the pattern `pods [mode] <action> <target
 The `command` mode currently uses `pods command <recipe> <command>`, violating the established convention by reversing target and action, and treating the recipe-specific maintenance command as the action. This inconsistency creates friction for users. Restructuring it ensures total CLI predictability and consistency.
 
 ### 1.3 Goals & Non-Goals
-* **Goals:** 
+* **Goals:**
   * Align the `command` mode strictly with the standard CLI syntax pattern `mode action target`.
   * Introduce explicit, static actions (`list`, `run`/`exec`).
   * Group the recipe and its command logically into a single target parameter (`<recipe>:<command>`).
@@ -46,7 +46,7 @@ Examples:
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* **Affected files:** 
+* **Affected files:**
   * `src/pods/mode_command.lua` (core logic update).
   * `src/pods/mode_simulate.lua` (parameter parsing updates for simulation).
 

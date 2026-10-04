@@ -46,16 +46,16 @@ local context = {
         pods = { path = "" },
         recipes = { path = ".", groups = {} },
     },
-    
+
     -- READ-ONLY (RO): Parsed once from CLI
     flags = {},          -- Parsed command-line flags (e.g., { ["--debug"] = true })
     parameters = {},     -- Parsed positional command-line arguments
-    
+
     -- READ-ONLY (RO) after main.lua initialization
     mode = {
         selected = modes.default, -- The selected mode handler function
     },
-    
+
     -- READ-ONLY (RO): Parsed centrally in main.lua after config load
     action = "",         -- The single action to execute
     targets = {},        -- The untangled list of targets
@@ -68,7 +68,7 @@ local context = {
 * By centralizing the CLI schema, we can extract the target untangling logic. Instead of each mode untangling its own targets, `main.lua` will invoke `parse_action_and_targets_parameters` (or equivalent) after the configuration is loaded, populate `context.action` and `context.targets`, and then pass the fully prepared context to the modes.#### Mode Context Requirements
 Each mode handler receives the `context` table and utilizes specific information from it:
 
-* **mode_command**: 
+* **mode_command**:
   * *Constraint regarding PSP-014:* From the outside (e.g., in `main.lua`), we treat `mode_command` exactly as if it has already been fully converted to the new central schema (`pods MODE ACTION TARGETS`). During implementation, we will ensure that `mode_command__handle` and its subsequent internal functions continue to work correctly with the new `context` object (using shim or mapping logic if necessary). However, the deep, true architectural optimization and syntax alignment for this mode remains strictly within the scope of **PSP-014**.
 * **mode_config**:
   * `config`: Needed to output and display the currently loaded configuration.

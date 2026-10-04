@@ -53,7 +53,6 @@ function table.contains(target, value)
     return false
 end
 
-
 ---Get value from table or default if key not found.
 ---You can use "table and table[key] or default" instead, if there is no false value in table.
 ---@param target table

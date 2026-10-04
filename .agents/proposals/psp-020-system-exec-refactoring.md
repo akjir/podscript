@@ -18,13 +18,13 @@ Refactor the `system.exec` function to use a flexible options table instead of p
 Currently, `os.execute` is used directly in places like `mode_logs.lua` (to retain TTY for `podman logs`) and `system.dir_exists` (to silently check exit codes). `system.exec`'s fixed positional signature (`command, prefix, simulate, direct`) and its hardcoded behavior (redirecting STDERR to `/dev/null` when `direct=true` and automatically logging errors) make it inflexible for these use cases. Consolidating all command executions under `system.exec` ensures unified handling, logging, and simulation logic.
 
 ### 1.3 Goals & Non-Goals
-* **Goals:** 
+* **Goals:**
   * Replace the `system.exec(command, prefix, simulate, direct)` signature with `system.exec(command, options)`.
   * Expose an `interactive` option to replace `direct`, ensuring it does not wrap commands in `( ... ) 2>/dev/null`.
   * Expose a `silent` option to suppress automatic `log.error` calls on failure.
   * Return `success, exit_reason, exit_code` from `system.exec`.
   * Replace all direct `os.execute` calls with `system.exec`.
-* **Non-Goals:** 
+* **Non-Goals:**
   * Modify `system.exec_capture` (it remains as is or internally unchanged).
 
 ### 1.4 Description

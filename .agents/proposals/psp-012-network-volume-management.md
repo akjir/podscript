@@ -27,7 +27,7 @@ PodScript currently manages pods and containers but relies on externally created
   * Migrating existing data in volumes.
 
 ### 1.4 Description
-Users will be able to define required networks and volumes within the recipe structure. During `create`, `update` (if recreating), and `recreate` actions, PodScript will iterate through these `networks` and `volumes` definitions and execute the respective `podman network create --ignore` and `podman volume create --ignore` commands. 
+Users will be able to define required networks and volumes within the recipe structure. During `create`, `update` (if recreating), and `recreate` actions, PodScript will iterate through these `networks` and `volumes` definitions and execute the respective `podman network create --ignore` and `podman volume create --ignore` commands.
 Logs will output `[CREATE] Network: <name>` or `[CREATE] Volume: <name>`. `simulate` mode will print these commands without executing them. No new CLI flags or modes are required.
 
 ### 1.5 Alternatives
@@ -80,7 +80,7 @@ return {
 * Configuration tables will need to be parsed to map Lua fields (like `label`, `opt`, `internal`, `driver`) to their corresponding Podman CLI flags (e.g., `--label`, `--opt`, `--internal`, `--driver`).
 
 ### 2.4 Testing Strategy
-* **Code Tests:** 
+* **Code Tests:**
   * Parse complex `networks` and `volumes` definitions (mixed strings and tables).
   * Validate command generation accurately maps Lua table fields to Podman flags.
 * **Mode Tests:**

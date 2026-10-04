@@ -133,7 +133,7 @@ local function print_json_report()
     table.insert(out, '    "failed": ' .. tests_count_failed .. ',\n')
     table.insert(out, '    "time_seconds": ' .. string.format("%.2f", os.clock() - start_time) .. '\n  },\n')
     table.insert(out, '  "failures": {\n')
-    
+
     local first = true
     for msg, count in pairs(failure_summaries) do
         if not first then table.insert(out, ',\n') else first = false end
@@ -141,7 +141,7 @@ local function print_json_report()
     end
     if not first then table.insert(out, '\n') end
     table.insert(out, '  },\n  "tests": [\n')
-    
+
     first = true
     for _, t in ipairs(test_report.tests) do
         if not first then table.insert(out, ',\n') else first = false end

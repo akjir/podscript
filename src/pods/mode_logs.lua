@@ -134,7 +134,7 @@ local function mode_logs__execute(context, action, target)
     end
 
     commands[#commands + 1] = string.escape_shell(loaded_recipe.pod.name)
-    
+
     local command_str = table.concat(commands, " ")
 
     local success = system.exec(command_str, {
@@ -155,12 +155,12 @@ global function mode_logs__handle(context)
     context.parameters = context.parameters or {}
     local action = context.parameters[1]
     local raw_target = context.parameters[2]
-    
+
     if action == "help" or string.is_nil_or_empty(action) then
         mode_logs__help(context)
         return
     end
-    
+
     -- If action is not show, follow or help, it might be the target if the action was omitted
     if action ~= "show" and action ~= "follow" then
         if not string.is_nil_or_empty(raw_target) then
@@ -170,7 +170,7 @@ global function mode_logs__handle(context)
         raw_target = action
         action = "show"
     end
-    
+
     if raw_target and string.begins_with(raw_target, "@") then
         log.error("Groups are not supported for logs. Only pods and containers are supported.")
         return

@@ -28,7 +28,7 @@ Users currently hardcode environment variables and sensitive configuration value
 
 ### 1.4 Description
 * **CLI Syntax Addition:** Add a global `--env-file=<path>` option to all modes. Example: `pods --env-file=.env.production create web-stack`
-* **Resolution Order:** 
+* **Resolution Order:**
   1. CLI Flag (`--env-file`)
   2. Recipe definition (`env_file`)
   3. Default fallback to `.env` in the current working directory (if it exists).

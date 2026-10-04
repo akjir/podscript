@@ -18,14 +18,14 @@ This proposal aims to replace the raw JSON/Lua dump currently output by the `pod
 Currently, `pods config show` simply reads the `config.lua` file line by line and prints it to the terminal. This is redundant because users can see the exact same content by using `pods config edit`. A pure file dump provides no additional insight. By transforming the output into a diagnostic tool, users can instantly see how groups resolve, whether required directories exist, and if targeted recipes are missing or misspelled, saving significant debugging time.
 
 ### 1.3 Goals & Non-Goals
-* **Goals:** 
+* **Goals:**
   * Provide a clean, formatted terminal output for `pods config show`.
   * Validate if the configured `pods.path` and `recipes.path` directories exist.
   * Hierarchically expand recipe groups and validate if the corresponding `.lua` recipe files exist.
   * Identify and list any unreferenced/unused `.lua` files in the recipes directory.
   * Consistently align the validation tags (`[OK]`, `[NOT FOUND]`) for readability.
   * Print summary sentences for missing files or unreferenced files.
-* **Non-Goals:** 
+* **Non-Goals:**
   * Modifying how the configuration is actually parsed or executed.
   * Changing the `pods config edit` behavior.
 
@@ -46,11 +46,11 @@ Directories:
 Groups:
   • all
     └── recipe                              [OK]
-    
+
   • database
     ├── postgres                            [OK]
     └── redis                               [OK]
-    
+
   • stack
     ├── @database
     │   ├── postgres                        [OK]

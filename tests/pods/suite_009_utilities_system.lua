@@ -110,15 +110,15 @@ return {
                 local test_dir = "/tmp/test_podscript_list_dir"
                 os.execute("mkdir -p " .. test_dir)
                 os.execute("touch " .. test_dir .. "/a.lua " .. test_dir .. "/b.txt " .. test_dir .. "/c.lua")
-                
+
                 local files_all = system.list_directory(test_dir)
                 local files_lua = system.list_directory(test_dir, "%.lua$")
                 local files_none = system.list_directory(test_dir, "%.nonexistent$")
-                
+
                 os.execute("rm -rf " .. test_dir)
-                
-                return files_all ~= nil and #files_all == 3 
-                   and files_lua ~= nil and #files_lua == 2 
+
+                return files_all ~= nil and #files_all == 3
+                   and files_lua ~= nil and #files_lua == 2
                    and files_none ~= nil and #files_none == 0
             end,
             expected = true,

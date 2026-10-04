@@ -151,11 +151,11 @@ return {
                     captured_cmd = cmd
                     return true, "exit", 0
                 end
-                
+
                 main({"logs", "recipe_011_simple_container", "--config=tests/pods/configs/config_015_commands"})
-                
+
                 os.execute = old_execute
-                
+
                 if captured_cmd == "podman pod logs -n --color simple_container" then
                     return true
                 end

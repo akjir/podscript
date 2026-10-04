@@ -18,14 +18,14 @@ Analogous to [PSP-017](psp-017-human-config-output.md), this proposal aims to re
 Currently, `pods recipe show` reads the recipe file and prints it to the terminal as a raw data dump. A raw dump provides no additional insight compared to simply looking at the file (e.g. `pods recipe edit`). By transforming the output into a formatted diagnostic tool, users can instantly understand the structure of the recipe and see if required local host directories for volumes exist, saving debugging time.
 
 ### 1.3 Goals & Non-Goals
-* **Goals:** 
+* **Goals:**
   * Provide a clean, formatted terminal output for `pods recipe show <recipe>`.
   * Display containers and their essential configurations (image, ports, volumes, environment variables) in a readable way.
   * Validate if local host paths defined in volumes exist.
   * Consistently align the validation tags (`[OK]`, `[NOT FOUND]`) for readability, sharing layout/printing code with the `config show` implementation (from PSP-017).
   * Print summary sentences for missing local volume paths.
   * Completely remove old code and tests related to the raw JSON/Lua dumping of recipes.
-* **Non-Goals:** 
+* **Non-Goals:**
   * Modifying how recipes are parsed or executed.
   * Changing the `pods recipe edit` behavior.
 
@@ -40,7 +40,7 @@ Containers:
     Image:      nginx:latest
     Ports:      8080:80
     Volumes:    /var/www:/usr/share/nginx/html      [NOT FOUND]
-    
+
   • db
     Image:      postgres:15
     Env:        POSTGRES_USER=admin

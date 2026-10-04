@@ -28,7 +28,7 @@ Users frequently need to perform setup and teardown tasks before or after pod/co
   * Long-running daemon hooks (all hooks must be synchronous and terminate).
 
 ### 1.4 Description
-Recipes and individual container definitions will be able to include a `hooks` table. When PodScript executes lifecycle actions (like creating or starting a pod/container), it will check for corresponding `pre_` and `post_` hooks. 
+Recipes and individual container definitions will be able to include a `hooks` table. When PodScript executes lifecycle actions (like creating or starting a pod/container), it will check for corresponding `pre_` and `post_` hooks.
 Hooks can be defined as Lua functions, string shell commands, or arrays of command arguments. If a `pre_` hook fails, the associated action is skipped and the CLI aborts with a non-zero exit code.
 
 ### 1.5 Alternatives
@@ -72,7 +72,7 @@ return {
 ```
 
 ### 2.3 Implementation Details
-* **New Module (`src/pods/hook.lua`)**: 
+* **New Module (`src/pods/hook.lua`)**:
   * Expose `hook__run(hook_definition, context)`.
   * Internal dispatch logic to distinguish between `type(hook) == "function"`, `"string"`, and `"table"`.
   * Use `pcall` to safely invoke Lua functions. Lua callbacks must return `true` or `nil` on success. Returning `false` or throwing an error via `error()` fails the hook.

@@ -13,10 +13,10 @@ updated: 2026-09-27
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-A comprehensive redesign of the `test.lua` testing framework to decouple test expectations from exact runtime line indices and execution side-effects, while drastically improving developer and AI agent experience via log provenance, fuzzy matching, smart diffing, and unit test isolation. 
+A comprehensive redesign of the `test.lua` testing framework to decouple test expectations from exact runtime line indices and execution side-effects, while drastically improving developer and AI agent experience via log provenance, fuzzy matching, smart diffing, and unit test isolation.
 
 ### 1.2 Motivation
-Currently, the testing framework asserts that specific log outputs appear at exact line indices in an `output_stack`. Any structural change in verbosity, execution timing, or order of debug logs shifts these indices, causing cascading false-positive failures across the entire test suite. For instance, the PSP-005 refactoring shifted logs by two lines, which caused 172 tests to fail despite the business logic remaining perfectly intact. 
+Currently, the testing framework asserts that specific log outputs appear at exact line indices in an `output_stack`. Any structural change in verbosity, execution timing, or order of debug logs shifts these indices, causing cascading false-positive failures across the entire test suite. For instance, the PSP-005 refactoring shifted logs by two lines, which caused 172 tests to fail despite the business logic remaining perfectly intact.
 
 Furthermore, when tests fail, the output lacks context (where did a log originate?), stops at the first expectation mismatch (hiding other failures), and provides massive stack traces that flood an AI agent's context window. Finally, tests are currently heavily integrated (E2E via `main()`), making isolated logic testing difficult.
 
@@ -35,8 +35,8 @@ Furthermore, when tests fail, the output lacks context (where did a log originat
 
 ### 1.4 Description
 The test execution framework (`test.lua`) will be refactored. Test definitions in `suite_*.lua` files will shift from array-index based expectations to logic-based assertions (`contains`, `sequence`, `not_contains`, `matches`, `count`).
-The legacy `exact` matching will be completely removed to force robust testing. 
-The `print_to_stack` override will utilize `debug.getinfo()` to automatically prefix captured logs with their origin file and line number. 
+The legacy `exact` matching will be completely removed to force robust testing.
+The `print_to_stack` override will utilize `debug.getinfo()` to automatically prefix captured logs with their origin file and line number.
 New CLI flags (`--json`, `--fail-fast`) will be added to the existing CLI structure without breaking current execution modes. The runner will capture all expectation failures for a given test before aborting, presenting a grouped failure summary at the end. Finally, execution time tracking and a new `execute_unit_test` API will be provided.
 
 ### 1.5 Alternatives
