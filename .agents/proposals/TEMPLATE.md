@@ -51,16 +51,20 @@ Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [ ] Create test stubs in `tests/pods/` (or `tests/pods-converter/`).
 - [ ] Implement core logic in `src/pods/` (or `src/pods-converter/`).
+- [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Add entry to `CHANGELOG.md`.
 - [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
+- [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
+- [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
+- [ ] Add entry to `CHANGELOG.md` (skip for internal test/dev/refactoring changes).
 - [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **YYYY-MM-DD:** Initial concept drafted.
+*(Record any discoveries, divergences from the original plan, or why a specific technical choice was altered during development)*
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*
