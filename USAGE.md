@@ -11,7 +11,7 @@ This document provides a comprehensive command-line reference for PodScript, cov
 - [Quick Start](#quick-start)
 - [Modes Overview](#modes-overview)
 - [Global Options](#global-options)
-- [Default & Simulate Modes](#default--simulate-modes)
+- [Default Mode](#default-mode)
   - [Actions](#actions)
   - [Options](#options)
   - [Targets & Grouping](#targets--grouping)
@@ -144,7 +144,7 @@ Execute lifecycle commands against your target recipe:
 
 ```bash
 # Preview the Podman commands without executing them
-pods simulate create recipe
+pods create recipe --simulate
 
 # Create and start the pod and containers
 pods create recipe
@@ -165,7 +165,6 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | Mode | Description |
 | :--- | :--- |
 | `(empty)` | **Default Mode**: Executes lifecycle actions on pods and containers defined in recipe files. |
-| `simulate` | **Simulate Mode**: Previews all generated Podman commands without executing them. |
 | `logs`     | **Logs Mode**: Fetches and tails logs from pods and individual containers. |
 | `connect`  | **Connect Mode**: Opens an interactive shell inside a running container for ad-hoc debugging. |
 | `init`     | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
@@ -187,11 +186,11 @@ The following flags can be supplied across CLI modes:
 
 ---
 
-## Default & Simulate Modes
+## Default Mode
 
-The `default` and `simulate` modes manage container and pod lifecycles. They require an **Action** followed by one or more **Targets**.
+The `default` mode manages container and pod lifecycles. They require an **Action** followed by one or more **Targets**.
 
-Simulate mode operates identically to default mode, except commands are printed rather than executed. It is invoked using the mode keyword `simulate`.
+The `--simulate` flag causes commands to be printed rather than executed across all modes.
 
 ### Actions
 
@@ -239,7 +238,7 @@ pods recreate @production-apps
 pods remove frontend @backend-services cache-server
 
 # Preview pod creation without executing
-pods simulate create my-web-server
+pods create my-web-server --simulate
 ```
 
 ---
@@ -376,7 +375,7 @@ The `connect` mode opens an interactive shell (defaulting to `bash`, falling bac
 ```bash
 pods connect [OPTIONS] [ACTION] <target>
 # or in simulation:
-pods simulate connect [OPTIONS] [ACTION] <target>
+pods connect [OPTIONS] [ACTION] <target> --simulate
 ```
 
 ### Actions
@@ -421,7 +420,7 @@ pods connect custom_container_name
 
 Simulate the connection command:
 ```bash
-pods simulate connect my_webapp
+pods connect my_webapp --simulate
 ```
 
 ## Command Mode
@@ -431,7 +430,7 @@ The `command` mode executes ad-hoc maintenance and administration tasks defined 
 ```bash
 pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX]
 # or in simulation:
-pods simulate command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX]
+pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX] --simulate
 ```
 
 ### Actions
@@ -494,7 +493,7 @@ pods command web-stack migrate
 pods command exec web-stack 1
 
 # Simulate command execution
-pods simulate command exec web-stack migrate
+pods command exec web-stack migrate --simulate
 ```
 
 ---
@@ -705,13 +704,13 @@ Simulation allows you to verify generated Podman commands before making any chan
 
 ```bash
 # Simulate creating a pod
-pods simulate create example-app
+pods create example-app --simulate
 
 # Simulate recreation with verbose debug logging
-pods simulate --debug recreate example-app
+pods --debug recreate example-app --simulate
 
 # Simulate maintenance command execution
-pods simulate command exec example-app migrate
+pods command exec example-app migrate --simulate
 ```
 
 ### Recipe Group Targeting

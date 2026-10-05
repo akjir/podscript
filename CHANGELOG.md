@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Replaced `simulate` mode with global `--simulate` flag for standard CLI syntax.
 - Changed default action for `recipe` mode from `help` to `list`.
 
 ### Fixed
@@ -37,8 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `init` mode to initialize default configuration and recipe files.
 
 ### Changed
-- Refactored `system.exec` to use an options table for flexible command execution.
 
+- Refactored `system.exec` to use an options table for flexible command execution.
 - Changed `config show` output to a structured, hierarchical diagnostic tree.
 - Renamed `print` action to `show` in `config` and `recipe` modes.
 - Changed default container `detach` option to `true`.
@@ -111,8 +112,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added the ability to target recipe groups using the `@` prefix in the target argument.
 
 ### Changed
-- Refactored `system.exec` to use an options table for flexible command execution.
 
+- Refactored `system.exec` to use an options table for flexible command execution.
 - Renamed `dryrun` option to `simulate` for better clarity.
 - Renamed `PodConfig` to `Recipe` for better clarity.
 - Improved internal code quality by fixing typos and renaming variables for consistency.
@@ -144,8 +145,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a `commands` field to containers for running commands on startup.
 
 ### Changed
-- Refactored `system.exec` to use an options table for flexible command execution.
 
+- Refactored `system.exec` to use an options table for flexible command execution.
 - Renamed the generic `commands` field to `options` to avoid confusion with container startup commands.
 
 ### Removed

@@ -1,7 +1,7 @@
 ---
 id: PSP-021
 title: Simulate Flag Migration
-status: planned
+status: done
 type: architecture
 created: 2026-10-05
 updated: 2026-10-05
@@ -69,20 +69,27 @@ Before changing the implementation, write rigorous test cases in `tests/pods/` t
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Add failing test cases in `tests/pods/test_main.lua` for `--simulate` flag parsing, argument stripping, and config precedence.
-- [ ] Add failing test cases in mode-specific test files ensuring `--simulate` works as a generic flag for standard modes.
-- [ ] Refactor `src/pods/main.lua`: Update `main__parse_arguments` to parse and strip the `--simulate` flag.
-- [ ] Refactor `src/pods/main.lua`: Sync `context.flags.simulate` with loaded configuration.
-- [ ] Refactor `src/pods/main.lua`: Remove `simulate` mode routing.
-- [ ] Delete `src/pods/mode_simulate.lua` and its corresponding tests.
-- [ ] Update help strings in `mode_help.lua` and mode-specific help functions to reflect the flag usage.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Update `.pods-completion.bash` to complete `--simulate`.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review.
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Add failing test cases in `tests/pods/suite_021_main.lua` for `--simulate` flag parsing, argument stripping, and config precedence.
+- [x] Add failing test cases in mode-specific test files ensuring `--simulate` works as a generic flag for standard modes.
+- [x] Refactor `src/pods/main.lua`: Update `main__parse_arguments` to parse and strip the `--simulate` flag.
+- [x] Refactor `src/pods/main.lua`: Sync `context.flags.simulate` with loaded configuration.
+- [x] Refactor `src/pods/main.lua`: Remove `simulate` mode routing.
+- [x] Delete `src/pods/mode_simulate.lua` and its corresponding tests.
+- [x] Update help strings in `mode_help.lua` and mode-specific help functions to reflect the flag usage.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] Update `USAGE.md` with new CLI syntax.
+- [x] Update `.pods-completion.bash` to complete `--simulate`.
+- [x] Add entry to `CHANGELOG.md`.
+- [x] Set status to `review`, update `README.md` board, and request manual user review.
 
 ### 3.2 Work Log & Decisions
 * **2026-10-05:** Concept drafted based on analysis of the current CLI architecture and insights from PSP-005 (central context) and PSP-020 (system.exec options table).
+* **2026-10-05:** User requested a post-review sync. The proposal was retroactively synchronized with documentation fixes across `USAGE.md` (fixing missing `--simulate` in examples and Modes Overview), `README.md` (fixing a broken markdown table left after removing the `simulate` mode), and `AGENTS.md` (removing `mode_simulate.lua`).
+
+### 3.3 Delivered Artifacts
+* **Feature:** `--simulate` is now a global flag parsed in `main.lua` and appended to the context. `simulate` mode is completely removed.
+* **Code:** `src/pods/main.lua` updated. `src/pods/mode_simulate.lua` deleted.
+* **Documentation:** `USAGE.md`, `README.md`, `AGENTS.md`, and `.pods-completion.bash` fully updated. All examples refactored to use the flag.
+* **Tests:** `tests/pods/suite_021_main.lua` and mode-specific tests updated and passing.

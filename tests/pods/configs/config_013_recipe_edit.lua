@@ -1,4 +1,5 @@
 return {
+    simulate = false,
     editor = "false",
     recipes = {
         path = "tests/pods/recipes",

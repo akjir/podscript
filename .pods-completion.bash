@@ -5,7 +5,7 @@ _pods_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Basic modes and default actions
-    local modes="simulate logs connect init command config recipe help"
+    local modes="logs connect init command config recipe help"
     local default_actions="create recreate remove status update"
 
     # Find mode and action in the preceding words to determine context
@@ -34,9 +34,9 @@ _pods_completions() {
 
     # Handle flag completions
     if [[ ${cur} == -* ]]; then
-        local opts="--config --debug"
+        local opts="--config --debug --simulate"
         case "$mode" in
-            default|simulate)
+            default)
                 opts+=" --all --full"
                 ;;
             logs)
@@ -59,9 +59,6 @@ _pods_completions() {
     # If we have a mode but no action yet, suggest its actions
     if [[ -z "$action" ]]; then
         case "$mode" in
-            simulate)
-                COMPREPLY=( $(compgen -W "create recreate remove status update command logs connect" -- "${cur}") )
-                ;;
             connect)
                 COMPREPLY=( $(compgen -W "shell help" -- "${cur}") )
                 ;;

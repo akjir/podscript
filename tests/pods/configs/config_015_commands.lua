@@ -1,4 +1,5 @@
 return {
+    simulate = false,
     pods = {
         path = "/tmp",
     },

@@ -27,7 +27,6 @@ require "src.pods.mode_connect"
 require "src.pods.mode_recipe"
 require "src.pods.mode_config"
 require "src.pods.mode_default"
-require "src.pods.mode_simulate"
 require "src.pods.mode_help"
 require "src.pods.mode_init"
 require "src.pods.mode_logs"
@@ -153,7 +152,6 @@ global function main(arguments)
         init = mode_init__handle,
         logs = mode_logs__handle,
         recipe = mode_recipe__handle,
-        simulate = mode_simulate__handle,
     }
 
     local context = {
@@ -239,9 +237,13 @@ global function main(arguments)
         return
     end
 
-    -- config simulate activates simulate mode if default mode is selected
-    if context.config.simulate and context.mode == modes.default then
-        context.mode = modes.simulate
+    -- sync simulate flag with config
+    if context.config.simulate then
+        context.flags.simulate = true
+    end
+
+    if context.flags.simulate then
+        log.info("Simulate mode is active.")
     end
 
     -- handle mode

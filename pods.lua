@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "243.23e2882.dev"
+local BUILD <const> = "246.f19f569.dev"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -1208,24 +1208,18 @@ end
 ---@param context table Application context.
 local function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
-        log.print("Simulate the execution of a command defined in a recipe for a container.")
-        log.print("Usage: pods simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
-        log.print("Execute a command defined in a recipe for a container.")
-        log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
+    log.print("Execute a command defined in a recipe for a container.")
+    log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
+    log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
     log.print("ACTIONS:")
     log.print("  exec               execute a command defined in a recipe (default when COMMAND is provided)")
     log.print("  list               list all valid commands for a recipe (default)")
     log.print("  help               display this help text\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("RECIPE:")
     log.print("  *                  name of the recipe\n")
     log.print("COMMAND|INDEX:")
@@ -1382,23 +1376,17 @@ end
 ---@param context table Application context.
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Connect Mode (SIMULATED)\n")
-        log.print("Simulate connecting to a running container with an interactive shell.")
-        log.print("Usage: pods simulate connect [OPTIONS] [<action>] <target>")
-        log.print("   or: lua pods.lua simulate connect [OPTIONS] [<action>] <target>\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Connect Mode\n")
-        log.print("Connect to a running container with an interactive shell.")
-        log.print("Usage: pods connect [OPTIONS] [<action>] <target>")
-        log.print("   or: lua pods.lua connect [OPTIONS] [<action>] <target>\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Connect Mode\n")
+    log.print("Connect to a running container with an interactive shell.")
+    log.print("Usage: pods connect [OPTIONS] [<action>] <target>")
+    log.print("   or: lua pods.lua connect [OPTIONS] [<action>] <target>\n")
     log.print("ACTIONS:")
     log.print("  shell              open an interactive shell (default)")
     log.print("  help               display this help\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("TARGET:")
     log.print("  <recipe>             connect to the container (if the recipe has exactly 1 container)")
     log.print("  <recipe>/<container> connect to a specific container (index, relative, absolute)")
@@ -2224,6 +2212,7 @@ local function mode_default__status_help(context)
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
     log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them")
     log.print("  --all              include all unmanaged podman containers")
     log.print("  --full             display extended container information (image, command, ports)\n")
     log.print("TARGETS:")
@@ -2295,17 +2284,10 @@ end
 ---@param context table Application context.
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Logs Mode (SIMULATED)\n")
-        log.print("Simulate the execution of log commands for a recipe's pod or container.")
-        log.print("Usage: pods simulate logs [OPTIONS] [<action>] <recipe>[/container]")
-        log.print("   or: lua pods.lua simulate logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
-        log.print("Show or follow logs for a recipe's pod or container.")
-        log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
-        log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
+    log.print("Show or follow logs for a recipe's pod or container.")
+    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
+    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
     log.print("ACTIONS:")
     log.print("  show               fetch and display logs, then exit (default)")
     log.print("  follow             fetch and follow logs")
@@ -2316,7 +2298,8 @@ local function mode_logs__help(context)
     log.print("  --until=<time>     show logs until timestamp")
     log.print("  --timestamps       show timestamps in the log output")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("TARGET:")
     log.print("  <recipe>             show logs for all containers in the recipe's pod")
     log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
@@ -2438,35 +2421,6 @@ local function mode_logs__handle(context)
 end
 -- ------------------------------------------------------------------------- --
 --
---    SECTION Mode Simulate
---
--- ------------------------------------------------------------------------- --
-
----Activates global simulation mode, forwarding execution to the underlying command with the simulation flag enabled.
----@param context table Application context containing parsed flags and parameters.
-local function mode_simulate__handle(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.info("Simulate mode is active.")
-    context.flags.simulate = true
-    local parameters = context.parameters
-    if parameters[1] == "command" then
-        -- remove "command" from parameters
-        context.parameters = table.sub(parameters, 2)
-        mode_command__handle(context)
-    elseif parameters[1] == "logs" then
-        -- remove "logs" from parameters
-        context.parameters = table.sub(parameters, 2)
-        mode_logs__handle(context)
-    elseif parameters[1] == "connect" then
-        -- remove "connect" from parameters
-        context.parameters = table.sub(parameters, 2)
-        mode_connect__handle(context)
-    else
-        mode_default__handle(context)
-    end
-end
--- ------------------------------------------------------------------------- --
---
 --    SECTION Mode Help
 --
 -- ------------------------------------------------------------------------- --
@@ -2486,12 +2440,12 @@ local function mode_help__handle(context)
     log.print("  help               display this help and exit")
     log.print("  init               initialize default configuration and recipe")
     log.print("  logs               show or follow logs for a pod or container")
-    log.print("  recipe             inspect and edit recipes")
-    log.print("  simulate           simulate all commands (default mode)\n")
+    log.print("  recipe             inspect and edit recipes\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
-    log.print("Valid in default and simulate mode only:\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
+    log.print("Valid in default mode only:\n")
     log.print("ACTIONS:")
     log.print("  create             create a new pod")
     log.print("  recreate           removes and then creates a new pod")
@@ -2716,7 +2670,6 @@ global function main(arguments)
         init = mode_init__handle,
         logs = mode_logs__handle,
         recipe = mode_recipe__handle,
-        simulate = mode_simulate__handle,
     }
 
     local context = {
@@ -2802,9 +2755,13 @@ global function main(arguments)
         return
     end
 
-    -- config simulate activates simulate mode if default mode is selected
-    if context.config.simulate and context.mode == modes.default then
-        context.mode = modes.simulate
+    -- sync simulate flag with config
+    if context.config.simulate then
+        context.flags.simulate = true
+    end
+
+    if context.flags.simulate then
+        log.info("Simulate mode is active.")
     end
 
     -- handle mode

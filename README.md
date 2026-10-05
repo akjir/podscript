@@ -23,7 +23,7 @@ A script to manage Podman pods and containers using declarative Lua recipes.
 
 - Declarative pod and container configuration via Lua tables.
 - Deterministic lifecycle ordering (top-to-bottom startup, bottom-to-top shutdown).
-- Dry-run simulation mode (`simulate`) to preview generated Podman commands.
+- Dry-run simulation flag (`--simulate`) to preview generated Podman commands.
 - Configuration grouping (`@group_name`) for batch recipe execution.
 - Execution of container-specific maintenance commands.
 - Standalone single-file deployment (`pods.lua`) with zero external dependencies.
@@ -68,7 +68,7 @@ This generates `config.lua` and a sample `recipe.lua`.
 Preview the execution of the generated recipe:
 
 ```bash
-pods simulate create recipe
+pods create recipe --simulate
 ```
 
 Create and start the pod and containers:
@@ -120,7 +120,6 @@ Execute commands on groups using the `@` prefix: `pods create @backend`.
 | Mode | Action | Target | Description |
 | :--- | :--- | :--- | :--- |
 | `(default)` | `create`, `recreate`, `remove`, `status`, `update` | `<recipe>`, `@<group>` | Executes lifecycle actions on recipes or groups. |
-| `simulate` | `create`, `recreate`, `remove`, `update` | `<recipe>`, `@<group>` | Prints generated Podman commands without executing them. |
 | `logs` | `show`, `follow` | `<recipe>[/<container>]` | Retrieves or tails container logs. |
 | `connect` | `shell` | `<recipe>[/<container>]` | Opens an interactive shell in a container. |
 | `command` | `list`, `exec` | `<recipe> [command]` | Executes pre-defined maintenance commands. |
@@ -133,6 +132,7 @@ Global Options:
 
 - `--config=<name>`: Specify a custom configuration file.
 - `--debug`: Enable verbose execution output.
+- `--simulate`: Prints generated Podman commands without executing them.
 
 ## Development
 

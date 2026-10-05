@@ -266,7 +266,7 @@ local function execute_mode_test(default_config_name, test_code, test_table, pri
     end
 
     if test_table.simulate then
-        table.insert(arguments, "simulate")
+        table.insert(arguments, "--simulate")
     end
     table.append(arguments, test_table.parameters)
 
@@ -421,6 +421,7 @@ add_suite("pods.suite_017_action_status")
 add_suite("pods.suite_018_release_integration")
 add_suite("pods.suite_019_mode_logs")
 add_suite("pods.suite_020_mode_connect")
+add_suite("pods.test_main")
 add_suite("pods.suite_999_test_framework")
 
 -- ------------------------------------------------------------------------- --

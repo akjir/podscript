@@ -36,17 +36,10 @@ global<const> *
 ---@param context table Application context.
 local function mode_logs__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Logs Mode (SIMULATED)\n")
-        log.print("Simulate the execution of log commands for a recipe's pod or container.")
-        log.print("Usage: pods simulate logs [OPTIONS] [<action>] <recipe>[/container]")
-        log.print("   or: lua pods.lua simulate logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
-        log.print("Show or follow logs for a recipe's pod or container.")
-        log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
-        log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
+    log.print("Show or follow logs for a recipe's pod or container.")
+    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
+    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
     log.print("ACTIONS:")
     log.print("  show               fetch and display logs, then exit (default)")
     log.print("  follow             fetch and follow logs")
@@ -57,7 +50,8 @@ local function mode_logs__help(context)
     log.print("  --until=<time>     show logs until timestamp")
     log.print("  --timestamps       show timestamps in the log output")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("TARGET:")
     log.print("  <recipe>             show logs for all containers in the recipe's pod")
     log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")

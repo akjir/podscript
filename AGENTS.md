@@ -20,7 +20,7 @@
 * `utilities_{string,table,system}.lua`: Extends `string.*` / `table.*` or provides `system.*`
 * `{container,pod,recipe,config}.lua`: Prefixed `<name>__*`. Modular functions are `global function` (localized by `build.lua` for release).
 * `main.lua`: Prefixed `main__*`
-* `mode_{command,config,default,help,init,recipe,simulate}.lua`: Prefixed `mode_<name>__*`
+* `mode_{command,config,default,help,init,recipe}.lua`: Prefixed `mode_<name>__*`
 * **Lua 5.5 & Strict Globals:** `global<const> *` enforced atop every chunk (undeclared globals trigger compile error). Use `table.create` for preallocation, named varargs (`... args`) for variadic functions without manual packing.
 
 ## Workflows

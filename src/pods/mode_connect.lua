@@ -36,23 +36,17 @@ global<const> *
 ---@param context table Application context.
 local function mode_connect__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Connect Mode (SIMULATED)\n")
-        log.print("Simulate connecting to a running container with an interactive shell.")
-        log.print("Usage: pods simulate connect [OPTIONS] [<action>] <target>")
-        log.print("   or: lua pods.lua simulate connect [OPTIONS] [<action>] <target>\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Connect Mode\n")
-        log.print("Connect to a running container with an interactive shell.")
-        log.print("Usage: pods connect [OPTIONS] [<action>] <target>")
-        log.print("   or: lua pods.lua connect [OPTIONS] [<action>] <target>\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Connect Mode\n")
+    log.print("Connect to a running container with an interactive shell.")
+    log.print("Usage: pods connect [OPTIONS] [<action>] <target>")
+    log.print("   or: lua pods.lua connect [OPTIONS] [<action>] <target>\n")
     log.print("ACTIONS:")
     log.print("  shell              open an interactive shell (default)")
     log.print("  help               display this help\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("TARGET:")
     log.print("  <recipe>             connect to the container (if the recipe has exactly 1 container)")
     log.print("  <recipe>/<container> connect to a specific container (index, relative, absolute)")

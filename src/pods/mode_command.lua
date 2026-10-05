@@ -86,24 +86,18 @@ end
 ---@param context table Application context.
 local function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    if context.flags.simulate then
-        log.print("PodScript " .. get_version_string() .. " - Command Mode (SIMULATED)\n")
-        log.print("Simulate the execution of a command defined in a recipe for a container.")
-        log.print("Usage: pods simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua simulate command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
-    else
-        log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
-        log.print("Execute a command defined in a recipe for a container.")
-        log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
-        log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
-    end
+    log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
+    log.print("Execute a command defined in a recipe for a container.")
+    log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
+    log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
     log.print("ACTIONS:")
     log.print("  exec               execute a command defined in a recipe (default when COMMAND is provided)")
     log.print("  list               list all valid commands for a recipe (default)")
     log.print("  help               display this help text\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("RECIPE:")
     log.print("  *                  name of the recipe\n")
     log.print("COMMAND|INDEX:")
