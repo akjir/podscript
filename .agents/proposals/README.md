@@ -8,7 +8,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
-| `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `concept` | [psp-002-image-prune.md](psp-002-image-prune.md) |
+| `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `planned` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-003` | Volume Host Directory Verification & Automatic Creation | `feature` | `concept` | [psp-003-volume-dir-check.md](psp-003-volume-dir-check.md) |
 | `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `concept` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
 | `PSP-006` | Granular Container Targeting within Pods (`recipe/container`) | `feature` | `concept` | [psp-006-container-targeting.md](psp-006-container-targeting.md) |
