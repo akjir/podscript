@@ -194,11 +194,12 @@ return {
             expected = table.to_string({})
         },
         [s .. "26"] = {
-            description = "table.remove_duplicates - nil table",
+            description = "table.remove_duplicates - error on nil table",
             run = function()
-                return table.to_string(table.remove_duplicates(nil))
+                local status, err = pcall(table.remove_duplicates, nil)
+                return status == false and string.find(err, "table.remove_duplicates expects a table") ~= nil
             end,
-            expected = table.to_string({})
+            expected = true
         },
         [s .. "27"] = {
             description = "table.remove_duplicates - already unique",

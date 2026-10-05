@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "242.1794a46.dev"
+local BUILD <const> = "243.23e2882.dev"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -260,7 +260,9 @@ end
 ---@param target table The source table.
 ---@return table A new table free of duplicates.
 function table.remove_duplicates(target)
-    if target == nil then return {} end
+    if type(target) ~= "table" then
+        error("table.remove_duplicates expects a table as target, got " .. type(target), 2)
+    end
     local count = #target
     if count == 0 then return {} end
 

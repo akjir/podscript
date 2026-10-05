@@ -101,7 +101,9 @@ end
 ---@param target table The source table.
 ---@return table A new table free of duplicates.
 function table.remove_duplicates(target)
-    if target == nil then return {} end
+    if type(target) ~= "table" then
+        error("table.remove_duplicates expects a table as target, got " .. type(target), 2)
+    end
     local count = #target
     if count == 0 then return {} end
 
