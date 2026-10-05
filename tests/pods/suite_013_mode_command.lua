@@ -42,7 +42,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
-                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices"
                 }
             },
         },
@@ -53,7 +53,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh run-absolute' in container 'absolute_db': ",
-                    "podman exec -it absolute_db script.sh run-absolute;"
+                    "podman exec -it absolute_db script.sh run-absolute"
                 }
             },
         },
@@ -64,7 +64,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh run-int-user' in container 'absolute_db': ",
-                    "podman exec -it -u 1000 absolute_db script.sh run-int-user;"
+                    "podman exec -it -u 1000 absolute_db script.sh run-int-user"
                 }
             },
         },
@@ -75,7 +75,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh run-int-container' in container 'cmd_pod-1': ",
-                    "podman exec -it cmd_pod-1 script.sh run-int-container;"
+                    "podman exec -it cmd_pod-1 script.sh run-int-container"
                 }
             },
         },
@@ -116,7 +116,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh run-int-container-2' in container 'cmd_pod-db': ",
-                    "podman exec -it cmd_pod-db script.sh run-int-container-2;"
+                    "podman exec -it cmd_pod-db script.sh run-int-container-2"
                 }
             },
         },
@@ -149,7 +149,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
-                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices"
                 }
             },
         },
@@ -182,7 +182,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh run-absolute' in container 'absolute_db': ",
-                    "podman exec -it absolute_db script.sh run-absolute;"
+                    "podman exec -it absolute_db script.sh run-absolute"
                 }
             },
         },
@@ -224,7 +224,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
-                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices"
                 }
             },
         },
@@ -235,7 +235,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute command 'script.sh add-missing-indices' in container 'cmd_pod-db': ",
-                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices;"
+                    "podman exec -it -u 33 cmd_pod-db script.sh add-missing-indices"
                 }
             },
         },

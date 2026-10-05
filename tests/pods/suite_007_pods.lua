@@ -15,9 +15,9 @@ return {
                     "DEBUG: Targets   - @nona",
                     "DEBUG: Untangled - recipe_007_simple_pod_no_name_and_path",
                     "Create pod 'Simple Pod' ('si_po'): ",
-                    "podman pod create --name si_po;",
+                    "podman pod create --name si_po",
                     "Create container 'supr_app': ",
-                    "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest;"
+                    "podman run --name supr_app --pod si_po --detach --restart never --volume /pods/si_po/config:/config:Z registry.io/alpine:latest"
                 }
             },
         },
@@ -27,11 +27,11 @@ return {
             expectations = {
                 sequence = {
                     "Stop container 'supr_app': ",
-                    "podman stop supr_app;",
+                    "podman stop supr_app",
                     "Remove container 'supr_app': ",
-                    "podman rm supr_app;",
+                    "podman rm supr_app",
                     "Remove pod 'Simple Pod' ('si_po'): ",
-                    "podman pod rm si_po;"
+                    "podman pod rm si_po"
                 }
             },
         },
@@ -42,7 +42,7 @@ return {
                 sequence = {
                     "Update pod 'Simple Pod' ('si_po') ...",
                     "Update container 'supr_app' ...",
-                    "podman pull registry.io/alpine:latest;"
+                    "podman pull registry.io/alpine:latest"
                 }
             },
         },
@@ -61,7 +61,7 @@ return {
             parameters = { "create", "recipe_008_publish" },
             expectations = {
                 sequence = {
-                    "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP;"
+                    "podman pod create --name publish --publish 8433:433 --publish 8080:80/TCP --publish 127.0.0.1::42 --publish 127.0.0.1:62:43/UDP --publish 600-500 --publish 83 --publish 124 --publish 12/UDP"
                 }
             },
         },
@@ -70,7 +70,7 @@ return {
             parameters = { "create", "recipe_010_pod_options" },
             expectations = {
                 sequence = {
-                    "podman pod create --name options --network slirp4netns:port_handler=slirp4netns --some thing --another thing;"
+                    "podman pod create --name options --network slirp4netns:port_handler=slirp4netns --some thing --another thing"
                 }
             },
         },
@@ -82,7 +82,7 @@ return {
             expectations = {
                 sequence = {
                     "INFO: Simulate mode is active.",
-                    "podman pod create --name si_po;",
+                    "podman pod create --name si_po",
                 }
             },
         },

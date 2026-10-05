@@ -20,7 +20,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color simple_container;"
+                    "podman pod logs -n --color simple_container"
                 }
             },
         },
@@ -31,7 +31,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color simple_container;"
+                    "podman pod logs -n --color simple_container"
                 }
             },
         },
@@ -42,7 +42,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color -f simple_container;"
+                    "podman pod logs -n --color -f simple_container"
                 }
             },
         },
@@ -53,7 +53,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color --since 1h --until 2h --tail 10 --timestamps simple_container;"
+                    "podman pod logs -n --color --since 1h --until 2h --tail 10 --timestamps simple_container"
                 }
             },
         },
@@ -64,7 +64,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color -c cmd_pod-1 cmd_pod;"
+                    "podman pod logs -n --color -c cmd_pod-1 cmd_pod"
                 }
             },
         },
@@ -75,7 +75,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color -c cmd_pod-db cmd_pod;"
+                    "podman pod logs -n --color -c cmd_pod-db cmd_pod"
                 }
             },
         },
@@ -86,7 +86,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color -c cmd_pod-db cmd_pod;"
+                    "podman pod logs -n --color -c cmd_pod-db cmd_pod"
                 }
             },
         },
@@ -97,7 +97,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute log command: ",
-                    "podman pod logs -n --color -c cmd_pod-db cmd_pod;"
+                    "podman pod logs -n --color -c cmd_pod-db cmd_pod"
                 }
             },
         },

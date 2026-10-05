@@ -94,7 +94,7 @@ return {
             parameters = { "recipe", "edit", "recipe_002_no_pod" },
             expectations = {
                 sequence = {
-                    "DEBUG: Execute: false ./tests/pods/recipes/recipe_002_no_pod.lua;",
+                    "DEBUG: Execute: false ./tests/pods/recipes/recipe_002_no_pod.lua",
                     "ERROR: Command exited with code '1'!"
                 }
             },

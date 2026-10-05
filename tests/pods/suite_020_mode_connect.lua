@@ -20,7 +20,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute connect command: ",
-                    "podman exec -it simple sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh';"
+                    "podman exec -it simple sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
                 }
             },
         },
@@ -31,7 +31,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute connect command: ",
-                    "podman exec -it simple sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh';"
+                    "podman exec -it simple sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
                 }
             },
         },
@@ -42,7 +42,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute connect command: ",
-                    "podman exec -it cmd_pod-1 sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh';"
+                    "podman exec -it cmd_pod-1 sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
                 }
             },
         },
@@ -53,7 +53,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute connect command: ",
-                    "podman exec -it cmd_pod-db sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh';"
+                    "podman exec -it cmd_pod-db sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
                 }
             },
         },
@@ -64,7 +64,7 @@ return {
             expectations = {
                 sequence = {
                     "Execute connect command: ",
-                    "podman exec -it my_absolute_container sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh';"
+                    "podman exec -it my_absolute_container sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'"
                 },
                 not_contains = {
                     "cannot open",

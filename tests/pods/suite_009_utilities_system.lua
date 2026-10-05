@@ -178,5 +178,31 @@ return {
             end,
             expected = false,
         },
+        [s .. "16"] = {
+            description = "system.exec_capture captures output correctly and returns success=true on zero exit.",
+            run = function()
+                local lines, success = system.exec_capture("echo 'hello'; echo 'world'")
+                return lines ~= nil and #lines == 2 and lines[1] == "hello" and lines[2] == "world" and success == true
+            end,
+            expected = true,
+        },
+        [s .. "17"] = {
+            description = "system.exec_capture returns success=false when command fails and suppresses STDERR.",
+            run = function()
+                -- Trying to cat a nonexistent file will output to stderr, which should be suppressed
+                local lines, success = system.exec_capture("cat /non/existent/path/for/test/123")
+                return lines ~= nil and #lines == 0 and success == false
+            end,
+            expected = true,
+        },
+        [s .. "18"] = {
+            description = "system.exec does not append semicolon to background commands.",
+            run = function()
+                -- Test that a command ending with & does not fail with syntax error
+                local success, _, exit_code = system.exec("sleep 0.01 &", { interactive = false, silent = true })
+                return success == true and exit_code == 0
+            end,
+            expected = true,
+        },
     }
 }

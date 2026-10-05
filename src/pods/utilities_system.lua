@@ -129,9 +129,6 @@ function system.exec(command, options)
 
     local final_command = command
     local print_command = command
-    if not string.ends_with(print_command, ";") then
-        print_command = print_command .. ";"
-    end
 
     if not interactive then
         final_command = print_command
@@ -192,18 +189,22 @@ end
 
 ---Executes a shell command and captures standard output into an array of lines.
 ---@param command string The shell command to execute.
----@return table|nil An array of output lines, or nil if execution failed.
+---@return table|nil lines An array of output lines, or nil if execution failed.
+---@return boolean success True if the command exited cleanly.
 function system.exec_capture(command)
     if type(command) ~= "string" then error("Expected string for command, got " .. type(command), 2) end
-    local handle = io.popen(command)
-    if not handle then return nil end
+
+    -- Redirect STDERR to /dev/null to prevent console bleeding
+    local handle = io.popen("( " .. command .. " ) 2>/dev/null")
+    if not handle then return nil, false end
 
     local lines = {}
     for line in handle:lines() do
         lines[#lines + 1] = line
     end
-    handle:close()
-    return lines
+
+    local success = handle:close()
+    return lines, (success == true)
 end
 
 ---Evaluates whether a file exists and is readable at the specified path.

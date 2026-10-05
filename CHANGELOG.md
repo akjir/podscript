@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Fixed cryptic file open error when showing missing recipes in `recipe` mode.
 - Fixed status column alignment for items exceeding default padding limit.
+- Fixed silent error swallowing in `system.exec_capture` when commands fail.
+- Fixed `STDERR` output console bleeding in `system.exec_capture`.
+- Fixed syntax errors for background commands by removing appended semicolons in `system.exec`.
 
 ### Removed
 
