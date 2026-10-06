@@ -1,10 +1,10 @@
 ---
 id: PSP-007
 title: Log Aggregation and Tailing (`logs` mode)
-status: review
+status: completed
 type: feature
 created: 2026-09-26
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 
 # PSP-007: Log Aggregation and Tailing (`logs` mode)
@@ -45,9 +45,9 @@ PodScript currently lacks a native way to view or tail logs for containers manag
 * **Execution:**
   * The command resolves the specified recipe to extract the `pod.name`.
   * If a container is specified, it resolves the container name and translates it into the Podman command: `podman pod logs -n --color -c <resolved_container> [user_options] <pod_name>`. Otherwise, it omits the `-c` flag.
-  * Uses blocking execution (e.g., `os.execute`) to stream `stdout` and `stderr` directly to the terminal.
+  * Uses `system.exec` with the `interactive = true` option to properly stream `stdout` and `stderr` directly to the terminal, avoiding output suppression.
 * **Simulation:**
-  * `pods simulate logs [OPTIONS] <action> <recipe>[/container]` prints the resolved Podman command instead of executing it.
+  * `pods logs --simulate [OPTIONS] <action> <recipe>[/container]` prints the resolved Podman command instead of executing it.
 * **Output & Exit Codes:**
   * Exits with the exit code returned by the underlying Podman process.
 
@@ -90,8 +90,7 @@ PodScript currently lacks a native way to view or tail logs for containers manag
   * Appends `recipe.pod.name`.
 * **Execution**:
   * Constructs the final string with `table.concat(commands, " ")`. Must safely quote/escape user-provided strings (like timestamps) to prevent shell injection.
-  * If `context.flags.simulate` is true, prints the command using `log.print`.
-  * If executing for real, the best approach is to use standard `os.execute` directly rather than `system.exec(..., direct=true)`, because PodScript's `system.exec` suppresses `stderr` in direct mode, but `stderr` is crucial for Podman log streams.
+  * Uses `system.exec(command_str, { simulate = context.flags.simulate, interactive = true, silent = true })`. The `interactive` flag is crucial as it ensures `stdout` and `stderr` are fully attached to the terminal without redirection, which is necessary for Podman log streams.
 * Strict Lua 5.5 rules (`global<const> *`) and PodScript style guidelines must be followed.
 
 ### 2.4 Testing Strategy
@@ -112,17 +111,22 @@ PodScript currently lacks a native way to view or tail logs for containers manag
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Implement comprehensive unit tests in `tests/pods/` (TDD phase).
-- [ ] Implement core logic in `src/pods/mode_logs.lua` to pass the tests.
-- [ ] Register `logs` mode in `src/pods/main.lua`.
-- [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Add entry to `CHANGELOG.md`.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [x] Implement comprehensive unit tests in `tests/pods/` (TDD phase).
+- [x] Implement core logic in `src/pods/mode_logs.lua` to pass the tests.
+- [x] Register `logs` mode in `src/pods/main.lua`.
+- [x] Update `USAGE.md` with new CLI syntax.
+- [x] Add entry to `CHANGELOG.md`.
+- [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
+- [x] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-26:** Initial concept specification created. Enforced `--color` and `--names` by default for improved UX over raw Podman defaults.
 * **2026-09-28:** Updated proposal to include `--timestamps`, implicit `show` action, `--tail` support, explicit shell-escaping/test-mocking requirements, and renamed the `tail` action to `follow`.
+* **2026-10-06:** Updated proposal to reflect the final implementation, which successfully adopted `system.exec` with `interactive = true` to preserve `stderr` streams directly to the terminal, and uses `--simulate` instead of a dedicated mode. Feature fully implemented and documented.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+* `src/pods/mode_logs.lua` (Implementation of the `logs` mode)
+* Updated `src/pods/main.lua` to register the mode
+* Unit tests in `tests/pods/suite_019_mode_logs.lua`
+* Updated `USAGE.md` with `logs` mode syntax and behavior
+* Entry added to `CHANGELOG.md`
