@@ -24,6 +24,13 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-018` | Human-Readable Recipe Output | `feature` | `concept` | [psp-018-human-recipe-output.md](psp-018-human-recipe-output.md) |
 | `PSP-021` | Simulate Flag Migration | `architecture` | `done` | [psp-021-simulate-flag-migration.md](psp-021-simulate-flag-migration.md) |
 
+| `PSP-022` | Native Container Image Building | `feature` | `concept` | [psp-022-native-build-support.md](psp-022-native-build-support.md) |
+| `PSP-023` | Resource Limits and Hardware Quotas | `feature` | `concept` | [psp-023-resource-limits.md](psp-023-resource-limits.md) |
+| `PSP-024` | Remote Host Orchestration | `feature` | `concept` | [psp-024-remote-host-orchestration.md](psp-024-remote-host-orchestration.md) |
+| `PSP-025` | Deployment History and Rollback Mechanism | `feature` | `concept` | [psp-025-rollback-mechanism.md](psp-025-rollback-mechanism.md) |
+| `PSP-026` | Podman Auto-Update Integration | `feature` | `concept` | [psp-026-auto-update-integration.md](psp-026-auto-update-integration.md) |
+| `PSP-027` | Declarative File Seeding | `feature` | `concept` | [psp-027-file-seeding.md](psp-027-file-seeding.md) |
+
 ### Completed Proposals
 
 | ID | Title | Type | Status | Specification |
