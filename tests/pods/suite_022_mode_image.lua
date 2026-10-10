@@ -47,22 +47,25 @@ return {
                 }
             },
         },
-        [s .. "05"] = {
+                [s .. "05"] = {
             description = "Test image prune preview with mock.",
             parameters = { "image", "--preview", "prune" },
             run = function()
                 local old_exec_capture = system.exec_capture
                 local captured_cmd = nil
 
-                -- mock the podman images query
                 ---@diagnostic disable-next-line: duplicate-set-field
                 system.exec_capture = function(cmd)
-                    captured_cmd = cmd
-                    local lines = {
-                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
-                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
-                    }
-                    return lines, true
+                    if string.find(cmd, "podman ps %-aq") then
+                        return {}, true
+                    else
+                        captured_cmd = cmd
+                        local lines = {
+                            "abcd1234efgh;;;long1;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
+                            "ijkl5678mnop;;;long2;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
+                        }
+                        return lines, true
+                    end
                 end
 
                 main({"image", "--preview", "prune", "--config=tests/pods/configs/config_001_default"})
@@ -71,7 +74,7 @@ return {
 
                 return captured_cmd
             end,
-            expected = "podman images --filter dangling=true --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
+            expected = "podman images --filter dangling=true --format \"{{.ID}};;;{{.Id}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
         },
         [s .. "06"] = {
             description = "Test image prune preview all with mock.",
@@ -80,11 +83,14 @@ return {
                 local old_exec_capture = system.exec_capture
                 local captured_cmd = nil
 
-                -- mock the podman images query
                 ---@diagnostic disable-next-line: duplicate-set-field
                 system.exec_capture = function(cmd)
-                    captured_cmd = cmd
-                    return {}, true
+                    if string.find(cmd, "podman ps %-aq") then
+                        return {}, true
+                    else
+                        captured_cmd = cmd
+                        return {}, true
+                    end
                 end
 
                 main({"image", "--preview", "--all", "prune", "--config=tests/pods/configs/config_001_default"})
@@ -93,22 +99,28 @@ return {
 
                 return captured_cmd
             end,
-            expected = "podman images --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
+            expected = "podman images --format \"{{.ID}};;;{{.Id}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
         },
         [s .. "07"] = {
-            description = "Test image prune preview output formatting.",
+            description = "Test image prune preview output formatting and exclusion logic.",
             parameters = { "image", "--preview", "prune" },
             run = function()
                 local old_exec_capture = system.exec_capture
 
-                -- mock the podman images query
                 ---@diagnostic disable-next-line: duplicate-set-field
                 system.exec_capture = function(cmd)
-                    local lines = {
-                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
-                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
-                    }
-                    return lines, true
+                    if string.find(cmd, "podman ps %-aq") then
+                        return {"c1"}, true
+                    elseif string.find(cmd, "podman inspect") then
+                        -- returns the long ID of the second image, meaning it is in use
+                        return {"long2"}, true
+                    else
+                        local lines = {
+                            "abcd1234efgh;;;long1;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
+                            "ijkl5678mnop;;;long2;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
+                        }
+                        return lines, true
+                    end
                 end
 
                 main({"image", "--preview", "prune", "--config=tests/pods/configs/config_001_default"})
@@ -121,9 +133,11 @@ return {
                 sequence = {
                     "Images to be pruned:",
                     "  - my-repo:1.0",
-                    "  - ijkl5678mnop",
                     "---------------------------------------------------------------------------",
                     "Total space reclaimable:"
+                },
+                not_sequence = {
+                    "  - ijkl5678mnop"
                 }
             }
         }

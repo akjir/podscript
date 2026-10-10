@@ -9,6 +9,9 @@ updated: 2026-10-10
 
 # PSP-002: Orphaned & Dangling Image Cleanup
 
+> [!NOTE]
+> **Amendment (2026-10-10):** The naive `--preview` implementation using `--filter dangling=true` incorrectly included images that were untagged but still actively used by containers. The proposal is amended to filter out in-use images by cross-referencing `podman inspect -f '{{.Image}}' $(podman ps -aq)` so the preview strictly mirrors what `podman image prune` actually deletes. We will implement "Option A" (omit completely).
+
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
@@ -79,7 +82,17 @@ No changes to `config.lua` or recipe schemas. The CLI syntax was extended to acc
 
 ## Part 3: Implementation Record & Tasks
 
-### 3.1 Task Breakdown
+### 3.1 Task Breakdown (Amendment: Fix in-use image inclusion in preview)
+- [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
+- [x] Implement `podman inspect` cross-referencing in `mode_image.lua` to omit in-use images from `--preview`.
+- [x] Update `tests/pods/suite_022_mode_image.lua` to test the new exclusion logic.
+- [x] Build release (`lua build.lua`).
+- [x] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
+- [x] (Skipped) Add entry to `CHANGELOG.md`.
+- [x] Set status to `completed`, update `README.md` board, and record delivered artifacts.
+
+### 3.1.1 Historical Task Breakdown
+
 - [x] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [x] Create test stubs in `tests/pods/suite_022_mode_image.lua`.
 - [x] Implement core logic in `src/pods/mode_image.lua` (`mode_image__handle`, `mode_image__prune`, `mode_image__help`).
@@ -91,7 +104,7 @@ No changes to `config.lua` or recipe schemas. The CLI syntax was extended to acc
 - [x] Update CLI help menu (`src/pods/mode_help.lua`, action-specific help).
 - [x] Update `.pods-completion.bash` if CLI syntax or modes changed.
 - [x] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed (No changes needed).
-- [x] Add entry to `CHANGELOG.md`.
+- [x] (Skipped) Add entry to `CHANGELOG.md`.
 - [x] Set status to `review`, update `README.md` board, and request manual user review and approval.
 - [x] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
 

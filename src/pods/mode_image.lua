@@ -57,8 +57,23 @@ local function mode_image__prune(context)
     local is_preview = context.flags["preview"] ~= nil
 
     if is_preview then
+        local in_use_images = {}
+        local container_ids, success_ids = system.exec_capture("podman ps -aq")
+        if success_ids and container_ids and #container_ids > 0 then
+            local inspect_cmd = "podman inspect -f '{{.Image}}' $(podman ps -aq)"
+            local in_use_lines = system.exec_capture(inspect_cmd)
+            if in_use_lines then
+                for i = 1, #in_use_lines do
+                    local img_id = string.trim(in_use_lines[i])
+                    if not string.is_nil_or_empty(img_id) then
+                        in_use_images[img_id] = true
+                    end
+                end
+            end
+        end
+
         local filter = is_all and "" or "--filter dangling=true "
-        local command = "podman images " .. filter .. "--format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
+        local command = "podman images " .. filter .. "--format \"{{.ID}};;;{{.Id}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
 
         local output_lines, success = system.exec_capture(command)
         if not success or output_lines == nil then
@@ -74,32 +89,35 @@ local function mode_image__prune(context)
             return
         end
 
-        log.print("Images to be pruned:")
+        local output_buffer = {}
 
         for i = 1, #output_lines do
             local line = output_lines[i]
             if not string.is_nil_or_empty(line) then
                 local parts = string.split(line, ";;;")
-                if #parts >= 5 then
-                    images_found = true
+                if #parts >= 6 then
                     local id = parts[1]
-                    local repo = parts[2]
-                    local tag = parts[3]
-                    local size_str = parts[4]
-                    local created_str = parts[5]
+                    local long_id = parts[2]
+                    local repo = parts[3]
+                    local tag = parts[4]
+                    local size_str = parts[5]
+                    local created_str = parts[6]
 
-                    local bytes = util.parse_size_to_bytes(size_str)
-                    total_bytes = total_bytes + bytes
+                    if not in_use_images[long_id] then
+                        images_found = true
+                        local bytes = util.parse_size_to_bytes(size_str)
+                        total_bytes = total_bytes + bytes
 
-                    local display_name = repo
-                    if repo == "<none>" then
-                        display_name = id
-                    elseif tag ~= "<none>" then
-                        display_name = repo .. ":" .. tag
+                        local display_name = repo
+                        if repo == "<none>" then
+                            display_name = id
+                        elseif tag ~= "<none>" then
+                            display_name = repo .. ":" .. tag
+                        end
+
+                        local left_side = string.format("  - %-45s (%s)", display_name, created_str)
+                        table.insert(output_buffer, util.format_line(left_side, size_str, 75))
                     end
-
-                    local left_side = string.format("  - %-45s (%s)", display_name, created_str)
-                    log.print(util.format_line(left_side, size_str, 75))
                 end
             end
         end
@@ -107,9 +125,14 @@ local function mode_image__prune(context)
         if not images_found then
             log.print("No images found to prune.")
         else
+            log.print("Images to be pruned:")
+            for i = 1, #output_buffer do
+                log.print(output_buffer[i])
+            end
             log.print(string.rep("-", 75))
             log.print(util.format_line("Total space reclaimable:", util.format_bytes(total_bytes), 75))
         end
+
     else
         local cmd_args = {"podman", "image", "prune", "-f"}
         if is_all then
