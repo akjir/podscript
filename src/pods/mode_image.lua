@@ -58,7 +58,7 @@ local function mode_image__prune(context)
 
     if is_preview then
         local filter = is_all and "" or "--filter dangling=true "
-        local command = "podman images " .. filter .. "--format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}}\""
+        local command = "podman images " .. filter .. "--format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
 
         local output_lines, success = system.exec_capture(command)
         if not success or output_lines == nil then
@@ -80,12 +80,13 @@ local function mode_image__prune(context)
             local line = output_lines[i]
             if not string.is_nil_or_empty(line) then
                 local parts = string.split(line, ";;;")
-                if #parts >= 4 then
+                if #parts >= 5 then
                     images_found = true
                     local id = parts[1]
                     local repo = parts[2]
                     local tag = parts[3]
                     local size_str = parts[4]
+                    local created_str = parts[5]
 
                     local bytes = util.parse_size_to_bytes(size_str)
                     total_bytes = total_bytes + bytes
@@ -97,7 +98,8 @@ local function mode_image__prune(context)
                         display_name = repo .. ":" .. tag
                     end
 
-                    log.print(util.format_line("  - " .. display_name, size_str, 60))
+                    local left_side = string.format("  - %-45s (%s)", display_name, created_str)
+                    log.print(util.format_line(left_side, size_str, 75))
                 end
             end
         end
@@ -105,8 +107,8 @@ local function mode_image__prune(context)
         if not images_found then
             log.print("No images found to prune.")
         else
-            log.print(string.rep("-", 60))
-            log.print(util.format_line("Total space reclaimable:", util.format_bytes(total_bytes), 60))
+            log.print(string.rep("-", 75))
+            log.print(util.format_line("Total space reclaimable:", util.format_bytes(total_bytes), 75))
         end
     else
         local cmd_args = {"podman", "image", "prune", "-f"}

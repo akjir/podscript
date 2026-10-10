@@ -59,8 +59,8 @@ return {
                 system.exec_capture = function(cmd)
                     captured_cmd = cmd
                     local lines = {
-                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB",
-                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB"
+                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
+                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
                     }
                     return lines, true
                 end
@@ -71,7 +71,7 @@ return {
 
                 return captured_cmd
             end,
-            expected = "podman images --filter dangling=true --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}}\""
+            expected = "podman images --filter dangling=true --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
         },
         [s .. "06"] = {
             description = "Test image prune preview all with mock.",
@@ -93,7 +93,7 @@ return {
 
                 return captured_cmd
             end,
-            expected = "podman images --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}}\""
+            expected = "podman images --format \"{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}};;;{{.Created}}\""
         },
         [s .. "07"] = {
             description = "Test image prune preview output formatting.",
@@ -105,8 +105,8 @@ return {
                 ---@diagnostic disable-next-line: duplicate-set-field
                 system.exec_capture = function(cmd)
                     local lines = {
-                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB",
-                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB"
+                        "abcd1234efgh;;;my-repo;;;1.0;;;10.5 MB;;;2 weeks ago",
+                        "ijkl5678mnop;;;<none>;;;<none>;;;500 kB;;;3 weeks ago"
                     }
                     return lines, true
                 end
@@ -122,7 +122,7 @@ return {
                     "Images to be pruned:",
                     "  - my-repo:1.0",
                     "  - ijkl5678mnop",
-                    "------------------------------------------------------------",
+                    "---------------------------------------------------------------------------",
                     "Total space reclaimable:"
                 }
             }
