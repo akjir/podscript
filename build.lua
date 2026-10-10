@@ -265,7 +265,6 @@ local pods_files = {
     "mode_config",
     "mode_default",
     "mode_logs",
-    "mode_help",
     "mode_image",
     "mode_init",
     "main",

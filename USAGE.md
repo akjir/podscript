@@ -47,7 +47,7 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Actions](#actions-5)
   - [Options](#options-5)
   - [Usage](#usage-5)
-- [Help Mode](#help-mode)
+- [Getting Help](#getting-help)
   - [Usage](#usage-6)
 - [Comprehensive Examples](#comprehensive-examples)
   - [Configuration File (`config.lua`)](#configuration-file-configlua)
@@ -176,7 +176,6 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | `config`   | **Config Mode**: Displays or modifies the active PodScript configuration file. |
 | `image`    | **Image Mode**: Manages orphaned and dangling container images on the host. |
 | `recipe`   | **Recipe Mode**: Displays or modifies a specific recipe file. |
-| `help`     | **Help Mode**: Displays command-line syntax and usage instructions. |
 
 ---
 
@@ -202,6 +201,7 @@ The `--simulate` flag causes commands to be printed rather than executed across 
 | Action | Description |
 | :--- | :--- |
 | `create` | Create and start a new pod and its containers in the order defined by the recipe. |
+| `help` | Display command-line syntax and usage instructions for the default mode. |
 | `recreate` | Stop and remove an existing pod and its containers in reverse order, then recreate them anew. |
 | `remove` | Stop and remove a running pod and all associated containers in reverse order. |
 | `status` | Query and display runtime status of managed containers. Target list is optional. |
@@ -645,9 +645,9 @@ pods --config=staging recipe show web-service
 
 ---
 
-## Help Mode
+## Getting Help
 
-The `help` mode prints syntax summaries, available modes, options, and actions directly in the terminal.
+You can use `help` as an action across all modes to print syntax summaries, options, and actions directly in the terminal.
 
 ```bash
 pods help
@@ -658,7 +658,7 @@ pods <mode> help
 ### Usage
 
 ```bash
-# Display general help
+# Display general help (default mode)
 pods help
 
 # Display help for config mode

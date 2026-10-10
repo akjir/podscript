@@ -27,7 +27,6 @@ require "src.pods.mode_connect"
 require "src.pods.mode_recipe"
 require "src.pods.mode_config"
 require "src.pods.mode_default"
-require "src.pods.mode_help"
 require "src.pods.mode_image"
 require "src.pods.mode_init"
 require "src.pods.mode_logs"
@@ -107,7 +106,8 @@ local function main__parse_arguments(context, arguments, modes)
     -- no arguments
     -- don't use table__size, it will be 2 (key -1 and 0 are used)
     if #arguments == 0 then
-        context.mode = modes.help
+        table.insert(context.parameters, "help")
+        context.mode = modes.default
         return
     end
     -- parse arguments
@@ -149,7 +149,6 @@ global function main(arguments)
         config = mode_config__handle,
         connect = mode_connect__handle,
         default = mode_default__handle,
-        help = mode_help__handle,
         image = mode_image__handle,
         init = mode_init__handle,
         logs = mode_logs__handle,
@@ -229,7 +228,11 @@ global function main(arguments)
     context.config.path = config_full_path
 
     -- handle modes that do not require configuration
-    if context.mode == modes.help or context.mode == modes.init or context.mode == modes.image then
+    if context.mode == modes.init or context.mode == modes.image then
+        context.mode(context)
+        return
+    end
+    if context.mode == modes.default and context.parameters[1] == "help" then
         context.mode(context)
         return
     end

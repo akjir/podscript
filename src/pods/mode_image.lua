@@ -149,7 +149,7 @@ local function mode_image__prune(context)
             end
         end
 
-        system.exec(cmd, { prefix = "Prune images: ", simulate = context.flags.simulate, interactive = true })
+        system.exec(cmd, { prefix = "Prune images: ", simulate = context.flags.simulate })
     end
 end
 

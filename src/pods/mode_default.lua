@@ -222,6 +222,40 @@ global function mode_default__status(context, targets)
     end
 end
 
+---Displays the help text for the default mode, outputting global usage, available modes, actions, and options.
+---@param context table Application context.
+global function mode_default__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  command            execute a command defined in a recipe")
+    log.print("  config             manage and inspect configuration")
+    log.print("  connect            connect to a running container with an interactive shell")
+    log.print("  image              manage orphaned and dangling container images")
+    log.print("  init               initialize default configuration and recipe")
+    log.print("  logs               show or follow logs for a pod or container")
+    log.print("  recipe             inspect and edit recipes\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them")
+    log.print("  --all              include all unmanaged podman containers (status only)\n")
+    log.print("Valid in default mode only:\n")
+    log.print("ACTIONS:")
+    log.print("  create             create a new pod")
+    log.print("  help               display this help and exit")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  status             display status of pods and containers")
+    log.print("  update             update all defined images of the pod\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
 ---Displays the help text for the status action within the default mode.
 ---@param context table Application context.
 global function mode_default__status_help(context)
@@ -251,7 +285,7 @@ global function mode_default__handle(context)
         log.error("No action set.")
         return
     end
-    if not table.contains({ "create", "recreate", "remove", "update", "status" }, action) then
+    if not table.contains({ "create", "recreate", "remove", "update", "status", "help" }, action) then
         log.error("Unknown action '" .. action .. "'.")
         return
     end
@@ -259,8 +293,13 @@ global function mode_default__handle(context)
     local targets = table.sub(context.parameters, 2)
 
     -- validate targets
-    if table.is_nil_or_empty(targets) and action ~= "status" then
+    if table.is_nil_or_empty(targets) and action ~= "status" and action ~= "help" then
         log.error("No targets set.")
+        return
+    end
+
+    if action == "help" then
+        mode_default__help(context)
         return
     end
 

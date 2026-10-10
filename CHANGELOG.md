@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Replaced `simulate` mode with global `--simulate` flag for standard CLI syntax.
 - Changed default action for `recipe` mode from `help` to `list`.
+- Changed `help` from a standalone mode to a default mode action.
 
 ### Fixed
 
