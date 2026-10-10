@@ -20,7 +20,7 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 ### 1.3 Goals & Non-Goals
 * **Goals:**
     * Detect non-existent host volume mount paths before launching containers.
-    * Introduce a new configuration option `settings.auto_create_directories` (default: `false`).
+    * Introduce a new configuration option `auto_create_directories` at the root level of the configuration (default: `false`).
     * If `auto_create_directories` is `false`: Emit an error and abort container creation when directories are missing.
     * If `auto_create_directories` is `true`: Emit a warning and automatically create missing directories (equivalent to `mkdir -p`) with current user permissions.
     * Abort container creation if directory creation fails.
@@ -31,7 +31,7 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
     * Modifying existing directory permissions if the folder already exists.
 
 ### 1.4 Description
-* **Configuration:** Add `auto_create_directories = false` to the default `config.lua` template under the `settings` block.
+* **Configuration:** Add `auto_create_directories = false` to the default `config.lua` template at the root level (alongside options like `editor`).
 * Runs transparently during `pods create` and `pods recreate` (ignored during `pods update`).
 * **When `auto_create_directories` is `false` (default):**
     * If a directory is missing, Logs: `ERROR: Volume host directory does not exist: '/path/to/dir'.`
@@ -52,35 +52,41 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `src/pods/config.lua` (or init templates)
+* `src/pods/config.lua` (and `mode_init.lua` for default templates)
 * `src/pods/utilities_system.lua`
 * `src/pods/container.lua`
 
 ### 2.2 Schema & Syntax Changes
-* Introduce `settings.auto_create_directories` in the `config.lua` structure. The default value should be `false`. `pods init` templates need to be updated to include this option.
+* Introduce `auto_create_directories` in the `config.lua` structure at the root level. The default value should be `false`. `pods init` templates and the repository's main `config.lua` need to be updated to include this option.
 
 ### 2.3 Implementation Details
-* **Configuration:**
-    * Add `auto_create_directories = false` to the configuration definition and `init` templates.
+* **Configuration Defaults:**
+    * Modify `mode_init.lua` templates, the repository's root `/config.lua`, and any default config initialization to include `auto_create_directories = false` at the root configuration level.
 * **Directory Helpers in `utilities_system.lua`:**
-    * Add `system.directory_exists(path)` using `test -d` or `io.open`.
-    * Add `system.make_directory(path, simulate)` executing `mkdir -p`. Check the return code and return success/failure.
+    * **Reuse Existing Validation:** Utilize the already existing `function system.directory_exists(full_path)` to check for directory presence.
+    * **Safe Creation Function:** Implement `function system.make_directory(full_path, simulate)`.
+        * **Command Injection Prevention:** The path must be strictly escaped before execution (e.g., `local safe_path = "'" .. full_path:gsub("'", "'\\''") .. "'"`).
+        * **No Console Spam:** Execute `mkdir -p` with `2>/dev/null` appended to suppress raw shell errors from leaking into the terminal.
+        * **Execution:** If `simulate` is `true`, it only logs the intended action. Otherwise, it executes the escaped command. Check the return code and emit the failure cleanly via `log.error` if creation fails.
 * **Volume Path Resolution in `container.lua`:**
-    * In `container__create`, iterate over `container.volumes`.
-    * For each entry with a host directory (ignoring empty or purely container-internal mounts), verify existence using `system.directory_exists`.
-    * Based on `context.config.settings.auto_create_directories`:
-        * If missing and option is false: throw error, abort.
-        * If missing and option is true: log warning, call `system.make_directory`. If it fails, throw error, abort.
-    * Do not execute this check during `pods update`.
+    * In `global function container__create(context, container, config)`, iterate over `container.volumes` before invoking the container run command.
+    * **Strict Type Checking (Early Validation):** For each entry `local host_dir = container.volumes[i][1]`, explicitly verify that it exists and `type(host_dir) == "string"` to prevent silent failures.
+    * Ensure it is a host directory path (e.g., starts with `/` or `.`), skipping named volumes.
+    * Use `system.directory_exists(host_dir)` to verify existence.
+    * Check `context.config.auto_create_directories`:
+        * If `false` and directory is missing: `log.error("Volume host directory does not exist: " .. host_dir)` and return an error or invoke `os.exit(1)`.
+        * If `true` and directory is missing: `log.warning("Volume host directory does not exist: " .. host_dir .. ". Creating directory.")`, then call `system.make_directory(host_dir, context.simulate)`. If creation fails, log the error cleanly and abort.
+* **Note:** Avoid singletons and global state to preserve test runner isolation; rely on explicit parameter passing via `context`. Ensure action-specific flags (if any were added) are explicitly separated from global flags (e.g., `--simulate`).
 
 ### 2.4 Testing Strategy
 * Update default configuration test cases.
-* Mock directory existence and creation checks.
+* Mock `system.exec` to intercept `test -d` and `mkdir -p` commands.
 * Test with relative host paths (`./data`), absolute paths (`/tmp/pod_test`), and nonexistent paths.
 * Test behavior when `auto_create_directories` is `true` vs `false`.
 * Test failure paths when directory creation fails (e.g. no permissions).
 * Verify behavior under `--simulate`.
 * Add test cases to `tests/pods/suite_008_containers.lua` or `tests/pods/suite_009_utilities_system.lua`.
+* **Note:** Ensure mock configurations do not trigger unwanted shell side-effects (e.g., suppress shell errors by mocking appropriately).
 
 ---
 
@@ -88,23 +94,28 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Update `config.lua` and `mode_init.lua` templates to include `auto_create_directories = false` under `settings`.
 - [ ] Create test stubs for new behavior in `tests/pods/`.
-- [ ] Add `system.directory_exists(path)` and `system.make_directory(path, simulate)` to `src/pods/utilities_system.lua`.
-- [ ] Implement volume check logic in `src/pods/container.lua` (`container__create`).
+- [ ] Implement core logic in `src/pods/` (ensure idiomatic naming conventions).
+    * [ ] Update `mode_init.lua` and the repository's root `/config.lua` to include `auto_create_directories = false`.
+    - [ ] Add `function system.make_directory` to `utilities_system.lua`.
+    - [ ] Add the strict type verification and directory check loop in `container__create`.
 - [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` to document the new `auto_create_directories` configuration option.
-- [ ] Add entry to `CHANGELOG.md` for this feature.
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [ ] Update `USAGE.md` with new CLI syntax/configuration options.
+- [ ] Update `README.md` (check for broken markdown tables) and `AGENTS.md` (update Architecture list if files were added/removed).
+- [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
+- [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
+- [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
+- [ ] Add entry to `CHANGELOG.md` (skip for internal test/dev/refactoring changes).
+- [ ] Set status to `review`, update `BOARD.md`, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `BOARD.md`, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.
 * **2026-09-26:** Migrated to `.agents/features/psp-003-volume-dir-check.md`.
 * **2026-09-26:** Refactored proposal to match 3-part template.
-* **2026-10-10:** Extended proposal with `auto_create_directories` configuration option and strict error handling.
+* **2026-10-10:** Extended proposal with `auto_create_directories` configuration option and strict error handling. Aligned the structure with latest `TEMPLATE.md` changes.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*
