@@ -39,9 +39,11 @@ Exact changes to `config.lua`, recipe schemas, or internal data structures.
 
 ### 2.3 Implementation Details
 Precise descriptions of the code changes to be made. This includes function signatures, variable scopes, strictly typed `global<const>` additions, and Podman command construction.
+* **Note:** Avoid singletons and global state to preserve test runner isolation; rely on explicit parameter passing. Ensure action-specific flags (e.g., `--preview`) are explicitly separated from global flags (e.g., `--simulate`).
 
 ### 2.4 Testing Strategy
 Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless vs. elevated behaviors) required to satisfy TDD.
+* **Note:** Ensure mock configurations do not trigger unwanted shell side-effects (e.g., suppress shell errors by mocking appropriately).
 
 ---
 
@@ -50,17 +52,18 @@ Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless
 ### 3.1 Task Breakdown
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [ ] Create test stubs in `tests/pods/` (or `tests/pods-converter/`).
-- [ ] Implement core logic in `src/pods/` (or `src/pods-converter/`).
+- [ ] Implement core logic in `src/pods/` (or `src/pods-converter/`). Ensure consistent naming conventions (`prefix__*`).
 - [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with new CLI syntax.
+- [ ] Update `USAGE.md` with new CLI syntax (check examples and Modes Overview).
+- [ ] Update `README.md` (check for broken markdown tables) and `AGENTS.md` (update Architecture list if files were added/removed).
 - [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
 - [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
 - [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
 - [ ] Add entry to `CHANGELOG.md` (skip for internal test/dev/refactoring changes).
-- [ ] Set status to `review`, update `README.md` board, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `README.md` board, and record delivered artifacts.
+- [ ] Set status to `review`, update `BOARD.md`, and request manual user review and approval.
+- [ ] Manual approval received; set status to `completed`, update `BOARD.md`, and record delivered artifacts.
 
 ### 3.2 Work Log & Decisions
 * **YYYY-MM-DD:** Initial concept drafted.

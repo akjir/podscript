@@ -33,7 +33,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
-| `PSP-002` | Orphaned | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `completed` | Dangling Image Cleanup | `feature` | `in-progress` | [psp-002-image-prune.md](psp-002-image-prune.md) |
+| `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `completed` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `completed` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
 | `PSP-017` | Human-Readable Configuration Output & Validation | `feature` | `completed` | [psp-017-human-config-output.md](psp-017-human-config-output.md) |
