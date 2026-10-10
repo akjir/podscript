@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "252.70b9b7b.dev"
+local BUILD <const> = "253.ab1cb10.dev"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -2588,7 +2588,7 @@ local function mode_image__prune(context)
             end
         end
 
-        system.exec(cmd, { prefix = "Prune images: ", simulate = context.flags.simulate })
+        system.exec(cmd, { prefix = "Prune images: ", simulate = context.flags.simulate, interactive = true })
     end
 end
 
