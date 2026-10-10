@@ -559,6 +559,8 @@ pods config edit
 
 The `image` mode manages orphaned and dangling container images on the host, helping to reclaim disk space used by old updates or untagged layers.
 
+> **Note on Safety:** Podman will **never** delete an image that is currently attached to a container (whether running or stopped), regardless of the commands or flags used. The `prune` commands strictly target *unused* images.
+
 ```bash
 pods image [OPTIONS] [ACTION]
 ```
@@ -567,16 +569,16 @@ pods image [OPTIONS] [ACTION]
 
 | Action | Description |
 | :--- | :--- |
-| `prune` | Safely remove dangling or unused container images. |
+| `prune` | Safely remove **dangling** (untagged) container images that are not in use by any container. |
 | `help` | Display command-line help for image mode. |
 
 ### Options
 
 | Option | Description |
 | :--- | :--- |
-| `--all` | Prune all unused images, not just dangling ones. |
+| `--all` | Prune **all** unused images (including unused tagged images), not just dangling ones. |
 | `--force` | Skip the interactive confirmation prompt. |
-| `--preview` | Preview the images that would be deleted and the total space reclaimable without executing the deletion. |
+| `--preview` | Preview the exact unused images that would be deleted and the total space reclaimable without executing the deletion. |
 
 ### Usage
 

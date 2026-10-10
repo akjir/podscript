@@ -22,8 +22,8 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     POD                NAMES    STATUS      RESTARTS   CREATED   ",
-                    "cid1   simple_container   simple   Up 2 days   0          2026-09-25"
+                    "ID     POD                NAMES    STATUS      RESTARTS   CREATED      IMAGE                  ",
+                    "cid1   simple_container   simple   Up 2 days   0          2026-09-25   simple.io/simple:latest"
                 }
             },
         },
@@ -61,9 +61,9 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     POD        NAMES               STATUS       RESTARTS   CREATED   ",
-                    "-      con_name   absolute            Not Found    -          -         ",
-                    "cid2   con_name   con_name-relative   Exited (1)   1          2026-09-26"
+                    "ID     POD        NAMES               STATUS       RESTARTS   CREATED      IMAGE                  ",
+                    "-      con_name   absolute            Not Found    -          -            -                      ",
+                    "cid2   con_name   con_name-relative   Exited (1)   1          2026-09-26   registry.io/name:latest"
                 }
             },
         },
@@ -84,10 +84,10 @@ return {
             end,
             expectations = {
                 sequence = {
-                    "ID     POD                NAMES               STATUS       RESTARTS   CREATED   ",
-                    "cid2   con_name           con_name-relative   Exited (1)   1          2026-09-26",
-                    "cid1   simple_container   simple              Up 2 days    0          2026-09-25",
-                    "cid3   unmanaged-pod      unmanaged           Up 3 days    0          2026-09-24"
+                    "ID     POD                NAMES               STATUS       RESTARTS   CREATED      IMAGE                  ",
+                    "cid2   con_name           con_name-relative   Exited (1)   1          2026-09-26   registry.io/name:latest",
+                    "cid1   simple_container   simple              Up 2 days    0          2026-09-25   simple.io/simple:latest",
+                    "cid3   unmanaged-pod      unmanaged           Up 3 days    0          2026-09-24   unmanaged:latest       "
                 }
             },
         },

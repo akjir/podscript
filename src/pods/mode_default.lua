@@ -69,7 +69,7 @@ global function mode_default__status(context, targets)
         for i = 1, #targets do
             targets_to_resolve[#targets_to_resolve + 1] = targets[i]
         end
-    elseif not context.flags.all then
+    else
         -- resolve all known recipes
         if context.config.recipes and context.config.recipes.groups then
             local recipe_map = {}
@@ -136,21 +136,19 @@ global function mode_default__status(context, targets)
             found_names[podman_containers[i].names] = true
         end
 
-        if not table.is_nil_or_empty(targets) then
-            for expected_name, info in pairs(managed_expected) do
-                if not found_names[expected_name] then
-                    display_containers[#display_containers + 1] = {
-                        id = "-",
-                        image = "-",
-                        command = "-",
-                        created = "-",
-                        status = "Not Found",
-                        ports = "-",
-                        names = expected_name,
-                        pod = info.pod_name,
-                        restarts = "-"
-                    }
-                end
+        for expected_name, info in pairs(managed_expected) do
+            if not found_names[expected_name] then
+                display_containers[#display_containers + 1] = {
+                    id = "-",
+                    image = "-",
+                    command = "-",
+                    created = "-",
+                    status = "Not Found",
+                    ports = "-",
+                    names = expected_name,
+                    pod = info.pod_name,
+                    restarts = "-"
+                }
             end
         end
     end
@@ -171,7 +169,7 @@ global function mode_default__status(context, targets)
     if context.flags.full then
         cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE", "COMMAND", "PORTS" }
     else
-        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED" }
+        cols = { "ID", "POD", "NAMES", "STATUS", "RESTARTS", "CREATED", "IMAGE" }
     end
 
     local pad_right = function(str, len)

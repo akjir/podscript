@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added `image` mode to prune orphaned and dangling container images.
 - Added cross-check to `recipe list` showing unconfigured files via `--all`.
+- Added `IMAGE` column to the default `status` command output.
+- Added `--all` option to `status` command to include unmanaged containers.
 
 ### Changed
 
