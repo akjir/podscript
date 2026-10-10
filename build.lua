@@ -19,67 +19,47 @@ this program.  If not, see <https://www.gnu.org/licenses/>.
 
 global<const> *
 
-local build
-local get_git_build_string
-local get_git_commit_count
-local get_git_commit_hash
-local is_git_dirty
-local iterate_lines
-local process_content
+--------------------------------------------------------------------------------
+-- I/O Helpers
+--------------------------------------------------------------------------------
 
-build = function(output_filename, source_dir, input_filenames, is_release)
-    local out_file = io.open(output_filename, "w")
-    if not out_file then
-        io.stderr:write("Error: Could not open output file: " .. output_filename .. "\n")
+---Reads the entire content of a file.
+---@param path string
+---@return string|nil
+local function read_file(path)
+    if type(path) ~= "string" then error("path must be a string", 2) end
+    local file = io.open(path, "r")
+    if not file then
+        return nil
+    end
+    local content = file:read("*a")
+    file:close()
+    return content
+end
+
+---Writes the given content to a file.
+---@param path string
+---@param content string
+---@return boolean
+local function write_file(path, content)
+    if type(path) ~= "string" then error("path must be a string", 2) end
+    if type(content) ~= "string" then error("content must be a string", 2) end
+    local file = io.open(path, "w")
+    if not file then
         return false
     end
-
-    local annotation = "---@build block:"
-    local git_build = get_git_build_string(is_release)
-    local state = {
-        build_string = (type(git_build) == "string" and git_build ~= "") and git_build or "0.unknown",
-        has_emitted_global_const = false,
-    }
-
-    for _, filename in ipairs(input_filenames) do
-        local path = source_dir .. "/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
-        local in_file = io.open(path, "r")
-        if not in_file then
-            io.stderr:write("Warning: Could not open file " .. path .. "\n")
-        else
-            local content = in_file:read("*a")
-            in_file:close()
-
-            if not content then
-                io.stderr:write("Warning: Could not read file " .. path .. "\n")
-            else
-                local start_idx = content:find(annotation, 1, true)
-                if start_idx then
-                    local line_end_idx = content:find("\n", start_idx, true)
-                    local block_content = line_end_idx and content:sub(line_end_idx + 1) or ""
-                    out_file:write(process_content(block_content, state))
-                else
-                    io.stderr:write("Warning: Build annotation not found in " .. path .. ". Skipping.\n")
-                end
-            end
-        end
-    end
-
-    out_file:close()
+    file:write(content)
+    file:close()
     return true
 end
 
-get_git_build_string = function(is_release)
-    local count = get_git_commit_count() or "0"
-    local hash = get_git_commit_hash() or "unknown"
-    local suffix = ""
-    if not is_release and is_git_dirty() then
-        suffix = ".dev"
-    end
-    return count .. "." .. hash .. suffix
-end
+--------------------------------------------------------------------------------
+-- Git Info
+--------------------------------------------------------------------------------
 
-get_git_commit_count = function()
+---Gets the total commit count for the current branch.
+---@return string
+local function get_git_commit_count()
     local handle = io.popen("git rev-list --count HEAD 2>/dev/null")
     if not handle then
         return "0"
@@ -92,7 +72,9 @@ get_git_commit_count = function()
     return result:match("^%s*(%d+)%s*$") or "0"
 end
 
-get_git_commit_hash = function()
+---Gets the short commit hash for the current HEAD.
+---@return string
+local function get_git_commit_hash()
     local handle = io.popen("git rev-parse --short HEAD 2>/dev/null")
     if not handle then
         return "unknown"
@@ -105,7 +87,9 @@ get_git_commit_hash = function()
     return result:match("^%s*(%x+)%s*$") or "unknown"
 end
 
-is_git_dirty = function()
+---Checks if the git working directory is dirty.
+---@return boolean
+local function is_git_dirty()
     local handle = io.popen("git status --porcelain 2>/dev/null")
     if not handle then
         return false
@@ -118,7 +102,29 @@ is_git_dirty = function()
     return (result:match("^%s*(.-)%s*$") or "") ~= ""
 end
 
-iterate_lines = function(content)
+---Generates the full build string for the current git state.
+---@param is_release boolean
+---@return string
+local function get_git_build_string(is_release)
+    if type(is_release) ~= "boolean" then error("is_release must be a boolean", 2) end
+    local count = get_git_commit_count() or "0"
+    local hash = get_git_commit_hash() or "unknown"
+    local suffix = ""
+    if not is_release and is_git_dirty() then
+        suffix = ".dev"
+    end
+    return count .. "." .. hash .. suffix
+end
+
+--------------------------------------------------------------------------------
+-- Code Processing
+--------------------------------------------------------------------------------
+
+---Returns an iterator over the lines in the given string content.
+---@param content string
+---@return function
+local function iterate_lines(content)
+    if type(content) ~= "string" then error("content must be a string", 2) end
     local pos = 1
     local len = #content
     return function()
@@ -138,23 +144,53 @@ iterate_lines = function(content)
     end
 end
 
-process_content = function(content, state)
+---Processes raw lua content based on build annotations.
+---@param content string
+---@param state table
+---@return string
+local function process_content(content, state)
+    if type(content) ~= "string" then error("content must be a string", 2) end
+    if type(state) ~= "table" then error("state must be a table", 2) end
+
     local result = {}
     local is_global = false
     local is_const = false
 
     for line in iterate_lines(content) do
-        local trimmed = line:match("^%s*(.-)%s*$")
-        if trimmed == "---@build global:" then
+        local current_line = line
+        if state.active_inserts and #state.active_inserts > 0 then
+            for _, insert_info in ipairs(state.active_inserts) do
+                local escaped_placeholder = insert_info.placeholder:gsub("[%^$()%%.%[%]*+%-?]", "%%%1")
+                current_line = current_line:gsub(escaped_placeholder, function() return insert_info.replacement end)
+            end
+        end
+
+        local trimmed = current_line:match("^%s*(.-)%s*$")
+        local insert_placeholder, insert_path = trimmed:match("^%-%-%-@build%s+insert:%s*{%s*\"([^\"]+)\"%s*,%s*\"([^\"]+)\"%s*}$")
+
+        if insert_placeholder and insert_path then
+            local file_content = read_file(insert_path)
+            if not file_content then
+                error("Build failed: Insert template not found at '" .. insert_path .. "'")
+            end
+            local formatted_content = string.format("%q", file_content)
+
+            if not state.active_inserts then state.active_inserts = {} end
+            table.insert(state.active_inserts, {
+                placeholder = '{"' .. insert_placeholder .. '"}',
+                replacement = formatted_content
+            })
+            -- Do not insert the annotation line into the result
+        elseif trimmed == "---@build global:" then
             is_global = true
             -- Do not insert the annotation line into the result
         elseif trimmed == "---@build const:" then
             is_const = true
             -- Do not insert the annotation line into the result
         elseif trimmed == "global<const> *" then
-            if state and not state.has_emitted_global_const then
+            if not state.has_emitted_global_const then
                 state.has_emitted_global_const = true
-                table.insert(result, line .. "\n")
+                table.insert(result, current_line .. "\n")
             end
         elseif trimmed ~= "" and not trimmed:match("^%-%-") then
             -- Genuine code line
@@ -174,21 +210,21 @@ process_content = function(content, state)
                 end
 
                 if name ~= "" and value ~= "" then
-                    local leading_ws = line:match("^(%s*)") or ""
+                    local leading_ws = current_line:match("^(%s*)") or ""
                     local final_val = value
-                    if name == "BUILD" and state then
+                    if name == "BUILD" then
                         local build_str = (type(state.build_string) == "string" and state.build_string ~= "") and state.build_string or "0.unknown"
                         final_val = string.format("%q", build_str)
                     end
                     table.insert(result, leading_ws .. "local " .. name .. " <const> = " .. final_val .. "\n")
                 else
-                    table.insert(result, line .. "\n")
+                    table.insert(result, current_line .. "\n")
                 end
                 is_const = false
             else
                 local fn_rest = trimmed:match("^global%s+function%s+([%w_.:].*)$") or trimmed:match("^function%s+([%w_.:].*)$")
                 if fn_rest then
-                    local leading_ws = line:match("^(%s*)") or ""
+                    local leading_ws = current_line:match("^(%s*)") or ""
                     if not is_global then
                         if string.find(fn_rest, "[.:]") then
                             table.insert(result, leading_ws .. "function " .. fn_rest .. "\n")
@@ -200,12 +236,12 @@ process_content = function(content, state)
                     end
                     is_global = false
                 else
-                    table.insert(result, line .. "\n")
+                    table.insert(result, current_line .. "\n")
                     is_global = false
                 end
             end
         else
-            table.insert(result, line .. "\n")
+            table.insert(result, current_line .. "\n")
         end
     end
 
@@ -217,25 +253,42 @@ process_content = function(content, state)
     return final
 end
 
+--------------------------------------------------------------------------------
+-- Build Execution
+--------------------------------------------------------------------------------
+
+---Checks for missing files in a source directory by comparing it with expected files.
+---@param source_dir string
+---@param expected_files table
 local function check_missing_files(source_dir, expected_files)
-    local handle = io.popen("ls " .. source_dir .. "/*.lua 2>/dev/null")
-    local src_files = ""
-    if handle then
-        src_files = handle:read("*a") or ""
-        handle:close()
+    if type(source_dir) ~= "string" then error("source_dir must be a string", 2) end
+    if type(expected_files) ~= "table" then error("expected_files must be a table", 2) end
+
+    local safe_dir = "'" .. source_dir:gsub("'", "'\\''") .. "'"
+    local handle = io.popen("ls -1 " .. safe_dir .. " 2>/dev/null")
+    if not handle then
+        return
     end
 
+    local src_files_output = handle:read("*a") or ""
+    handle:close()
+
     local missing = {}
-    for file in src_files:gmatch(source_dir .. "/([%w_]+)%.lua") do
-        local found = false
-        for _, build_file in ipairs(expected_files) do
-            if build_file == file then
-                found = true
-                break
+    for line in src_files_output:gmatch("[^\r\n]+") do
+        if string.match(line, "%.lua$") then
+            local file_base = string.match(line, "^([^%.]+)%.lua$")
+            if file_base then
+                local found = false
+                for _, build_file in ipairs(expected_files) do
+                    if build_file == file_base then
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    table.insert(missing, file_base .. ".lua")
+                end
             end
-        end
-        if not found then
-            table.insert(missing, file)
         end
     end
 
@@ -247,6 +300,61 @@ local function check_missing_files(source_dir, expected_files)
         io.stderr:write("Please add them to the 'files' table in build.lua in the correct order.\n\n")
     end
 end
+
+---Builds the PodScript target by combining and parsing source files.
+---@param output_filename string
+---@param source_dir string
+---@param input_filenames table
+---@param is_release boolean
+---@return boolean
+local function build(output_filename, source_dir, input_filenames, is_release)
+    if type(output_filename) ~= "string" then error("output_filename must be a string", 2) end
+    if type(source_dir) ~= "string" then error("source_dir must be a string", 2) end
+    if type(input_filenames) ~= "table" then error("input_filenames must be a table", 2) end
+    if type(is_release) ~= "boolean" then error("is_release must be a boolean", 2) end
+
+    local annotation = "---@build block:"
+    local git_build = get_git_build_string(is_release)
+    local state = {
+        build_string = (type(git_build) == "string" and git_build ~= "") and git_build or "0.unknown",
+        has_emitted_global_const = false,
+        active_inserts = {},
+    }
+
+    local final_output = {}
+
+    for _, filename in ipairs(input_filenames) do
+        local path = source_dir .. "/" .. (filename:match("%.lua$") and filename or filename .. ".lua")
+        local content = read_file(path)
+
+        if not content then
+            io.stderr:write("Warning: Could not read file " .. path .. "\n")
+        else
+            state.active_inserts = {}
+            local start_idx = content:find(annotation, 1, true)
+            if start_idx then
+                local line_end_idx = content:find("\n", start_idx, true)
+                local block_content = line_end_idx and content:sub(line_end_idx + 1) or ""
+                table.insert(final_output, process_content(block_content, state))
+            else
+                io.stderr:write("Warning: Build annotation not found in " .. path .. ". Skipping.\n")
+            end
+        end
+    end
+
+    local result_content = table.concat(final_output)
+    local success = write_file(output_filename, result_content)
+    if not success then
+        io.stderr:write("Error: Could not write output file: " .. output_filename .. "\n")
+        return false
+    end
+
+    return true
+end
+
+--------------------------------------------------------------------------------
+-- Main Entrypoint
+--------------------------------------------------------------------------------
 
 local pods_files = {
     "header",

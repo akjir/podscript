@@ -15,7 +15,7 @@ _task_completions() {
 
     # If completing the second argument after 'test' (e.g., ./task test <TAB>)
     if [[ ${COMP_CWORD} == 2 && ${prev} == "test" ]]; then
-        local test_opts="dev release"
+        local test_opts="dev release build"
         COMPREPLY=( $(compgen -W "${test_opts}" -- "${cur}") )
         return 0
     fi

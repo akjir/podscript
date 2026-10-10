@@ -33,6 +33,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
+| `PSP-028` | Build System File Insertion Annotation | `enhancement` | `completed` | [psp-028-build-insert-annotation.md](psp-028-build-insert-annotation.md) |
 | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `completed` | [psp-002-image-prune.md](psp-002-image-prune.md) |
 | `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `completed` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |

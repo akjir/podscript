@@ -11,6 +11,7 @@ description: >-
 2. **Edit:** Modify `src/pods/` modular files.
 3. **Test & Build:** Run `./task verify [testID]` (or simply `./task [testID]`) to automatically run dev tests, build `pods.lua`, and run release tests.
    * *Alternative:* Use `./task test dev [testID]` to only run dev tests without building.
+   * *Alternative:* Use `./task test build` to run the standalone build system tests.
    * *Alternative:* Use `./task build --release` for a clean release build without the `.dev` suffix.
 4. **Docs:** Update `CHANGELOG.md` and `AGENTS.md`. If CLI syntax changes, follow **`update-documentation`** skill for `USAGE.md`, `README.md`, and `.pods-completion.bash`.
 
@@ -18,6 +19,7 @@ description: >-
 * `---@build block:`: Starts included code block (ignores preceding dev `require`s).
 * `---@build global:`: Preserves `global function` in release (otherwise localized to `local function`).
 * `---@build const:`: Transforms `[global] VAR[<const>] = ...` to `local VAR <const> = ...`.
+* `---@build insert:{"PLACEHOLDER", "PATH"}`: Reads file at PATH, formats as safe Lua string literal, and replaces `{"PLACEHOLDER"}` on subsequent lines.
 * **New files:** Add to `src/pods/` with `---@build block:`, require for dev, append to `files` table in `build.lua`.
 
 ## 3. Testing (`test.lua`)

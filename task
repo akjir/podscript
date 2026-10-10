@@ -8,6 +8,8 @@ if [ "$ACTION" = "verify" ] || [ "$ACTION" = "check" ]; then
     if [ "$1" = "verify" ] || [ "$1" = "check" ]; then shift; fi
     echo "=> [VERIFY] Running dev tests..."
     lua test.lua --dev "$@"
+    echo "=> [VERIFY] Running build tests..."
+    lua tests/test_build.lua
     echo "=> [VERIFY] Building..."
     lua build.lua
     echo "=> [VERIFY] Running release tests..."
@@ -27,10 +29,16 @@ case "$ACTION" in
             shift
             echo "=> Running release tests..."
             lua test.lua "$@"
+        elif [ "$1" = "build" ]; then
+            shift
+            echo "=> Running build tests..."
+            lua tests/test_build.lua "$@"
         else
-            # Run both dev and release tests without building
+            # Run dev, build, and release tests without building pods.lua
             echo "=> Running dev tests..."
             lua test.lua --dev "$@"
+            echo "=> Running build tests..."
+            lua tests/test_build.lua
             echo "=> Running release tests..."
             lua test.lua "$@"
         fi
@@ -44,6 +52,8 @@ case "$ACTION" in
         # Default behavior for standalone IDs (e.g. `./task 01001`)
         echo "=> [VERIFY] Running dev tests..."
         lua test.lua --dev "$@"
+        echo "=> [VERIFY] Running build tests..."
+        lua tests/test_build.lua
         echo "=> [VERIFY] Building..."
         lua build.lua
         echo "=> [VERIFY] Running release tests..."
