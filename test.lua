@@ -422,6 +422,7 @@ add_suite("pods.suite_018_release_integration")
 add_suite("pods.suite_019_mode_logs")
 add_suite("pods.suite_020_mode_connect")
 add_suite("pods.suite_021_main")
+add_suite("pods.suite_022_mode_image")
 add_suite("pods.suite_999_test_framework")
 
 -- ------------------------------------------------------------------------- --

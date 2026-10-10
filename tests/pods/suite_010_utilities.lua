@@ -91,5 +91,68 @@ return {
             end,
             expected = "überlänge     [OK]"
         },
+        [s .. "14"] = {
+            description = "util.parse_size_to_bytes with B",
+            run = function()
+                return util.parse_size_to_bytes("500 B")
+            end,
+            expected = 500
+        },
+        [s .. "15"] = {
+            description = "util.parse_size_to_bytes with kB",
+            run = function()
+                return util.parse_size_to_bytes("1.5 kB")
+            end,
+            expected = 1500
+        },
+        [s .. "16"] = {
+            description = "util.parse_size_to_bytes with MB",
+            run = function()
+                return util.parse_size_to_bytes("2 MB")
+            end,
+            expected = 2000000
+        },
+        [s .. "17"] = {
+            description = "util.parse_size_to_bytes with GB",
+            run = function()
+                return util.parse_size_to_bytes("1.25 GB")
+            end,
+            expected = 1250000000
+        },
+        [s .. "18"] = {
+            description = "util.parse_size_to_bytes with no unit",
+            run = function()
+                return util.parse_size_to_bytes("1024")
+            end,
+            expected = 1024
+        },
+        [s .. "19"] = {
+            description = "util.format_bytes with B",
+            run = function()
+                return util.format_bytes(500)
+            end,
+            expected = "500 B"
+        },
+        [s .. "20"] = {
+            description = "util.format_bytes with kB",
+            run = function()
+                return util.format_bytes(1500)
+            end,
+            expected = "1.5 kB"
+        },
+        [s .. "21"] = {
+            description = "util.format_bytes with MB",
+            run = function()
+                return util.format_bytes(1500000)
+            end,
+            expected = "1.5 MB"
+        },
+        [s .. "22"] = {
+            description = "util.format_bytes with GB",
+            run = function()
+                return util.format_bytes(1500000000)
+            end,
+            expected = "1.5 GB"
+        },
     }
 }

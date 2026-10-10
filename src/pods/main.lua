@@ -28,6 +28,7 @@ require "src.pods.mode_recipe"
 require "src.pods.mode_config"
 require "src.pods.mode_default"
 require "src.pods.mode_help"
+require "src.pods.mode_image"
 require "src.pods.mode_init"
 require "src.pods.mode_logs"
 require "src.pods.utilities_system"
@@ -149,6 +150,7 @@ global function main(arguments)
         connect = mode_connect__handle,
         default = mode_default__handle,
         help = mode_help__handle,
+        image = mode_image__handle,
         init = mode_init__handle,
         logs = mode_logs__handle,
         recipe = mode_recipe__handle,
@@ -227,7 +229,7 @@ global function main(arguments)
     context.config.path = config_full_path
 
     -- handle modes that do not require configuration
-    if context.mode == modes.help or context.mode == modes.init then
+    if context.mode == modes.help or context.mode == modes.init or context.mode == modes.image then
         context.mode(context)
         return
     end

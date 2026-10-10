@@ -84,3 +84,32 @@ function util.split_argument(argument)
     end
     return clean_argument, true
 end
+
+---Parses a human-readable size string (e.g., "1.5 MB") into bytes.
+---@param size_str string The size string to parse.
+---@return number # The size in bytes.
+function util.parse_size_to_bytes(size_str)
+    if string.is_nil_or_empty(size_str) then return 0 end
+    local val, unit = string.match(size_str, "^([%d%.]+)%s*([a-zA-Z]+)$")
+    if not val or not unit then
+        val, unit = string.match(size_str, "^([%d%.]+)%s*$"), "B"
+    end
+    if not val then return 0 end
+    local num = tonumber(val) or 0
+    unit = string.upper(unit)
+    if string.begins_with(unit, "K") then return math.floor(num * 1000) end
+    if string.begins_with(unit, "M") then return math.floor(num * 1000 * 1000) end
+    if string.begins_with(unit, "G") then return math.floor(num * 1000 * 1000 * 1000) end
+    if string.begins_with(unit, "T") then return math.floor(num * 1000 * 1000 * 1000 * 1000) end
+    return math.floor(num)
+end
+
+---Formats a byte count into a human-readable string.
+---@param bytes number The number of bytes.
+---@return string # The formatted size string.
+function util.format_bytes(bytes)
+    if bytes < 1000 then return bytes .. " B" end
+    if bytes < 1000 * 1000 then return string.format("%.1f kB", bytes / 1000) end
+    if bytes < 1000 * 1000 * 1000 then return string.format("%.1f MB", bytes / (1000 * 1000)) end
+    return string.format("%.1f GB", bytes / (1000 * 1000 * 1000))
+end

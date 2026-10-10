@@ -5,7 +5,7 @@ _pods_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Basic modes and default actions
-    local modes="logs connect init command config recipe help"
+    local modes="logs connect init command config recipe image help"
     local default_actions="create recreate remove status update"
 
     # Find mode and action in the preceding words to determine context
@@ -42,6 +42,9 @@ _pods_completions() {
             logs)
                 opts+=" --tail --since --until --timestamps"
                 ;;
+            image)
+                opts+=" --all --force --preview"
+                ;;
             recipe)
                 opts+=" --all"
                 ;;
@@ -77,8 +80,11 @@ _pods_completions() {
             recipe)
                 COMPREPLY=( $(compgen -W "edit help list show" -- "${cur}") )
                 ;;
+            image)
+                COMPREPLY=( $(compgen -W "prune help" -- "${cur}") )
+                ;;
             help)
-                COMPREPLY=( $(compgen -W "${modes} config recipe command init logs connect" -- "${cur}") )
+                COMPREPLY=( $(compgen -W "${modes} config recipe command init logs connect image" -- "${cur}") )
                 ;;
         esac
     fi

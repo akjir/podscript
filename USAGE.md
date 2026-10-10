@@ -39,12 +39,16 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Options](#options-3)
   - [Editor Configuration](#editor-configuration)
   - [Usage](#usage-3)
-- [Recipe Mode](#recipe-mode)
+- [Image Mode](#image-mode)
   - [Actions](#actions-4)
   - [Options](#options-4)
   - [Usage](#usage-4)
-- [Help Mode](#help-mode)
+- [Recipe Mode](#recipe-mode)
+  - [Actions](#actions-5)
+  - [Options](#options-5)
   - [Usage](#usage-5)
+- [Help Mode](#help-mode)
+  - [Usage](#usage-6)
 - [Comprehensive Examples](#comprehensive-examples)
   - [Configuration File (`config.lua`)](#configuration-file-configlua)
   - [Basic Pod Lifecycle](#basic-pod-lifecycle)
@@ -170,6 +174,7 @@ PodScript is organized into operational modes. When no explicit mode is specifie
 | `init`     | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
 | `command`  | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
 | `config`   | **Config Mode**: Displays or modifies the active PodScript configuration file. |
+| `image`    | **Image Mode**: Manages orphaned and dangling container images on the host. |
 | `recipe`   | **Recipe Mode**: Displays or modifies a specific recipe file. |
 | `help`     | **Help Mode**: Displays command-line syntax and usage instructions. |
 
@@ -546,6 +551,44 @@ pods --config=staging config show
 
 # Open the active configuration in the configured editor
 pods config edit
+```
+
+---
+
+## Image Mode
+
+The `image` mode manages orphaned and dangling container images on the host, helping to reclaim disk space used by old updates or untagged layers.
+
+```bash
+pods image [OPTIONS] [ACTION]
+```
+
+### Actions
+
+| Action | Description |
+| :--- | :--- |
+| `prune` | Safely remove dangling or unused container images. |
+| `help` | Display command-line help for image mode. |
+
+### Options
+
+| Option | Description |
+| :--- | :--- |
+| `--all` | Prune all unused images, not just dangling ones. |
+| `--force` | Skip the interactive confirmation prompt. |
+| `--preview` | Preview the images that would be deleted and the total space reclaimable without executing the deletion. |
+
+### Usage
+
+```bash
+# Preview dangling images that can be pruned
+pods image prune --preview
+
+# Prune dangling images (will ask for confirmation)
+pods image prune
+
+# Prune all unused images and skip confirmation
+pods image prune --all --force
 ```
 
 ---

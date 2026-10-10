@@ -125,6 +125,7 @@ Execute commands on groups using the `@` prefix: `pods create @backend`.
 | `command` | `list`, `exec` | `<recipe> [command]` | Executes pre-defined maintenance commands. |
 | `init` | - | - | Generates default `config.lua` and `recipe.lua`. |
 | `config` | `show`, `edit` | - | Displays or edits the active configuration file. |
+| `image` | `prune`, `help` | - | Manages orphaned and dangling container images. |
 | `recipe` | `show`, `edit`, `list` | `<recipe>` | Displays, edits, or lists recipes. |
 | `help` | - | - | Displays syntax and usage information. |
 
