@@ -1,77 +1,47 @@
--- Example recipe.
 return {
-    -- Recipe values.
-    -- Name for the Recipe.
-    name = "Example Container",
-    -- Pod section.
+    name = "Example Web Stack",
+    description = "A minimal but complete example recipe with a web app and database.",
+
     pod = {
-        -- Name of pod. Will be pod_name.
-        name = "Pod name",
-        -- Individual path for files of this pod. Default is defined in configuration file.
-        path = "/pod/path",
-        -- Default registry for containers.
-        registry = "registry.io",
-        -- Ports to publish.
+        name = "example-stack",
+        path = "/pods/example-stack",
+        registry = "docker.io",
         publish = {
-            { 8433, 433 },
             { 8080, 80, "TCP" },
         },
-        -- Execute a command in a running container.
         commands = {
-            add_missing_indices = {
-                description = "Adds missing database indices.",
+            migrate = {
+                description = "Run database migrations.",
                 container = "*db",
-                user = "33",
-                execute = "/usr/local/bin/script.sh add-missing-indices",
+                user = "postgres",
+                execute = "psql -U postgres -d app -f /migrations/run.sql",
             },
         },
-        -- Pod options.
         options = {
-            "--userns=host",
-            "--tty",
+            "--userns=keep-id",
         },
     },
+
     containers = {
-        { -- 1
-            -- Absolute name of the container.
-            name = "simple",
-            -- Detached mode.
-            detach = true,
-            -- Restart policy.
-            restart = "never",
-            -- Image to use.
-            image = "simple:latest",
-            -- Optional commands to run in the container.
-            commands = { "command", "arg1", "arg2" },
-        },
-        { -- 2
-            -- Missing name will use pod name.
-            -- Will be "pod_name-2".
-            detach = true,
-            restart = "always",
-            -- Separate registry for this container.
-            registry = "another-registry.io",
-            image = "simple2:latest",
-            volumes = {
-                -- Will be "/pod/path/file.conf:/path/file.conf:ro,Z".
-                { "file.conf",      "/path/file.conf", "ro,Z" },
-                -- Will be "/pod/path/folder:/path/folder:Z".
-                { "folder",         "/path/folder",    "Z" },
-                -- Will be "/absolute/path:/absolute/path".
-                -- Ignores invidual and default pod path.
-                { "/absolute/path", "/absolute/path",  "" },
-            },
-        },
-        { -- 3
-            -- Relative name for container.
-            -- Will be "pod_name-db".
+        {
             name = "*db",
             detach = true,
-            restart = "on-failure",
-            image = "simple3:1.1",
-            options = {
-                "--env ADMIN_TOKEN='1234567890'",
+            restart = "always",
+            registry = "docker.io",
+            image = "postgres:15-alpine",
+            volumes = {
+                { "data", "/var/lib/postgresql/data", "Z" },
             },
+            options = {
+                "--env POSTGRES_PASSWORD=secret",
+            },
+        },
+        {
+            name = "*app",
+            detach = true,
+            restart = "always",
+            image = "example/app:latest",
+            commands = { "start-server.sh" },
         },
     },
 }

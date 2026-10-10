@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "259.1ace6c2.dev"
+local BUILD <const> = "260.9ac6785.dev"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -2657,38 +2657,83 @@ local function mode_init__create(context)
         return
     end
 
-    local recipe_content = "return {\n"
-        .. "    name = \"Example Pod\",\n"
-        .. "    description = \"Example web service pod managed by PodScript.\",\n"
-        .. "    pod = {\n"
-        .. "        name = \"web-service\",\n"
-        .. "        path = \"/pods\",\n"
-        .. "        registry = \"docker.io\",\n"
-        .. "        publish = {\n"
-        .. "            { 8080, 80, \"TCP\" },\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "    containers = {\n"
-        .. "        {\n"
-        .. "            name = \"*app\",\n"
-        .. "            detach = true,\n"
-        .. "            image = \"example:latest\",\n"
-        .. "            restart = \"always\",\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "}\n"
-    local config_content = "return {\n"
-        .. "    pods = {\n"
-        .. "        path = \"/pods\",\n"
-        .. "    },\n"
-        .. "    recipes = {\n"
-        .. "        groups = {\n"
-        .. "            all = {\n"
-        .. "                \"recipe\",\n"
-        .. "            },\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "}\n"
+    local recipe_content = "return {\
+    name = \"Example Web Stack\",\
+    description = \"A minimal but complete example recipe with a web app and database.\",\
+    \
+    pod = {\
+        name = \"example-stack\",\
+        path = \"/pods/example-stack\",\
+        registry = \"docker.io\",\
+        publish = {\
+            { 8080, 80, \"TCP\" },\
+        },\
+        commands = {\
+            migrate = {\
+                description = \"Run database migrations.\",\
+                container = \"*db\",\
+                user = \"postgres\",\
+                execute = \"psql -U postgres -d app -f /migrations/run.sql\",\
+            },\
+        },\
+        options = {\
+            \"--userns=keep-id\",\
+        },\
+    },\
+    \
+    containers = {\
+        {\
+            name = \"*db\",\
+            detach = true,\
+            restart = \"always\",\
+            registry = \"docker.io\",\
+            image = \"postgres:15-alpine\",\
+            volumes = {\
+                { \"data\", \"/var/lib/postgresql/data\", \"Z\" },\
+            },\
+            options = {\
+                \"--env POSTGRES_PASSWORD=secret\",\
+            },\
+        },\
+        {\
+            name = \"*app\",\
+            detach = true,\
+            restart = \"always\",\
+            image = \"example/app:latest\",\
+            commands = { \"start-server.sh\" },\
+        },\
+    },\
+}\
+"
+    local config_content = "-- PodScript Configuration\
+return {\
+    -- The editor to use for editing files.\
+    editor = \"vim\",\
+\
+    -- If true, commands will be printed but not executed.\
+    simulate = true,\
+\
+    -- Pod-specific configurations.\
+    pods = {\
+        -- The default root directory for all pod-related data.\
+        path = \"/pods\",\
+    },\
+\
+    -- Defines where to find recipe files for pod creation.\
+    recipes = {\
+        -- The default search path for recipe files.\
+        --path = \".\",\
+        -- Defines groups of recipes that can be run together.\
+        -- All active recipes must be in a group.\
+        groups = {\
+            -- An example of a recipe group.\
+            all = {\
+                \"pod\",\
+            },\
+        },\
+    },\
+}\
+"
 
     if not system.write_file(recipe_path, recipe_content) then
         return

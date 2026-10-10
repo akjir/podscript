@@ -13,7 +13,7 @@ description: >-
    * *Alternative:* Use `./task test dev [testID]` to only run dev tests without building.
    * *Alternative:* Use `./task test build` to run the standalone build system tests.
    * *Alternative:* Use `./task build --release` for a clean release build without the `.dev` suffix.
-4. **Docs:** Update `CHANGELOG.md` and `AGENTS.md`. If CLI syntax changes, follow **`update-documentation`** skill for `USAGE.md`, `README.md`, and `.pods-completion.bash`.
+4. **Docs & Templates:** Update `CHANGELOG.md` and `AGENTS.md`. If CLI syntax or schema changes, update root templates (`config.lua`, `recipe.lua`) and follow **`update-documentation`** skill for `USAGE.md`, `README.md`, and `.pods-completion.bash`.
 
 ## 2. Build System Annotations (`build.lua`)
 * `---@build block:`: Starts included code block (ignores preceding dev `require`s).

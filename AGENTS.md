@@ -10,6 +10,7 @@
 * **Style:** 4 spaces. No trailing spaces on empty lines. English comments/vars. Sort functions alphabetically. Avoid globals. Initialize vars (no `nil`).
 * **Reqs:** Lua 5.5+, Podman 5.8.0+. CLI is mode-driven (see [USAGE.md](USAGE.md)).
 * **Testing (TDD):** Rigorous testing strictly mandated. Every new feature, logic branch, parser routine, or bug fix for core `pods` and `pods-converter` MUST have comprehensive tests in their respective `tests/` directories.
+* **Templates:** Always keep the `config.lua` and `recipe.lua` template files in the repository root updated when adding/modifying configurations or recipe options.
 * **Changelog:** Short, concise entries (6–15 words, past tense, backticks for code, no pure refactoring or test changes). See dev skill.
 * **Efficiency:** Always optimize for token efficiency; avoid redundant or duplicated information across code, docs, rules, and skills.
 

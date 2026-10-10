@@ -49,38 +49,10 @@ local function mode_init__create(context)
         return
     end
 
-    local recipe_content = "return {\n"
-        .. "    name = \"Example Pod\",\n"
-        .. "    description = \"Example web service pod managed by PodScript.\",\n"
-        .. "    pod = {\n"
-        .. "        name = \"web-service\",\n"
-        .. "        path = \"/pods\",\n"
-        .. "        registry = \"docker.io\",\n"
-        .. "        publish = {\n"
-        .. "            { 8080, 80, \"TCP\" },\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "    containers = {\n"
-        .. "        {\n"
-        .. "            name = \"*app\",\n"
-        .. "            detach = true,\n"
-        .. "            image = \"example:latest\",\n"
-        .. "            restart = \"always\",\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "}\n"
-    local config_content = "return {\n"
-        .. "    pods = {\n"
-        .. "        path = \"/pods\",\n"
-        .. "    },\n"
-        .. "    recipes = {\n"
-        .. "        groups = {\n"
-        .. "            all = {\n"
-        .. "                \"recipe\",\n"
-        .. "            },\n"
-        .. "        },\n"
-        .. "    },\n"
-        .. "}\n"
+    ---@build insert:{"RECIPE_TEMPLATE", "recipe.lua"}
+    local recipe_content = {"RECIPE_TEMPLATE"}
+    ---@build insert:{"CONFIG_TEMPLATE", "config.lua"}
+    local config_content = {"CONFIG_TEMPLATE"}
 
     if not system.write_file(recipe_path, recipe_content) then
         return

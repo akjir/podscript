@@ -57,11 +57,11 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 * `src/pods/container.lua`
 
 ### 2.2 Schema & Syntax Changes
-* Introduce `auto_create_directories` in the `config.lua` structure at the root level. The default value should be `false`. `pods init` templates and the repository's main `config.lua` need to be updated to include this option.
+* Introduce `auto_create_directories` in the `config.lua` structure at the root level. The default value should be `false`. The repository's main `config.lua` needs to be updated to include this option.
 
 ### 2.3 Implementation Details
-* **Configuration Defaults:**
-    * Modify `mode_init.lua` templates, the repository's root `/config.lua`, and any default config initialization to include `auto_create_directories = false` at the root configuration level.
+*   **Configuration Defaults:**
+    *   Modify the repository's root `/config.lua` and any default config initialization to include `auto_create_directories = false` at the root configuration level (the `mode_init.lua` template automatically embeds the root `/config.lua` via the build system).
 * **Directory Helpers in `utilities_system.lua`:**
     * **Reuse Existing Validation:** Utilize the already existing `function system.directory_exists(full_path)` to check for directory presence.
     * **Safe Creation Function:** Implement `function system.make_directory(full_path, simulate)`.
@@ -96,7 +96,7 @@ In rootless setups, if a host path bound to a container does not exist, Podman m
 - [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
 - [ ] Create test stubs for new behavior in `tests/pods/`.
 - [ ] Implement core logic in `src/pods/` (ensure idiomatic naming conventions).
-    * [ ] Update `mode_init.lua` and the repository's root `/config.lua` to include `auto_create_directories = false`.
+    * [ ] Update the repository's root `/config.lua` to include `auto_create_directories = false`.
     - [ ] Add `function system.make_directory` to `utilities_system.lua`.
     - [ ] Add the strict type verification and directory check loop in `container__create`.
 - [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.

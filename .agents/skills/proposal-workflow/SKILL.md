@@ -34,7 +34,7 @@ description: >-
     * **Living Document:** If implementation details, CLI syntax, or technical choices diverge from the original proposal during development (e.g., necessary corrections or better alternatives discovered during coding), the PSP document (Part 1 and Part 2) MUST be updated to accurately reflect the final, actual implementation.
 3. **Promote to `review`:**
     * **Post-Verification (After):** Run `lua test.lua --dev`, execute release build (`lua build.lua`), and verify full release suite passes (`lua test.lua`).
-    * **Documentation:** Update `CHANGELOG.md`, `USAGE.md` (see `update-documentation` skill), the CLI help menu, and `.pods-completion.bash` if syntax changed.
+    * **Documentation:** Update `CHANGELOG.md`, `USAGE.md` (see `update-documentation` skill), the CLI help menu, `.pods-completion.bash`, and the root templates (`config.lua`, `recipe.lua`) if syntax or schema changed.
     * **Update Status:** Set frontmatter `status: review` in the proposal spec and update `.agents/proposals/BOARD.md`.
     * **Request Approval:** Present deliverables to the user for manual inspection and verification. Never transition to `completed` autonomously.
 4. **Promote to `completed`:**
@@ -44,7 +44,7 @@ description: >-
 ## 5. Historical Pitfalls & Lessons Learned
 To avoid repeating past mistakes, incorporate these learnings into your implementation and proposal drafting:
 * **Test Isolation:** Avoid singletons or global state (e.g., a central `context.lua` singleton). Always rely on explicit parameter passing to guarantee test runner isolation and prevent cross-contamination.
-* **Comprehensive Documentation Sync:** When removing, renaming, or migrating modes and flags, meticulously update all references. Check `USAGE.md` (examples, Modes Overview), `README.md` (remove dangling/broken markdown tables), and `AGENTS.md` (update architecture and naming).
+* **Comprehensive Documentation Sync:** When removing, renaming, or migrating modes and flags, meticulously update all references. Check `USAGE.md` (examples, Modes Overview), `README.md` (remove dangling/broken markdown tables), `AGENTS.md` (update architecture and naming), and root templates (`config.lua`, `recipe.lua`).
 * **Mock Configurations:** When refactoring core execution functions, ensure mock configurations in test suites don't trigger unwanted shell side-effects.
 * **Changelog Diligence:** Skip `CHANGELOG.md` updates for internal test/dev/refactoring changes; it is strictly for user-facing changes.
 * **Flag Scoping:** Explicitly separate action-specific flags (e.g., `--preview` for a prune action) from global flags (e.g., `--simulate`).

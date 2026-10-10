@@ -11,6 +11,7 @@ Review and update documentation on:
 * **Syntax Changes:** Added, modified, or removed CLI modes, actions, options/flags, or target patterns. Ensure `.pods-completion.bash` is also updated to reflect these syntax changes.
 * **Feature Changes:** Lifecycle steps, configuration file structure, or recipe format changes.
 * **Requirements:** Supported Podman, Lua, or OS version changes.
+* **Templates:** Always ensure the `config.lua` and `recipe.lua` template files in the repository root are updated when configuration or recipe options change.
 
 ## 2. README.md Guidelines
 High-level entry point focusing on "What is it?" and "What can it do?".

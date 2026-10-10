@@ -58,6 +58,7 @@ Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax (check examples and Modes Overview).
 - [ ] Update `README.md` (check for broken markdown tables) and `AGENTS.md` (update Architecture list if files were added/removed).
+- [ ] Update root templates (`config.lua`, `recipe.lua`) if schema or features changed.
 - [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
 - [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
 - [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
