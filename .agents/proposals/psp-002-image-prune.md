@@ -4,7 +4,7 @@ title: Orphaned & Dangling Image Cleanup
 status: planned
 type: feature
 created: 2026-09-25
-updated: 2026-10-05
+updated: 2026-10-10
 ---
 
 # PSP-002: Orphaned & Dangling Image Cleanup
@@ -48,37 +48,55 @@ The proposed feature introduces a new `image` mode to the PodScript CLI, with `p
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-* `src/pods/main.lua`: Update the main command router to dispatch the `image` mode.
-* `src/pods/mode_image.lua`: A new mode handler module containing the logic for the `image` mode and its specific actions.
+* `src/pods/main.lua`: Update the main command router (`main__execute`) to dispatch the new `image` mode.
+* `src/pods/mode_image.lua`: A newly created mode handler module. This file will strictly enforce Lua 5.5 type checking and use `global<const> *` to maintain strict variable scope.
+* `src/pods/mode_help.lua`: Add the `image` mode and its usage instructions to the general help output.
+* `tests/pods/suite_018_mode_image.lua`: A new test suite dedicated to the image mode implementation.
 
 ### 2.2 Schema & Syntax Changes
-No changes to `config.lua` or recipe schemas are anticipated, as this is purely a CLI operational mode.
+No changes to `config.lua` or recipe schemas are anticipated, as this is purely a CLI operational mode. The CLI syntax will be extended to accept `image` as a valid top-level mode argument.
 
 ### 2.3 Implementation Details
-* **New Functions to Create in `src/pods/mode_image.lua`:**
-    * `global function mode_image__execute(context)`: Main dispatcher for the `image` mode. **Must strictly begin with early type validation (`if type(context) ~= "table" then error("...") end`) to prevent silent failures and cascading bugs.** Validates actions against an allowed list (`["prune"] = true`, `["help"] = true`) and calls the appropriate action function.
-    * `local function mode_image__action_prune(context)`: Handles the `prune` action. **Must strictly begin with early type validation (`if type(context) ~= "table" then error("...") end`).** Checks `context.flags.all`, `context.flags.preview`, and `context.flags.force`.
-    * `local function mode_image__action_help(context)`: Displays help text specific to the `image` mode and its actions.
+* **New File `src/pods/mode_image.lua`:**
+    * **Module Setup:** Must begin with `global<const> *` to enforce strict globals.
+    * **Dispatch Function:**
+      ```lua
+      global function mode_image__execute(context)
+      ```
+      Must strictly begin with early type validation (`if type(context) ~= "table" then error("...", 2) end`) to prevent silent failures. Validate `context.action` against an allowed list (`["prune"] = true`, `["help"] = true`) and dispatch to local action handlers.
+    * **Action `prune`:**
+      ```lua
+      local function mode_image__prune(context)
+      ```
+      Checks `context.flags.all`, `context.flags.preview`, and `context.flags.force`.
+    * **Action `help`:**
+      ```lua
+      local function mode_image__help(context)
+      ```
+      Outputs usage specific to `pods image`.
+
 * **Preview Query Execution & Parsing:**
     * If `--preview` is passed, do NOT run `podman image prune`.
-    * Instead, execute a read-only query explicitly using `system.exec_capture` to leverage our validated, zero-dependency method for securely parsing Podman CLI outputs into Lua tables:
-      `podman images --filter dangling=true --format "{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}}"`
+    * Use the `system.exec_capture(command)` function (from `src/pods/utilities_system.lua`) which securely returns standard output as a Lua table without JSON dependencies.
+    * **Command:** `podman images --filter dangling=true --format "{{.ID}};;;{{.Repository}};;;{{.Tag}};;;{{.Size}}"`
       (If `--all` is passed, omit the dangling filter).
-    * Parse the output by splitting lines with `;;;`.
-    * Calculate the total reclaimed space by parsing the size strings (e.g., converting "MB", "GB" to bytes for summation, then formatting back to a human-readable string).
-    * Output a structured list of images that would be deleted, followed by the total estimated reclaimable space. **Mandatory: Use the existing utility function `util.format_line` to format this list. This ensures Image IDs, Repositories, and Sizes are precisely and robustly aligned, maintaining the same visual consistency as the Config-Tree status tags.**
+    * Split the returned lines natively using `string.split(line, ";;;")`.
+    * Track and sum the sizes, which typically come as `MB`, `GB` strings. A helper function must safely convert these to bytes for accurate summation, then format them back to a human-readable string.
+    * Display the matched images using `util.format_line(line, size_str, target_column)` to maintain visual parity with existing CLI tables.
+
 * **Actual Prune Command Execution:**
+    * If `--preview` is NOT passed, execute actual pruning.
     * Construct the base command: `podman image prune -f` (always force since PodScript handles confirmation if needed, or bypasses it if `-f` is passed via CLI).
-    * If `--all` is passed, append `-a`.
-    * Use `system.exec_capture` or standard execution to run the prune command and relay the output to the user.
+    * Append `-a` if `--all` is provided.
+    * Use `system.exec` (from `src/pods/utilities_system.lua`) to run the command interactively or capture its output for the user, handling potential errors.
 
 ### 2.4 Testing Strategy
-* Require a new functional test suite in `tests/pods/suite_018_mode_image.lua`.
-* **Tests to Implement:**
-    * Test mode dispatch for `image` and verify that invalid actions fail gracefully.
-    * Test `pods image help` output.
-    * Mock Podman outputs to test `pods image prune --preview` formatting and space calculation.
-    * Verify proper behavior of flag combinations (`--all`, `--force`, `--preview`).
+* Create `tests/pods/suite_018_mode_image.lua` to enforce TDD.
+* **Test cases:**
+    * Invalid action dispatching falls back to an error or help menu.
+    * `mode_image__action_help` produces expected output lines.
+    * Mock Podman outputs (mocking `system.exec_capture`) to strictly test size conversions and `util.format_line` formatting.
+    * Verify flag variations (`--all`, `--force`, `--preview`).
 
 ---
 
@@ -93,7 +111,7 @@ No changes to `config.lua` or recipe schemas are anticipated, as this is purely 
 - [ ] Build release (`lua build.lua`).
 - [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
 - [ ] Update `USAGE.md` with new CLI syntax.
-- [ ] Update CLI help menu (e.g., `mode_help.lua`, action-specific help) if applicable.
+- [ ] Update CLI help menu (`src/pods/mode_help.lua`, action-specific help) if applicable.
 - [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
 - [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
 - [ ] Add entry to `CHANGELOG.md` (skip for internal test/dev/refactoring changes).
@@ -103,7 +121,8 @@ No changes to `config.lua` or recipe schemas are anticipated, as this is purely 
 ### 3.2 Work Log & Decisions
 * **2026-09-25:** Initial concept documented in `DEVELOPMENT.md`.
 * **2026-09-26:** Migrated to `.agents/features/psp-002-image-prune.md` and refactored to the new 3-part template.
-* **2026-10-05:** Refined proposal to introduce `mode image` with `prune` and `help` actions, explicitly separating `--preview` from the global `--simulate` flag and enforcing strict early validation and zero-dependency parsing.
+* **2026-10-05:** Refined proposal to introduce `mode image` with `prune` and `help` actions, explicitly separating `--preview` from the global `--simulate` flag.
+* **2026-10-10:** Expanded technical design details (Code paths, `system.exec_capture`, `global<const>`), reset status back to `concept` based on review.
 
 ### 3.3 Delivered Artifacts
 *(Filled out upon completion)*
