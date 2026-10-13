@@ -6,58 +6,39 @@ description: >-
 
 # PodScript Release Workflow
 
-Use whenever instructed to cut a release (e.g. "Release version 1.4.0"). Strictly gate-kept: each step must succeed before proceeding. Abort and rollback on any failure.
+Run this workflow when instructed to release a version (e.g., "Release version 1.4.0"). Every step must pass. If any step fails, stop and run the rollback procedure.
 
----
+## 1. Pre-Flight Checks
+1. **Clean Tree:** Verify `git status --porcelain` is empty. If not, stop and ask the user to commit or stash changes.
+2. **Branch:** Verify `git branch --show-current` is `main` (or the target release branch).
+3. **Version:** Strip leading `v`. Verify `<VERSION>` matches `^%d+%.%d+%.%d+$` and is greater than `VERSION` in `src/pods/header.lua`.
+4. **Tag:** Run `git rev-parse -q --verify "refs/tags/v<VERSION>"`. Stop if the tag exists.
+5. **Dev Tests:** Run `./task test dev`. Verify 0 errors.
 
-## 1. Pre-Flight Validation Checks
-1. **Clean Working Tree:** `git status --porcelain` must be completely empty. If dirty, abort immediately and request user commit/stash.
-2. **Branch Check:** `git branch --show-current` must be `main` (or designated release branch).
-3. **SemVer & Monotonicity:** Strip leading `v` (e.g. `v1.4.0` -> `1.4.0`). Must match SemVer regex `^%d+%.%d+%.%d+$` and be strictly greater than `VERSION` in `src/pods/header.lua`.
-4. **Tag Non-Existence:** `git rev-parse -q --verify "refs/tags/v<VERSION>"`. Abort if tag exists.
-5. **Dev Tests:** `./task test dev` must pass with 0 errors.
+## 2. Release Steps
+1. **Update Version:**
+   * Set `global VERSION<const> = "<VERSION>"` in `src/pods/header.lua`.
+   * Update version strings in `README.md` and `USAGE.md` if present.
+2. **Update Changelog:**
+   * In `CHANGELOG.md`, replace `## [Unreleased]` with `## [<VERSION>] - <YYYY-MM-DD>`.
+   * Do **not** add an empty `## [Unreleased]` section.
+3. **Build Release:**
+   * Run `./task build --release`.
+   * Verify `pods.lua` (lines 30–35) has `local VERSION <const> = "<VERSION>"` and `local BUILD <const>` without `.dev`.
+4. **Run Tests:** Run `./task test`. Verify 0 errors.
+5. **Check Banner:** Run `lua pods.lua help | head -n 1`. Verify it outputs `PodScript v<VERSION>+<count>.<hash>` without `.dev`.
+6. **Commit & Tag:**
+   * Run `git status --short`. Verify only `src/pods/header.lua`, `pods.lua`, `CHANGELOG.md`, and `README.md` changed.
+   * Run:
+     ```bash
+     git add src/pods/header.lua pods.lua CHANGELOG.md README.md
+     git commit -m "Release v<VERSION>"
+     git tag -a "v<VERSION>" -m "Release v<VERSION>"
+     ```
+   * Verify with `git tag -n -l "v<VERSION>"` and `git log -1 --stat`.
 
----
-
-## 2. Step-by-Step Release Protocol
-
-### Step 1: Update Version in Code & Docs
-* **`src/pods/header.lua`:** Update `VERSION` constant (`global VERSION<const> = "<VERSION>"` under `---@build const:`).
-* **`README.md` & `USAGE.md`:** Update hardcoded version strings or example outputs if present.
-
-### Step 2: Finalize Changelog (`CHANGELOG.md`)
-* Replace top `## [Unreleased]` with `## [<VERSION>] - <YYYY-MM-DD>` (current ISO date).
-* **Do NOT create an empty `## [Unreleased]` section** above it.
-
-### Step 3: Compile Release Build
-1. Build release script: `./task build --release`
-2. Verify `pods.lua` (lines 30–35):
-   * `local VERSION <const> = "<VERSION>"` present.
-   * `local BUILD <const> = "<count>.<hash>"` does **not** contain `.dev`.
-
-### Step 4: Execute Full Test Suites
-Run both test suites: `./task test` (must pass with 0 errors).
-
-### Step 5: Smoke Test Release Banner
-Verify CLI banner: `lua pods.lua help | head -n 1`
-* Must output `PodScript v<VERSION>+<count>.<hash>` without `.dev`.
-
-### Step 6: Git Staging, Commit & Tagging
-1. Verify changed files with `git status --short`. Only expected release files may be modified:
-   * `src/pods/header.lua`, `pods.lua`, `CHANGELOG.md`, and `README.md` (if doc updated).
-2. Stage, commit, and tag:
-   ```bash
-   git add src/pods/header.lua pods.lua CHANGELOG.md README.md
-   git commit -m "Release v<VERSION>"
-   git tag -a "v<VERSION>" -m "Release v<VERSION>"
-   ```
-3. Verify: `git tag -n -l "v<VERSION>"` and `git log -1 --stat`.
-
----
-
-## 3. Safe Rollback Procedure
-If any check or step fails before completion, abort and restore workspace:
+## 3. Rollback Procedure
+If any step fails before the commit, restore the workspace and report the error:
 ```bash
 git checkout -- src/pods/header.lua pods.lua CHANGELOG.md README.md
 ```
-Report the failure reason clearly to the user.

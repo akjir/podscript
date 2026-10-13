@@ -1,30 +1,31 @@
 # PodScript AI Assistant Rules
 
 > [!IMPORTANT]
-> Update this document upon any architectural or naming changes.
+> Update this file when the architecture or file names change.
 
-* **Goal:** Lightweight Lua script managing Podman pods/containers via declarative recipes.
-* **Core Rules:** Zero external dependencies. Linux only (no Windows/macOS). Modular `src/pods/` and `src/pods-converter/`. NEVER edit `pods.lua` or `pods-converter.lua` directly.
-* **Version Control:** NEVER automatically commit changes unless explicitly instructed by the user. The user exclusively decides when and what is committed. This rule must not be broken under any circumstances.
-* **Language & Tone:** Always respond and write strictly in English, **regardless of the language the user uses** (all chat responses, code, comments, docs, tests/fixtures, commits). Concise and precise; no emojis.
-* **Style:** 4 spaces. No trailing spaces on empty lines. English comments/vars. Sort functions alphabetically. Avoid globals. Initialize vars (no `nil`).
-* **Reqs:** Lua 5.5+, Podman 5.8.0+. CLI is mode-driven (see [USAGE.md](USAGE.md)).
-* **Testing (TDD):** Rigorous testing strictly mandated. Every new feature, logic branch, parser routine, or bug fix for core `pods` and `pods-converter` MUST have comprehensive tests in their respective `tests/` directories.
-* **Templates:** Always keep the `config.lua` and `recipe.lua` template files in the repository root updated when adding/modifying configurations or recipe options.
-* **Changelog:** Short, concise entries (6–15 words, past tense, backticks for code, no pure refactoring or test changes). See dev skill.
-* **Efficiency:** Always optimize for token efficiency; avoid redundant or duplicated information across code, docs, rules, and skills.
+* **Goal:** Manage Podman pods and containers with a lightweight Lua script and declarative recipes.
+* **Core Rules:** Use zero external dependencies. Support Linux only. Edit modular files in `src/pods/` and `src/pods-converter/`. NEVER edit `pods.lua` or `pods-converter.lua` directly.
+* **Version Control:** NEVER commit changes unless the user explicitly instructs you to do so.
+* **Language & Tone:** Write all responses, code, comments, documentation, tests, and commits in English. Follow ASD-STE100 (80%). Be concise and precise. Do not use emojis.
+* **Style:** Indent with 4 spaces. Remove trailing spaces. Sort functions alphabetically. Avoid globals. Initialize all variables (do not leave them `nil`).
+* **Reqs:** Lua 5.5+, Podman 5.8.0+. Use mode-driven CLI syntax (see [USAGE.md](USAGE.md)).
+* **Testing (TDD):** Write comprehensive tests in `tests/pods/` or `tests/pods-converter/` for every new feature, logic branch, parser routine, or bug fix.
+* **Templates:** Update root `config.lua` and `recipe.lua` when configuration or recipe options change.
+* **Changelog:** Follow `podscript-dev-workflow` rules for `CHANGELOG.md`.
+* **Efficiency:** Optimize for token efficiency. Avoid redundant information across code, docs, rules, and skills.
 
 ## Architecture & Naming
 * `header.lua`: `VERSION`, `BUILD`, `get_version_string`
-* `log.lua`: `log.*` (including `log.debug_enabled`)
-* `utilities.lua`: global utility functions
-* `utilities_{string,table,system}.lua`: Extends `string.*` / `table.*` or provides `system.*`
-* `{container,pod,recipe,config}.lua`: Prefixed `<name>__*`. Modular functions are `global function` (localized by `build.lua` for release).
-* `main.lua`: Prefixed `main__*`
-* `mode_{command,config,default,help,init,recipe}.lua`: Prefixed `mode_<name>__*`
-* **Lua 5.5 & Strict Globals:** `global<const> *` enforced atop every chunk (undeclared globals trigger compile error). Use `table.create` for preallocation, named varargs (`... args`) for variadic functions without manual packing.
+* `log.lua`: `log.*` (includes `log.debug_enabled`)
+* `utilities.lua`: Global utility functions
+* `utilities_{string,table,system}.lua`: Extends `string.*` or `table.*`, or provides `system.*`
+* `{container,pod,recipe,config}.lua`: Prefix `<name>__*`. Declare modular functions as `global function` (`build.lua` localizes them for release).
+* `main.lua`: Prefix `main__*`
+* `mode_{command,config,default,help,init,recipe}.lua`: Prefix `mode_<name>__*`
+* **Lua 5.5 & Strict Globals:** Put `global<const> *` at the top of every chunk. Use `table.create` to preallocate tables. Use named varargs (`... args`) for variadic functions.
 
 ## Workflows
-* Proposals: Follow **`proposal-workflow`** skill for specifying and tracking proposals in `.agents/proposals/`.
-* Development & Build: Follow **`podscript-dev-workflow`** skill for `build.lua`, `test.lua`, and dev workflows.
-* Release: Follow **`podscript-release`** skill for cutting official releases.
+* Proposals: Use **`proposal-workflow`** to manage `.agents/proposals/`.
+* Development & Build: Use **`podscript-dev-workflow`** to build, test, and develop.
+* Documentation: Use **`update-documentation`** to update `USAGE.md`, `README.md`, and completion scripts.
+* Release: Use **`podscript-release`** to create official releases.

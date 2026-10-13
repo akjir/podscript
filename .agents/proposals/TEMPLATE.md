@@ -12,63 +12,56 @@ updated: YYYY-MM-DD
 ## Part 1: Concept & Proposal
 
 ### 1.1 Summary
-A brief, one-paragraph explanation of the proposal and what it aims to achieve.
+Write a one-paragraph summary of the proposal and its objective.
 
 ### 1.2 Motivation
-Why should this be implemented? What underlying problem does it solve for the user, and why is the current state insufficient?
+Explain the problem and why the current implementation is insufficient.
 
 ### 1.3 Goals & Non-Goals
-* **Goals:** Specific, measurable deliverables and expected outcomes.
-* **Non-Goals:** Explicitly excluded capabilities to prevent scope creep.
+* **Goals:** List specific, measurable outcomes.
+* **Non-Goals:** List excluded features to prevent scope creep.
 
 ### 1.4 Description
-A comprehensive explanation of the proposed feature. This includes expected user workflows, CLI syntax, and overall behavior from a user's perspective.
+Describe the feature, user workflows, CLI syntax, and system behavior.
 
 ### 1.5 Alternatives
-Alternative approaches or tools considered during the design phase, and the rationale for rejecting them in favor of this proposal.
+List alternative solutions and explain why you rejected them.
 
 ---
 
 ## Part 2: Technical Design & Code Changes
 
 ### 2.1 Architecture & Affected Modules
-Specific source files in `src/pods/` or `src/pods-converter/` that require modification, and how they interact.
+List modified files in `src/pods/` or `src/pods-converter/` and their interactions.
 
 ### 2.2 Schema & Syntax Changes
-Exact changes to `config.lua`, recipe schemas, or internal data structures.
+Specify changes to `config.lua`, recipe schemas, or internal data structures.
 
 ### 2.3 Implementation Details
-Precise descriptions of the code changes to be made. This includes function signatures, variable scopes, strictly typed `global<const>` additions, and Podman command construction.
-* **Note:** Avoid singletons and global state to preserve test runner isolation; rely on explicit parameter passing. Ensure action-specific flags (e.g., `--preview`) are explicitly separated from global flags (e.g., `--simulate`).
+Specify function signatures, variable scopes, `global<const>` declarations, and Podman commands.
+* **Note:** Pass parameters explicitly; do not use singletons or global state. Separate action flags (e.g., `--preview`) from global flags (e.g., `--simulate`).
 
 ### 2.4 Testing Strategy
-Required test suites in `tests/pods/` (e.g., edge cases, failure modes, rootless vs. elevated behaviors) required to satisfy TDD.
-* **Note:** Ensure mock configurations do not trigger unwanted shell side-effects (e.g., suppress shell errors by mocking appropriately).
+Define TDD test cases in `tests/pods/` or `tests/pods-converter/` (edge cases, errors, rootless vs. root).
+* **Note:** Mock shell commands to prevent unintended side effects.
 
 ---
 
 ## Part 3: Implementation Record & Tasks
 
 ### 3.1 Task Breakdown
-- [ ] Run baseline test suites (`lua test.lua --dev` & `lua test.lua`) to verify clean state.
-- [ ] Create test stubs in `tests/pods/` (or `tests/pods-converter/`).
-- [ ] Implement core logic in `src/pods/` (or `src/pods-converter/`). Ensure consistent naming conventions (`prefix__*`).
-- [ ] Maintain "Living Document": Update Part 1 & 2 to reflect actual implementation if it diverged from the original plan.
-- [ ] Build release (`lua build.lua`).
-- [ ] Run full test suites (`lua test.lua --dev` & `lua test.lua`) and verify 100% pass.
-- [ ] Update `USAGE.md` with new CLI syntax (check examples and Modes Overview).
-- [ ] Update `README.md` (check for broken markdown tables) and `AGENTS.md` (update Architecture list if files were added/removed).
-- [ ] Update root templates (`config.lua`, `recipe.lua`) if schema or features changed.
-- [ ] Update CLI help menu (e.g. `mode_help.lua`, action-specific help) if applicable.
-- [ ] Update `.pods-completion.bash` if CLI syntax or modes changed.
-- [ ] Update relevant `.agents/skills/*.md` if agent workflows or capabilities changed.
-- [ ] Add entry to `CHANGELOG.md` (skip for internal test/dev/refactoring changes).
-- [ ] Set status to `review`, update `BOARD.md`, and request manual user review and approval.
-- [ ] Manual approval received; set status to `completed`, update `BOARD.md`, and record delivered artifacts.
+- [ ] Run `./task verify` to confirm a clean baseline.
+- [ ] Add test stubs in `tests/pods/` or `tests/pods-converter/`.
+- [ ] Implement logic in `src/pods/` or `src/pods-converter/` using `prefix__*` naming.
+- [ ] Update Parts 1 and 2 if the implementation changes the design.
+- [ ] Run `./task verify` to build and pass all dev and release tests.
+- [ ] Update `USAGE.md`, `README.md`, `AGENTS.md`, `config.lua`, `recipe.lua`, CLI help, `.pods-completion.bash`, and `.agents/skills/*.md` as applicable.
+- [ ] Add a `CHANGELOG.md` entry (skip for internal, test, or refactoring changes).
+- [ ] Set status to `review`, update `BOARD.md`, and request user approval.
+- [ ] After user approval, set status to `completed`, update `BOARD.md`, and list delivered artifacts.
 
 ### 3.2 Work Log & Decisions
-* **YYYY-MM-DD:** Initial concept drafted.
-*(Record any discoveries, divergences from the original plan, or why a specific technical choice was altered during development)*
+* **YYYY-MM-DD:** Drafted initial concept.
 
 ### 3.3 Delivered Artifacts
-*(Filled out upon completion)*
+*(Complete upon approval)*

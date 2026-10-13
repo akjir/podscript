@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "260.9ac6785.dev"
+local BUILD <const> = "261.f2bbf24"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.

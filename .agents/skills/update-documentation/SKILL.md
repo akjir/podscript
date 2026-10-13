@@ -6,28 +6,23 @@ description: >-
 
 # Updating Documentation
 
-## 1. Trigger Conditions
-Review and update documentation on:
-* **Syntax Changes:** Added, modified, or removed CLI modes, actions, options/flags, or target patterns. Ensure `.pods-completion.bash` is also updated to reflect these syntax changes.
-* **Feature Changes:** Lifecycle steps, configuration file structure, or recipe format changes.
-* **Requirements:** Supported Podman, Lua, or OS version changes.
-* **Templates:** Always ensure the `config.lua` and `recipe.lua` template files in the repository root are updated when configuration or recipe options change.
+## 1. Triggers
+Update documentation when you change:
+* **CLI Syntax:** Modes, actions, flags, or target patterns (also update `.pods-completion.bash` and CLI help).
+* **Features & Schemas:** Lifecycle steps, configuration keys, or recipe formats (also update root `config.lua` and `recipe.lua`).
+* **Requirements:** Podman, Lua, or OS versions.
 
-## 2. README.md Guidelines
-High-level entry point focusing on "What is it?" and "What can it do?".
-* **Features:** Add new high-level capabilities to the feature list.
-* **Specifications:** Update version requirements when changed.
-* **Style:** Professional, compact, minimal illustrative examples. Defer granular CLI options to `USAGE.md`.
+## 2. `README.md` Rules
+* Describe high-level features and system requirements.
+* Keep examples brief and defer full CLI details to `USAGE.md`.
 
-## 3. USAGE.md Guidelines
-Comprehensive manual for CLI operations.
-* **Hierarchy:** Maintain existing structure (`## Mode Name`, `### Actions`, `### Options`, `### Usage`).
-* **Tables:** Use aligned markdown tables for Modes, Actions, and Options.
-* **Content:** Clear, single-sentence description for every new action/option. Include at least one example (using abstract placeholders) under `### Usage` or `## Examples`.
-* **Formatting:** Backtick all CLI commands, flags, modes, and options (e.g. `--debug`).
+## 3. `USAGE.md` Rules
+* Keep the section hierarchy: `## Mode Name`, `### Actions`, `### Options`, `### Usage`.
+* Use aligned markdown tables for Modes, Actions, and Options.
+* Write a one-sentence description and provide at least one example for every action or option.
+* Wrap all CLI commands, modes, actions, and flags in backticks (e.g., `--debug`).
 
-## 4. Execution Rules
-* **No Speculation:** Only document verified, implemented features.
-* **Abstract Examples Only:** Never use real-world applications (like `nextcloud`, `postgres`, `php`) in examples. Always use abstract, generic placeholders (like `example-app`, `db-server`, `app-cli`) to keep the documentation universally applicable.
-* **Consistency:** Match tone and terminology of existing entries.
-* **Completeness:** If a feature or flag spans multiple modes, update all relevant sections.
+## 4. General Rules
+* Document only implemented, verified features.
+* Use generic placeholders (`example-app`, `db-server`, `app-cli`) in examples; never use real application names (`nextcloud`, `postgres`, `php`).
+* Update all affected sections when a flag or feature applies to multiple modes.
