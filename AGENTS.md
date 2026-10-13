@@ -10,7 +10,7 @@
 * **Style:** Indent with 4 spaces. Remove trailing spaces. Sort functions alphabetically. Avoid globals. Initialize all variables (do not leave them `nil`).
 * **Reqs:** Lua 5.5+, Podman 5.8.0+. Use mode-driven CLI syntax (see [USAGE.md](USAGE.md)).
 * **Testing (TDD):** Write comprehensive tests in `tests/pods/` or `tests/pods-converter/` for every new feature, logic branch, parser routine, or bug fix.
-* **Templates:** Update root `config.lua` and `recipe.lua` when configuration or recipe options change.
+* **Docs & Templates:** Keep `USAGE.md`, `README.md`, `.pods-completion.bash`, CLI help, and root `config.lua` / `recipe.lua` in sync with code changes per **`update-documentation`**.
 * **Changelog:** Follow `podscript-dev-workflow` rules for `CHANGELOG.md`.
 * **Efficiency:** Optimize for token efficiency. Avoid redundant information across code, docs, rules, and skills.
 

@@ -16,7 +16,7 @@ description: >-
 * **`concept`:** Define the idea and motivation (Part 1).
 * **`planned`:** Agree on architecture, schema, and tests with the user (Part 2).
 * **`in-progress`:** Run `./task verify` first. Implement with TDD per **`podscript-dev-workflow`**. Track tasks in Part 3.1. Update Parts 1 and 2 if the design changes during coding.
-* **`review`:** Pass `./task verify`, update docs/templates/changelog, set `status: review`, update `BOARD.md`, and ask the user for approval. Never set `completed` without user approval.
+* **`review`:** Pass `./task verify`, sync `USAGE.md` and `README.md` per **`update-documentation`**, update templates/changelog, set `status: review`, update `BOARD.md`, and ask the user for approval. Never set `completed` without user approval.
 * **`completed`:** After user approval, set `status: completed`, update `BOARD.md`, and record artifacts in Part 3.3. Keep completed proposals permanently. If superseded later, keep `status: completed` and add a `> [!NOTE]` block at the top.
 * **`rejected`:** Document the rejection reason and set `status: rejected`.
 
@@ -30,7 +30,7 @@ description: >-
 * **Isolate State:** Pass parameters explicitly; never use singletons or global state.
 * **Scope Flags:** Separate action flags (e.g., `--preview`) from global flags (e.g., `--simulate`).
 * **Mock Safely:** Prevent shell side effects in test mocks.
-* **Sync Docs:** When modes or flags change, update `USAGE.md`, `README.md`, `AGENTS.md`, `config.lua`, `recipe.lua`, CLI help, and `.pods-completion.bash`.
+* **Sync Docs:** Follow **`update-documentation`** to update `USAGE.md`, `README.md`, CLI help, `.pods-completion.bash`, `config.lua`, `recipe.lua`, and `AGENTS.md` when syntax, schemas, or features change.
 
 ## 5. Token Efficiency
 * Read `BOARD.md` first.

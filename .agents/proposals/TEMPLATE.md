@@ -55,7 +55,7 @@ Define TDD test cases in `tests/pods/` or `tests/pods-converter/` (edge cases, e
 - [ ] Implement logic in `src/pods/` or `src/pods-converter/` using `prefix__*` naming.
 - [ ] Update Parts 1 and 2 if the implementation changes the design.
 - [ ] Run `./task verify` to build and pass all dev and release tests.
-- [ ] Update `USAGE.md`, `README.md`, `AGENTS.md`, `config.lua`, `recipe.lua`, CLI help, `.pods-completion.bash`, and `.agents/skills/*.md` as applicable.
+- [ ] Follow **`update-documentation`** to update `USAGE.md`, `README.md`, CLI help, `.pods-completion.bash`, `config.lua`, `recipe.lua`, and `AGENTS.md` as applicable.
 - [ ] Add a `CHANGELOG.md` entry (skip for internal, test, or refactoring changes).
 - [ ] Set status to `review`, update `BOARD.md`, and request user approval.
 - [ ] After user approval, set status to `completed`, update `BOARD.md`, and list delivered artifacts.

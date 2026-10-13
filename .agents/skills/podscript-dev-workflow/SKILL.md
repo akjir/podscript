@@ -13,7 +13,7 @@ description: >-
    * Run `./task test dev [testID]` to run dev tests only.
    * Run `./task test build` to test the build system.
    * Run `./task build --release` to build a release without the `.dev` suffix.
-4. **Update Docs & Templates:** Update `CHANGELOG.md`, `AGENTS.md`, `config.lua`, and `recipe.lua`. Follow **`update-documentation`** if CLI syntax or schemas change.
+4. **Sync Docs & Templates:** Read and follow **`update-documentation`** to update `USAGE.md`, `README.md`, CLI help, and `.pods-completion.bash` when CLI syntax, schemas, or requirements change. Update `config.lua`, `recipe.lua`, `AGENTS.md`, and `CHANGELOG.md`.
 
 ## 2. Build Annotations (`build.lua`)
 * `---@build block:`: Start included code block (ignores preceding `require` calls).
