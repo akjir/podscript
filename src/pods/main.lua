@@ -48,10 +48,10 @@ global function main__config_load_and_set(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local config_path = context.config.path
 
-    local config, error, _ = system.load_lua_file(config_path)
-    if config == nil then
-        if error ~= nil then
-            log.error(error)
+    local config, err, _ = system.load_lua_file(config_path)
+    if type(config) ~= "table" then
+        if err ~= nil then
+            log.error(err)
         end
         log.error("Couldn't load configuration '" .. config_path .. "'!")
         return false
@@ -221,18 +221,19 @@ global function main(arguments)
     end
 
     -- print debug message if non-default-configuration is used
-    if log.debug_enabled and config_name ~= "config" then
-        log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
+    if config_name ~= "config" then
+        log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
     context.config.path = config_full_path
 
-    -- handle modes that do not require configuration
-    if context.mode == modes.init or context.mode == modes.image then
-        context.mode(context)
-        return
-    end
-    if context.mode == modes.default and context.parameters[1] == "help" then
+    -- handle modes and help actions that do not require configuration
+    local p1 = context.parameters[1] or ""
+    local p2 = context.parameters[2] or ""
+    local is_help = (p1 == "help")
+        or (context.mode == modes.default and p1 == "status" and p2 == "help")
+        or ((context.mode == modes.command or context.mode == modes.connect or context.mode == modes.logs) and p1 == "")
+    if context.mode == modes.init or context.mode == modes.image or is_help then
         context.mode(context)
         return
     end

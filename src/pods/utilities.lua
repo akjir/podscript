@@ -32,26 +32,47 @@ global util <const> = {}
 
 ---Constructs a complete file path from a base directory, filename, and extension.
 ---@param path string The base directory path.
----@param file_name string The name of the file.
----@param file_extension string The extension to append (e.g., '.lua').
+---@param file_name string|nil The name of the file.
+---@param file_extension string|nil The extension to append (e.g., '.lua').
 ---@return string The fully resolved file path.
 function util.build_full_path(path, file_name, file_extension)
+    if type(path) ~= "string" then error("path must be a string", 2) end
+    file_name = file_name or ""
+    file_extension = file_extension or ""
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
     then
         path = "./" .. path
     end
     if string.is_nil_or_empty(file_name) then
-        if string.is_nil_or_empty(file_extension) then
+        if string.is_nil_or_empty(file_extension) or string.ends_with(path, file_extension) then
             return path
         else
             return path .. file_extension
         end
     elseif string.ends_with(path, "/") or string.begins_with(file_name, "/") then
-        return path .. file_name .. file_extension
+        local full = path .. file_name
+        if not string.is_nil_or_empty(file_extension) and not string.ends_with(full, file_extension) then
+            return full .. file_extension
+        end
+        return full
     else
-        return path .. "/" .. file_name .. file_extension
+        local full = path .. "/" .. file_name
+        if not string.is_nil_or_empty(file_extension) and not string.ends_with(full, file_extension) then
+            return full .. file_extension
+        end
+        return full
     end
+end
+
+---Formats a byte count into a human-readable string.
+---@param bytes number The number of bytes.
+---@return string # The formatted size string.
+function util.format_bytes(bytes)
+    if bytes < 1000 then return bytes .. " B" end
+    if bytes < 1000 * 1000 then return string.format("%.1f kB", bytes / 1000) end
+    if bytes < 1000 * 1000 * 1000 then return string.format("%.1f MB", bytes / (1000 * 1000)) end
+    return string.format("%.1f GB", bytes / (1000 * 1000 * 1000))
 end
 
 ---Formats a line by padding it with spaces until the target column is reached, then appending the status.
@@ -73,18 +94,6 @@ function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
----Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
----@param argument string The input string to be split.
----@return string, string|boolean # The key and value.
-function util.split_argument(argument)
-    local clean_argument = string.gsub(argument, "^%-+", "")
-    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
-    if parameter then
-        return parameter, value
-    end
-    return clean_argument, true
-end
-
 ---Parses a human-readable size string (e.g., "1.5 MB") into bytes.
 ---@param size_str string The size string to parse.
 ---@return number # The size in bytes.
@@ -104,12 +113,14 @@ function util.parse_size_to_bytes(size_str)
     return math.floor(num)
 end
 
----Formats a byte count into a human-readable string.
----@param bytes number The number of bytes.
----@return string # The formatted size string.
-function util.format_bytes(bytes)
-    if bytes < 1000 then return bytes .. " B" end
-    if bytes < 1000 * 1000 then return string.format("%.1f kB", bytes / 1000) end
-    if bytes < 1000 * 1000 * 1000 then return string.format("%.1f MB", bytes / (1000 * 1000)) end
-    return string.format("%.1f GB", bytes / (1000 * 1000 * 1000))
+---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
+---@param argument string The input string to be split.
+---@return string, string|boolean # The key and value.
+function util.split_argument(argument)
+    local clean_argument = string.gsub(argument, "^%-+", "")
+    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
+    if parameter then
+        return parameter, value
+    end
+    return clean_argument, true
 end

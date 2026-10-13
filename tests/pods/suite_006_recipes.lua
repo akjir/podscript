@@ -76,6 +76,7 @@ return {
             parameters = { "create", "recipe_005_no_path" },
             expectations = {
                 sequence = {
+                    "DEBUG: No pod path in recipe 'recipe_005_no_path' set. Path '/pods/nopathpod' used."
                 }
             },
         },
@@ -108,8 +109,8 @@ return {
                     "ERROR: cannot open ./target.lua: No such file or directory",
                     "ERROR: Couldn't load recipe './target.lua'!"
                 }
-                }
             },
+        },
         [s .. "12"] = {
             description = "Missing ',' in lua file.",
             parameters = { "create", "recipe_016_container_lua_error" },
@@ -118,8 +119,8 @@ return {
                     "ERROR: ./tests/pods/recipes/recipe_016_container_lua_error.lua:10: '}' expected (to close '{' at line 7) near 'image'",
                     "ERROR: Couldn't load recipe './tests/pods/recipes/recipe_016_container_lua_error.lua'!"
                 }
-                }
             },
+        },
         [s .. "13"] = {
             description = "Initialize recipe.pod.commands as empty table if missing.",
             dev_only = true,
@@ -134,6 +135,24 @@ return {
                 return valid and type(recipe.pod.commands) == "table" and table.size(recipe.pod.commands) == 0 and recipe.commands == nil
             end,
             expected = true,
+        },
+        [s .. "14"] = {
+            description = "Reject container with empty volume container target directory.",
+            dev_only = true,
+            run = function()
+                local container = {
+                    name = "app",
+                    image = "test:latest",
+                    volumes = { { "/host/data", "" } },
+                }
+                return container__is_valid(container, "test_pod")
+            end,
+            expected = false,
+            expectations = {
+                sequence = {
+                    "ERROR: Container dir cannot be empty! (app)"
+                }
+            },
         },
     },
 }

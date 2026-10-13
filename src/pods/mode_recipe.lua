@@ -62,7 +62,8 @@ local function mode_recipe__help()
     log.print("OPTIONS:")
     log.print("  --all              include unconfigured recipes found on disk")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
@@ -83,27 +84,7 @@ local function mode_recipe__list(context)
 
     local show_all = flags.all
 
-    local recipe_map = {}
-    local recipe_list = {}
-
-    local groups = recipes.groups or {}
-    if not table.is_nil_or_empty(groups) then
-        for _, group_targets in pairs(groups) do
-            if type(group_targets) == "table" then
-                for _, target in ipairs(group_targets) do
-                    if type(target) == "string" and not string.begins_with(target, "@") then
-                        local clean_target = string.trim(target)
-                        if clean_target ~= "" and not recipe_map[clean_target] then
-                            recipe_map[clean_target] = true
-                            recipe_list[#recipe_list + 1] = clean_target
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    table.sort(recipe_list)
+    local recipe_list, recipe_map = config__get_recipes(context)
 
     local unreferenced = {}
     local recipes_path = recipes.path or ""

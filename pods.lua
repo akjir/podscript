@@ -28,7 +28,7 @@ global<const> *
 -- ------------------------------------------------------------------------- --
 
 local VERSION <const> = "1.5.0"
-local BUILD <const> = "261.f2bbf24"
+local BUILD <const> = "262.b75fb0a.dev"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -111,7 +111,7 @@ end
 ---@param suffix string The suffix to search for.
 ---@return boolean True if the string ends with the suffix, false otherwise.
 function string.ends_with(str, suffix)
-    return str:sub(- #suffix) == suffix
+    return suffix == "" or str:sub(- #suffix) == suffix
 end
 
 ---Escapes a string securely for injection into shell commands.
@@ -136,15 +136,6 @@ function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
----Strips leading and trailing whitespace characters from a string.
----@param str string|nil The string to trim.
----@return string The trimmed string, or an empty string if nil.
-function string.trim(str)
-    if str == nil then return "" end
-    -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
-    return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
-end
-
 ---Partitions a string into a table of substrings divided by a given separator.
 ---@param str string The string to partition.
 ---@param sep string The separator substring.
@@ -163,6 +154,15 @@ function string.split(str, sep)
     end
     result[#result + 1] = str:sub(last_end)
     return result
+end
+
+---Strips leading and trailing whitespace characters from a string.
+---@param str string|nil The string to trim.
+---@return string The trimmed string, or an empty string if nil.
+function string.trim(str)
+    if str == nil then return "" end
+    -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
+    return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
 ---Computes the visible character count of a string, accounting for multi-byte UTF-8 sequences.
@@ -330,26 +330,47 @@ global util <const> = {}
 
 ---Constructs a complete file path from a base directory, filename, and extension.
 ---@param path string The base directory path.
----@param file_name string The name of the file.
----@param file_extension string The extension to append (e.g., '.lua').
+---@param file_name string|nil The name of the file.
+---@param file_extension string|nil The extension to append (e.g., '.lua').
 ---@return string The fully resolved file path.
 function util.build_full_path(path, file_name, file_extension)
+    if type(path) ~= "string" then error("path must be a string", 2) end
+    file_name = file_name or ""
+    file_extension = file_extension or ""
     if not string.begins_with(path, "/") and
         not string.begins_with(path, ".")
     then
         path = "./" .. path
     end
     if string.is_nil_or_empty(file_name) then
-        if string.is_nil_or_empty(file_extension) then
+        if string.is_nil_or_empty(file_extension) or string.ends_with(path, file_extension) then
             return path
         else
             return path .. file_extension
         end
     elseif string.ends_with(path, "/") or string.begins_with(file_name, "/") then
-        return path .. file_name .. file_extension
+        local full = path .. file_name
+        if not string.is_nil_or_empty(file_extension) and not string.ends_with(full, file_extension) then
+            return full .. file_extension
+        end
+        return full
     else
-        return path .. "/" .. file_name .. file_extension
+        local full = path .. "/" .. file_name
+        if not string.is_nil_or_empty(file_extension) and not string.ends_with(full, file_extension) then
+            return full .. file_extension
+        end
+        return full
     end
+end
+
+---Formats a byte count into a human-readable string.
+---@param bytes number The number of bytes.
+---@return string # The formatted size string.
+function util.format_bytes(bytes)
+    if bytes < 1000 then return bytes .. " B" end
+    if bytes < 1000 * 1000 then return string.format("%.1f kB", bytes / 1000) end
+    if bytes < 1000 * 1000 * 1000 then return string.format("%.1f MB", bytes / (1000 * 1000)) end
+    return string.format("%.1f GB", bytes / (1000 * 1000 * 1000))
 end
 
 ---Formats a line by padding it with spaces until the target column is reached, then appending the status.
@@ -371,18 +392,6 @@ function util.normalize_name(str)
     return string.lower(str:trim():gsub("%s+", "_"))
 end
 
----Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
----@param argument string The input string to be split.
----@return string, string|boolean # The key and value.
-function util.split_argument(argument)
-    local clean_argument = string.gsub(argument, "^%-+", "")
-    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
-    if parameter then
-        return parameter, value
-    end
-    return clean_argument, true
-end
-
 ---Parses a human-readable size string (e.g., "1.5 MB") into bytes.
 ---@param size_str string The size string to parse.
 ---@return number # The size in bytes.
@@ -402,16 +411,17 @@ function util.parse_size_to_bytes(size_str)
     return math.floor(num)
 end
 
----Formats a byte count into a human-readable string.
----@param bytes number The number of bytes.
----@return string # The formatted size string.
-function util.format_bytes(bytes)
-    if bytes < 1000 then return bytes .. " B" end
-    if bytes < 1000 * 1000 then return string.format("%.1f kB", bytes / 1000) end
-    if bytes < 1000 * 1000 * 1000 then return string.format("%.1f MB", bytes / (1000 * 1000)) end
-    return string.format("%.1f GB", bytes / (1000 * 1000 * 1000))
+---Splits a string by the first equals sign. If no equals sign is found, the value is set to true (as flag is given).
+---@param argument string The input string to be split.
+---@return string, string|boolean # The key and value.
+function util.split_argument(argument)
+    local clean_argument = string.gsub(argument, "^%-+", "")
+    local parameter, value = string.match(clean_argument, "^([^=]+)=(.*)$")
+    if parameter then
+        return parameter, value
+    end
+    return clean_argument, true
 end
-
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION System
@@ -458,16 +468,6 @@ function system.check_podman_version()
     return major > 5 or (major == 5 and minor >= 8)
 end
 
----Evaluates whether a directory exists at the specified path.
----@param path string The directory path to verify.
----@return boolean True if the directory exists, false otherwise.
-function system.directory_exists(path)
-    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
-    return success == true
-end
-
 ---Evaluates whether a specific Podman container is currently running.
 ---@param container_name string The name of the container to inspect.
 ---@return boolean True if the container is running, false otherwise.
@@ -482,24 +482,14 @@ function system.container_exists(container_name)
     return false
 end
 
----Resolves the absolute path for a given file system path using realpath.
----@param path string The path to resolve.
----@return string The absolute path.
-function system.get_absolute_path(path)
+---Evaluates whether a directory exists at the specified path.
+---@param path string The directory path to verify.
+---@return boolean True if the directory exists, false otherwise.
+function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
-    if string.is_nil_or_empty(path) then return "" end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
-    if not handle then return path end
-    local result = handle:read("*a")
-    handle:close()
-    if result then
-        local trimmed_result = string.trim(result)
-        if not string.is_nil_or_empty(trimmed_result) then
-            return trimmed_result
-        end
-    end
-    return path
+    local safe_path = string.escape_shell(path)
+    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
+    return success == true
 end
 
 ---Executes a shell command synchronously, optionally buffering output or running interactively.
@@ -518,25 +508,18 @@ function system.exec(command, options)
     local interactive = options.interactive == true
     local silent = options.silent == true
 
-    local final_command = command
-    local print_command = command
-
-    if not interactive then
-        final_command = print_command
-    end
-
     if simulate then
         if not string.is_nil_or_empty(prefix) then
             log.print(prefix)
         end
-        log.print(print_command)
+        log.print(command)
         return true, "exit", 0
     end
 
-    log.debug("Execute: " .. print_command)
+    log.debug("Execute: " .. command)
 
     if interactive then
-        local success, exit_reason, exit_code = os.execute(final_command)
+        local success, exit_reason, exit_code = os.execute(command)
         success = (success == true) -- os.execute returns boolean?
         if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
@@ -545,10 +528,10 @@ function system.exec(command, options)
     end
 
     -- combine STDOUT and STDERR using 2>&1
-    local handle = io.popen("( " .. final_command .. " ) 2>&1")
+    local handle = io.popen("( " .. command .. " ) 2>&1")
     if not handle then
         if not silent then
-            log.error("Failed to execute command '" .. final_command .. "'!")
+            log.error("Failed to execute command '" .. command .. "'!")
         end
         return false, "failed", -1
     end
@@ -611,6 +594,26 @@ function system.file_exists(path)
     return false
 end
 
+---Resolves the absolute path for a given file system path using realpath.
+---@param path string The path to resolve.
+---@return string The absolute path.
+function system.get_absolute_path(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    if string.is_nil_or_empty(path) then return "" end
+    local safe_path = string.escape_shell(path)
+    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
+    if not handle then return path end
+    local result = handle:read("*a")
+    handle:close()
+    if result then
+        local trimmed_result = string.trim(result)
+        if not string.is_nil_or_empty(trimmed_result) then
+            return trimmed_result
+        end
+    end
+    return path
+end
+
 ---Retrieves a list of files within a directory, optionally filtered by a Lua pattern.
 ---@param path string The directory to scan.
 ---@param pattern string|nil A Lua pattern to filter filenames.
@@ -619,7 +622,7 @@ function system.list_directory(path, pattern)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
     if not system.directory_exists(path) then return nil end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
+    local safe_path = string.escape_shell(path)
     local handle = io.popen("ls -1 " .. safe_path .. " 2>/dev/null")
     if not handle then return nil end
     local files = {}
@@ -728,7 +731,7 @@ local function container__create(container, pod, simulate)
     -- container restart
     if not string.is_nil_or_empty(container.restart) then
         commands[#commands + 1] = "--restart"
-        commands[#commands + 1] = container.restart
+        commands[#commands + 1] = string.escape_shell(container.restart)
     end
 
     -- container volumes
@@ -738,7 +741,8 @@ local function container__create(container, pod, simulate)
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
             if string.is_nil_or_empty(container_dir) then
-                log.error("Container dir cannot be empty! (" .. container.name .. ")")
+                log.error("Container dir cannot be empty! (" .. tostring(container.name) .. ")")
+                return
             else
                 local command = ""
                 if string.is_nil_or_empty(host_dir) then
@@ -815,10 +819,21 @@ local function container__is_valid(container, pod_name)
         log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
     end
+    local label = tostring(container.name or pod_name)
     -- test for container image
     if string.is_nil_or_empty(container.image) then
-        log.error("Image not set for container '" .. container.name .. "'!")
+        log.error("Image not set for container '" .. label .. "'!")
         return false
+    end
+    -- test for container volumes
+    if not table.is_nil_or_empty(container.volumes) then
+        for i = 1, #container.volumes do
+            local volume = container.volumes[i]
+            if type(volume) ~= "table" or string.is_nil_or_empty(volume[2]) then
+                log.error("Container dir cannot be empty! (" .. label .. ")")
+                return false
+            end
+        end
     end
     return true
 end
@@ -856,11 +871,11 @@ end
 ---@return table|nil The loaded recipe table, or nil if an error occurred.
 local function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, error, _ = system.load_lua_file(full_path)
-    if recipe == nil then
+    local recipe, err, _ = system.load_lua_file(full_path)
+    if type(recipe) ~= "table" then
         if not suppress_errors then
-            if error ~= nil then
-                log.error(error)
+            if err ~= nil then
+                log.error(err)
             end
             log.error("Couldn't load recipe '" .. full_path .. "'!")
         end
@@ -868,6 +883,49 @@ local function recipe__load(recipe_path, recipe_name, suppress_errors)
     else
         return recipe
     end
+end
+
+---Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
+---@param recipe table The recipe containing the container definitions.
+---@param container_spec string|number The container identifier to resolve.
+---@return string|nil The resolved absolute container name, or nil if not found.
+local function recipe__resolve_container_name(recipe, container_spec)
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    if type(container_spec) == "number" or tonumber(container_spec) then
+        local container_index = tonumber(container_spec)
+        if container_index and recipe.containers[container_index] then
+            local container = recipe.containers[container_index]
+            container__ensure_name(container, recipe.pod.name, tostring(container_index))
+            return container.name
+        end
+    end
+
+    local spec_str = tostring(container_spec)
+    local container_name = util.normalize_name(spec_str)
+    local alternate_container_name = ""
+
+    if string.begins_with(container_name, "*") then
+        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    else
+        alternate_container_name = recipe.pod.name .. "-" .. container_name
+    end
+
+    for i, container in ipairs(recipe.containers) do
+        container__ensure_name(container, recipe.pod.name, tostring(i))
+        if container.name == container_name then
+            return container.name
+        end
+    end
+
+    if alternate_container_name ~= "" then
+        for _, container in ipairs(recipe.containers) do
+            if container.name == alternate_container_name then
+                return container.name
+            end
+        end
+    end
+
+    return nil
 end
 
 ---Validates a loaded recipe, ensuring all required fields, pod properties, and containers are properly configured.
@@ -942,50 +1000,6 @@ local function recipe__validate(context, recipe, file_name)
     end
     return true
 end
-
----Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
----@param recipe table The recipe containing the container definitions.
----@param container_spec string|number The container identifier to resolve.
----@return string|nil The resolved absolute container name, or nil if not found.
-local function recipe__resolve_container_name(recipe, container_spec)
-    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    if type(container_spec) == "number" or tonumber(container_spec) then
-        local container_index = tonumber(container_spec)
-        if container_index and recipe.containers[container_index] then
-            local container = recipe.containers[container_index]
-            container__ensure_name(container, recipe.pod.name, tostring(container_index))
-            return container.name
-        end
-    end
-
-    local spec_str = tostring(container_spec)
-    local container_name = util.normalize_name(spec_str)
-    local alternate_container_name
-
-    if string.begins_with(container_name, "*") then
-        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
-    else
-        alternate_container_name = recipe.pod.name .. "-" .. container_name
-    end
-
-    for i, container in ipairs(recipe.containers) do
-        container__ensure_name(container, recipe.pod.name, tostring(i))
-        if container.name == container_name then
-            return container.name
-        end
-    end
-
-    if alternate_container_name then
-        for i, container in ipairs(recipe.containers) do
-            container__ensure_name(container, recipe.pod.name, tostring(i))
-            if container.name == alternate_container_name then
-                return container.name
-            end
-        end
-    end
-
-    return nil
-end
 -- ------------------------------------------------------------------------- --
 --
 --    SECTION Pod
@@ -1007,22 +1021,23 @@ local function pod__create(recipe, simulate)
     -- pod publish
     if not table.is_nil_or_empty(recipe.pod.publish) then
         local publish = recipe.pod.publish
-        for _, entry in pairs(publish) do
-            local size = table.size(entry)
+        for i = 1, #publish do
+            local entry = publish[i]
+            local size = #entry
             if size == 1 then
-                commands[#commands + 1] = "--publish " .. entry[1]
+                commands[#commands + 1] = "--publish " .. string.escape_shell(tostring(entry[1]))
             elseif size == 2 then
-                local e1 = entry[1]
-                local e2 = entry[2]
+                local e1 = tostring(entry[1])
+                local e2 = tostring(entry[2])
                 if e1 == "" then
-                    commands[#commands + 1] = "--publish " .. e2
+                    commands[#commands + 1] = "--publish " .. string.escape_shell(e2)
                 elseif e2 == "TCP" or e2 == "UDP" then
-                    commands[#commands + 1] = "--publish " .. e1 .. "/" .. e2
+                    commands[#commands + 1] = "--publish " .. string.escape_shell(e1 .. "/" .. e2)
                 else
-                    commands[#commands + 1] = "--publish " .. e1 .. ":" .. e2
+                    commands[#commands + 1] = "--publish " .. string.escape_shell(e1 .. ":" .. e2)
                 end
             elseif size > 2 then
-                commands[#commands + 1] = "--publish " .. entry[1] .. ":" .. entry[2] .. "/" .. entry[3]
+                commands[#commands + 1] = "--publish " .. string.escape_shell(tostring(entry[1]) .. ":" .. tostring(entry[2]) .. "/" .. tostring(entry[3]))
             end
         end
     end
@@ -1098,13 +1113,45 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Collects all unique recipe names defined across all configuration groups.
+---@param context table Application context containing configuration data.
+---@return table recipe_list Sorted array of unique recipe names.
+---@return table recipe_map Lookup table mapping each recipe name to true.
+local function config__get_recipes(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    local config = context.config or {}
+    local recipes = config.recipes or {}
+    local groups = recipes.groups or {}
+    local recipe_map = {}
+    local recipe_list = {}
+
+    for _, group_targets in pairs(groups) do
+        if type(group_targets) == "table" then
+            for _, target in ipairs(group_targets) do
+                if type(target) == "string" and not string.begins_with(target, "@") then
+                    local clean_target = string.trim(target)
+                    if clean_target ~= "" and not recipe_map[clean_target] then
+                        recipe_map[clean_target] = true
+                        recipe_list[#recipe_list + 1] = clean_target
+                    end
+                end
+            end
+        end
+    end
+
+    table.sort(recipe_list)
+    return recipe_list, recipe_map
+end
+
 ---Checks if a specific recipe is defined within the application configuration.
 ---@param context table Application context containing configuration data.
 ---@param recipe_name string Name of the recipe to search for.
 ---@return boolean True if the recipe exists in a group, false otherwise.
 local function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    local groups = context.config.recipes.groups or {}
+    local config = context.config or {}
+    local recipes = config.recipes or {}
+    local groups = recipes.groups or {}
 
     for _, group_targets in pairs(groups) do
         if type(group_targets) == "table" then
@@ -1134,26 +1181,48 @@ local function config__untangle(context, list)
 
     local untangled = {}
 
+    local function expand_group(group_target, visited)
+        if string.find(group_target, "/") or string.find(group_target, ":") then
+            log.error("Container targeting is not supported for groups: '" .. group_target .. "'.")
+            return false
+        end
+
+        local group_name = string.sub(group_target, 2)
+        local group_recipes = groups[group_name]
+
+        if type(group_recipes) ~= "table" then
+            log.error("Unknown recipe group '" .. group_target .. "'.")
+            return false
+        end
+
+        if visited[group_name] then
+            return true
+        end
+        visited[group_name] = true
+
+        for j = 1, #group_recipes do
+            local item = group_recipes[j]
+            if string.begins_with(item, "@") then
+                if not expand_group(item, visited) then
+                    return false
+                end
+            else
+                table.insert(untangled, item)
+            end
+        end
+
+        visited[group_name] = false
+        return true
+    end
+
     for i = 1, #targets do
         local target = targets[i]
 
         -- 1. Handle group targeting (e.g., @group_name)
         if string.begins_with(target, "@") then
-
-            if string.find(target, "/") or string.find(target, ":") then
-                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+            if not expand_group(target, {}) then
                 return false
             end
-
-            local group_name = string.sub(target, 2)
-            local group_recipes = groups[group_name]
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return false
-            end
-
-            table.append(untangled, group_recipes)
 
         -- 2. Handle specific edge cases (help or empty string)
         elseif (target == "help" or target == "") then
@@ -1183,25 +1252,6 @@ end
 --    SECTION Mode Command
 --
 -- ------------------------------------------------------------------------- --
-
----Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
----@param command_table table The command table to validate.
----@param recipe table The recipe containing the command.
----@return boolean True if the command is valid, false otherwise.
-local function mode_command__validate(command_table, recipe)
-    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
-    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
-        log.error("No container in command table set!")
-        return false
-    end
-    if string.is_nil_or_empty(command_table.execute) then
-        log.error("No command in command table set!")
-        return false
-    end
-    -- validate container name : APP *APP and 1
-    return true
-end
 
 ---Constructs and executes a Podman command to run a predefined command within a recipe's container.
 ---@param context table Application context.
@@ -1234,29 +1284,6 @@ local function mode_command__execute(context, recipe, command_table)
     })
 end
 
----Displays the help text for the command mode, outlining usage, actions, and options.
----@param context table Application context.
-local function mode_command__help(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
-    log.print("Execute a command defined in a recipe for a container.")
-    log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
-    log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
-    log.print("ACTIONS:")
-    log.print("  exec               execute a command defined in a recipe (default when COMMAND is provided)")
-    log.print("  list               list all valid commands for a recipe (default)")
-    log.print("  help               display this help text\n")
-    log.print("OPTIONS:")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --simulate         preview generated commands without executing them\n")
-    log.print("RECIPE:")
-    log.print("  *                  name of the recipe\n")
-    log.print("COMMAND|INDEX:")
-    log.print("  *                  command by name defined in recipe to execute")
-    log.print("  <number>           command by numeric index defined in recipe to execute")
-end
-
 ---Retrieves and sorts all valid commands defined within a recipe's pod configuration.
 ---@param recipe table The recipe to inspect.
 ---@param suppress_warnings boolean|nil True to suppress warnings for commands missing descriptions.
@@ -1278,16 +1305,41 @@ local function mode_command__get_valid_commands(recipe, suppress_warnings)
     for i = 1, #sorted_commands do
         local command = sorted_commands[i]
         local command_table = recipe.pod.commands[command]
-        local description = command_table.description
-        if string.is_nil_or_empty(description) then
-            if not suppress_warnings then
-                log.warning("Command '" .. command .. "' has no description.")
+        if type(command_table) == "table" then
+            local description = command_table.description
+            if string.is_nil_or_empty(description) then
+                if not suppress_warnings then
+                    log.warning("Command '" .. command .. "' has no description.")
+                end
+                description = ""
             end
-            description = ""
+            table.insert(valid_commands, { name = command, desc = description, table = command_table })
         end
-        table.insert(valid_commands, { name = command, desc = description, table = command_table })
     end
     return valid_commands
+end
+
+---Displays the help text for the command mode, outlining usage, actions, and options.
+---@param context table Application context.
+local function mode_command__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
+    log.print("Execute a command defined in a recipe for a container.")
+    log.print("Usage: pods command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]")
+    log.print("   or: lua pods.lua command [OPTIONS] [ACTION] RECIPE [COMMAND|INDEX]\n")
+    log.print("ACTIONS:")
+    log.print("  exec               execute a command defined in a recipe (default when COMMAND is provided)")
+    log.print("  list               list all valid commands for a recipe (default)")
+    log.print("  help               display this help text\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
+    log.print("RECIPE:")
+    log.print("  *                  name of the recipe\n")
+    log.print("COMMAND|INDEX:")
+    log.print("  *                  command by name defined in recipe to execute")
+    log.print("  <number>           command by numeric index defined in recipe to execute")
 end
 
 ---Lists all predefined commands available for a specified recipe, formatting them for display.
@@ -1323,22 +1375,42 @@ local function mode_command__list(context, recipe, target)
     end
 end
 
+---Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
+---@param command_table table The command table to validate.
+---@param recipe table The recipe containing the command.
+---@return boolean True if the command is valid, false otherwise.
+local function mode_command__validate(command_table, recipe)
+    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
+        log.error("No container in command table set!")
+        return false
+    end
+    if string.is_nil_or_empty(command_table.execute) then
+        log.error("No command in command table set!")
+        return false
+    end
+    return true
+end
+
 ---Handles the command mode, parsing arguments to list or execute predefined recipe commands.
 ---@param context table Application context containing parsed flags and parameters.
 local function mode_command__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Command mode is used.")
 
-    local p1 = context.parameters[1]
-    local p2 = context.parameters[2]
-    local p3 = context.parameters[3]
+    local p1 = context.parameters[1] or ""
+    local p2 = context.parameters[2] or ""
+    local p3 = context.parameters[3] or ""
 
     if string.is_nil_or_empty(p1) or p1 == "help" then
         mode_command__help(context)
         return
     end
 
-    local action, target, command_name
+    local action = ""
+    local target = ""
+    local command_name = ""
 
     if p1 == "list" or p1 == "exec" then
         action = p1
@@ -1386,7 +1458,7 @@ local function mode_command__handle(context)
                 command_table = recipe.pod.commands[command_name]
             end
 
-            if command_table == nil then
+            if type(command_table) ~= "table" then
                 log.error("Command '" .. command_name .. "' not found in recipe '" .. target .. "'.")
                 return
             end
@@ -1433,18 +1505,15 @@ local function mode_connect__shell(context, target)
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
         recipe_name = target
-        container_spec = nil
+        container_spec = ""
     end
 
-    local abs_container_name
+    local abs_container_name = ""
 
     local recipe_file = util.build_full_path(context.config.recipes.path, recipe_name, ".lua")
     local recipe_exists = system.file_exists(recipe_file)
 
-    local loaded_recipe
-    if recipe_exists then
-        loaded_recipe = recipe__load(context.config.recipes.path, recipe_name)
-    end
+    local loaded_recipe = recipe_exists and recipe__load(context.config.recipes.path, recipe_name) or false
 
     if recipe_exists then
         if not loaded_recipe then
@@ -1577,7 +1646,8 @@ local function mode_recipe__help()
     log.print("OPTIONS:")
     log.print("  --all              include unconfigured recipes found on disk")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit recipe")
@@ -1598,27 +1668,7 @@ local function mode_recipe__list(context)
 
     local show_all = flags.all
 
-    local recipe_map = {}
-    local recipe_list = {}
-
-    local groups = recipes.groups or {}
-    if not table.is_nil_or_empty(groups) then
-        for _, group_targets in pairs(groups) do
-            if type(group_targets) == "table" then
-                for _, target in ipairs(group_targets) do
-                    if type(target) == "string" and not string.begins_with(target, "@") then
-                        local clean_target = string.trim(target)
-                        if clean_target ~= "" and not recipe_map[clean_target] then
-                            recipe_map[clean_target] = true
-                            recipe_list[#recipe_list + 1] = clean_target
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    table.sort(recipe_list)
+    local recipe_list, recipe_map = config__get_recipes(context)
 
     local unreferenced = {}
     local recipes_path = recipes.path or ""
@@ -1818,6 +1868,7 @@ local function mode_config__edit(context)
     local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
+
 ---Displays the help text for the config mode, detailing available actions and options.
 local function mode_config__help()
     log.print("PodScript " .. get_version_string() .. "\n")
@@ -1825,7 +1876,8 @@ local function mode_config__help()
     log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit config")
@@ -1868,9 +1920,8 @@ local function mode_config__show(context)
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
     local recipes_files = system.list_directory(recipes_path, "%.lua$")
-    if system.directory_exists(recipes_path) then
-        local count = recipes_files and #recipes_files or 0
-        recipes_status = string.format("[OK, %d recipes found]", count)
+    if recipes_files ~= nil then
+        recipes_status = string.format("[OK, %d recipes found]", #recipes_files)
     end
     local abs_recipes_path = system.get_absolute_path(recipes_path)
     local recipes_line = string.format("  %-14s%s", "Recipes:", abs_recipes_path)
@@ -2037,12 +2088,58 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the default mode, outputting global usage, available modes, actions, and options.
+---@param context table Application context.
+local function mode_default__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  command            execute a command defined in a recipe")
+    log.print("  config             manage and inspect configuration")
+    log.print("  connect            connect to a running container with an interactive shell")
+    log.print("  image              manage orphaned and dangling container images")
+    log.print("  init               initialize default configuration and recipe")
+    log.print("  logs               show or follow logs for a pod or container")
+    log.print("  recipe             inspect and edit recipes\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them")
+    log.print("  --all              include all unmanaged podman containers (status only)\n")
+    log.print("Valid in default mode only:\n")
+    log.print("ACTIONS:")
+    log.print("  create             create a new pod")
+    log.print("  help               display this help and exit")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  status             display status of pods and containers")
+    log.print("  update             update all defined images of the pod\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
 ---Queries Podman and formats the runtime status of managed pods and containers for display.
 ---@param context table Application context.
 ---@param targets table Array of recipe names to filter the status output.
 local function mode_default__status(context, targets)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(targets) ~= "table" then error("targets must be a table", 2) end
+
+    local targets_to_resolve = {}
+    if not table.is_nil_or_empty(targets) then
+        local untangled = config__untangle(context, targets)
+        if not untangled then
+            return
+        end
+        targets_to_resolve = untangled
+    else
+        targets_to_resolve = config__get_recipes(context)
+    end
+
     local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
     local lines = system.exec_capture(query_command)
     if not lines then
@@ -2070,31 +2167,6 @@ local function mode_default__status(context, targets)
 
     local display_containers = {}
     local managed_expected = {}
-
-    local targets_to_resolve = {}
-    if not table.is_nil_or_empty(targets) then
-        for i = 1, #targets do
-            targets_to_resolve[#targets_to_resolve + 1] = targets[i]
-        end
-    else
-        -- resolve all known recipes
-        if context.config.recipes and context.config.recipes.groups then
-            local recipe_map = {}
-            for _, group_targets in pairs(context.config.recipes.groups) do
-                if type(group_targets) == "table" then
-                    for _, target in ipairs(group_targets) do
-                        if type(target) == "string" and not string.begins_with(target, "@") then
-                            local clean_target = string.trim(target)
-                            if clean_target ~= "" and not recipe_map[clean_target] then
-                                recipe_map[clean_target] = true
-                                targets_to_resolve[#targets_to_resolve + 1] = clean_target
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
 
     for i = 1, #targets_to_resolve do
         local target = targets_to_resolve[i]
@@ -2181,8 +2253,9 @@ local function mode_default__status(context, targets)
 
     local pad_right = function(str, len)
         str = str or ""
-        if #str < len then
-            return str .. string.rep(" ", len - #str)
+        local visible = string.visible_length(str)
+        if visible < len then
+            return str .. string.rep(" ", len - visible)
         end
         return str
     end
@@ -2190,7 +2263,7 @@ local function mode_default__status(context, targets)
     local max_lengths = {}
     for i = 1, #cols do
         local col = cols[i]
-        max_lengths[col] = #col
+        max_lengths[col] = string.visible_length(col)
     end
 
     for i = 1, #display_containers do
@@ -2198,8 +2271,9 @@ local function mode_default__status(context, targets)
         for j = 1, #cols do
             local col = cols[j]
             local val = tostring(c[string.lower(col)] or "")
-            if #val > max_lengths[col] then
-                max_lengths[col] = #val
+            local visible = string.visible_length(val)
+            if visible > max_lengths[col] then
+                max_lengths[col] = visible
             end
         end
     end
@@ -2229,40 +2303,6 @@ local function mode_default__status(context, targets)
     end
 end
 
----Displays the help text for the default mode, outputting global usage, available modes, actions, and options.
----@param context table Application context.
-local function mode_default__help(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.print("PodScript " .. get_version_string() .. "\n")
-    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
-    log.print("MODES:")
-    log.print("  *                  default mode")
-    log.print("  command            execute a command defined in a recipe")
-    log.print("  config             manage and inspect configuration")
-    log.print("  connect            connect to a running container with an interactive shell")
-    log.print("  image              manage orphaned and dangling container images")
-    log.print("  init               initialize default configuration and recipe")
-    log.print("  logs               show or follow logs for a pod or container")
-    log.print("  recipe             inspect and edit recipes\n")
-    log.print("OPTIONS:")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --simulate         preview generated commands without executing them")
-    log.print("  --all              include all unmanaged podman containers (status only)\n")
-    log.print("Valid in default mode only:\n")
-    log.print("ACTIONS:")
-    log.print("  create             create a new pod")
-    log.print("  help               display this help and exit")
-    log.print("  recreate           removes and then creates a new pod")
-    log.print("  remove             remove a running pod")
-    log.print("  status             display status of pods and containers")
-    log.print("  update             update all defined images of the pod\n")
-    log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups defined in a config\n")
-    log.print("For more: lua pods.lua [MODE] help")
-end
-
 ---Displays the help text for the status action within the default mode.
 ---@param context table Application context.
 local function mode_default__status_help(context)
@@ -2280,6 +2320,7 @@ local function mode_default__status_help(context)
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
 end
+
 ---Handles the default mode, orchestrating lifecycle actions (create, recreate, remove, update) or displaying status.
 ---@param context table Application context containing parsed flags and parameters.
 local function mode_default__handle(context)
@@ -2347,31 +2388,6 @@ end
 --
 -- ------------------------------------------------------------------------- --
 
----Displays the help text for the logs mode, detailing usage, actions, and available flags.
----@param context table Application context.
-local function mode_logs__help(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
-    log.print("Show or follow logs for a recipe's pod or container.")
-    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
-    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    log.print("ACTIONS:")
-    log.print("  show               fetch and display logs, then exit (default)")
-    log.print("  follow             fetch and follow logs")
-    log.print("  help               display this help\n")
-    log.print("OPTIONS:")
-    log.print("  --tail=<n>         output the specified number of lines at the end")
-    log.print("  --since=<time>     show logs since timestamp")
-    log.print("  --until=<time>     show logs until timestamp")
-    log.print("  --timestamps       show timestamps in the log output")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --simulate         preview generated commands without executing them\n")
-    log.print("TARGET:")
-    log.print("  <recipe>             show logs for all containers in the recipe's pod")
-    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
-end
-
 ---Executes the podman log command for a target recipe's pod or specific container.
 ---@param context table Application context containing flags (e.g., since, tail).
 ---@param action string The logging action (e.g., 'show' or 'follow').
@@ -2387,7 +2403,7 @@ local function mode_logs__execute(context, action, target)
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
         recipe_name = target
-        container_spec = nil
+        container_spec = ""
     end
 
     -- Load recipe
@@ -2423,7 +2439,7 @@ local function mode_logs__execute(context, action, target)
     end
     if context.flags.tail then
         commands[#commands + 1] = "--tail"
-        commands[#commands + 1] = tostring(context.flags.tail)
+        commands[#commands + 1] = string.escape_shell(tostring(context.flags.tail))
     end
     if context.flags.timestamps then
         commands[#commands + 1] = "--timestamps"
@@ -2450,6 +2466,31 @@ local function mode_logs__execute(context, action, target)
         prefix = "Execute log command: "
     })
     return success
+end
+
+---Displays the help text for the logs mode, detailing usage, actions, and available flags.
+---@param context table Application context.
+local function mode_logs__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
+    log.print("Show or follow logs for a recipe's pod or container.")
+    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
+    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
+    log.print("ACTIONS:")
+    log.print("  show               fetch and display logs, then exit (default)")
+    log.print("  follow             fetch and follow logs")
+    log.print("  help               display this help\n")
+    log.print("OPTIONS:")
+    log.print("  --tail=<n>         output the specified number of lines at the end")
+    log.print("  --since=<time>     show logs since timestamp")
+    log.print("  --until=<time>     show logs until timestamp")
+    log.print("  --timestamps       show timestamps in the log output")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
+    log.print("TARGET:")
+    log.print("  <recipe>             show logs for all containers in the recipe's pod")
+    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
 ---Handles the logs mode, processing commands to display or stream podman logs.
@@ -2505,8 +2546,10 @@ local function mode_image__help(context)
     log.print("  help               display this help text\n")
     log.print("OPTIONS:")
     log.print("  --all              prune all unused images, not just dangling ones")
+    log.print("  --debug            enable debug output")
     log.print("  --force            skip confirmation prompt")
     log.print("  --preview          preview images and space that would be deleted")
+    log.print("  --simulate         preview generated commands without executing them")
 end
 
 ---Handles the pruning of orphaned or dangling images.
@@ -2521,7 +2564,7 @@ local function mode_image__prune(context)
         local in_use_images = {}
         local container_ids, success_ids = system.exec_capture("podman ps -aq")
         if success_ids and container_ids and #container_ids > 0 then
-            local inspect_cmd = "podman inspect -f '{{.Image}}' $(podman ps -aq)"
+            local inspect_cmd = "podman inspect -f '{{.Image}}' " .. table.concat(container_ids, " ")
             local in_use_lines = system.exec_capture(inspect_cmd)
             if in_use_lines then
                 for i = 1, #in_use_lines do
@@ -2601,7 +2644,7 @@ local function mode_image__prune(context)
         end
         local cmd = table.concat(cmd_args, " ")
 
-        if not is_force then
+        if not is_force and not context.flags.simulate then
             io.write("Are you sure you want to prune " .. (is_all and "all unused" or "dangling") .. " images? Type 'yes' to proceed: ")
             local input = io.read()
             if input ~= "yes" then
@@ -2660,7 +2703,7 @@ local function mode_init__create(context)
     local recipe_content = "return {\
     name = \"Example Web Stack\",\
     description = \"A minimal but complete example recipe with a web app and database.\",\
-    \
+\
     pod = {\
         name = \"example-stack\",\
         path = \"/pods/example-stack\",\
@@ -2680,7 +2723,7 @@ local function mode_init__create(context)
             \"--userns=keep-id\",\
         },\
     },\
-    \
+\
     containers = {\
         {\
             name = \"*db\",\
@@ -2728,7 +2771,7 @@ return {\
         groups = {\
             -- An example of a recipe group.\
             all = {\
-                \"pod\",\
+                \"recipe\",\
             },\
         },\
     },\
@@ -2790,10 +2833,10 @@ local function main__config_load_and_set(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     local config_path = context.config.path
 
-    local config, error, _ = system.load_lua_file(config_path)
-    if config == nil then
-        if error ~= nil then
-            log.error(error)
+    local config, err, _ = system.load_lua_file(config_path)
+    if type(config) ~= "table" then
+        if err ~= nil then
+            log.error(err)
         end
         log.error("Couldn't load configuration '" .. config_path .. "'!")
         return false
@@ -2962,18 +3005,19 @@ global function main(arguments)
     end
 
     -- print debug message if non-default-configuration is used
-    if log.debug_enabled and config_name ~= "config" then
-        log.print("DEBUG: Config '" .. config_full_path .. "' is used.")
+    if config_name ~= "config" then
+        log.debug("Config '" .. config_full_path .. "' is used.")
     end
 
     context.config.path = config_full_path
 
-    -- handle modes that do not require configuration
-    if context.mode == modes.init or context.mode == modes.image then
-        context.mode(context)
-        return
-    end
-    if context.mode == modes.default and context.parameters[1] == "help" then
+    -- handle modes and help actions that do not require configuration
+    local p1 = context.parameters[1] or ""
+    local p2 = context.parameters[2] or ""
+    local is_help = (p1 == "help")
+        or (context.mode == modes.default and p1 == "status" and p2 == "help")
+        or ((context.mode == modes.command or context.mode == modes.connect or context.mode == modes.logs) and p1 == "")
+    if context.mode == modes.init or context.mode == modes.image or is_help then
         context.mode(context)
         return
     end

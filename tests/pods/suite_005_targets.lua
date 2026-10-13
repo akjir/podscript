@@ -111,5 +111,16 @@ return {
                 }
             },
         },
+        [s .. "12"] = {
+            description = "Nested group references expand recursively.",
+            config = "config_013_validation",
+            parameters = { "create", "@stack" },
+            expectations = {
+                sequence = {
+                    "DEBUG: Targets   - @stack",
+                    "DEBUG: Untangled - recipe_001_empty frontend"
+                }
+            },
+        },
     },
 }

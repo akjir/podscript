@@ -30,13 +30,45 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
+---Collects all unique recipe names defined across all configuration groups.
+---@param context table Application context containing configuration data.
+---@return table recipe_list Sorted array of unique recipe names.
+---@return table recipe_map Lookup table mapping each recipe name to true.
+global function config__get_recipes(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    local config = context.config or {}
+    local recipes = config.recipes or {}
+    local groups = recipes.groups or {}
+    local recipe_map = {}
+    local recipe_list = {}
+
+    for _, group_targets in pairs(groups) do
+        if type(group_targets) == "table" then
+            for _, target in ipairs(group_targets) do
+                if type(target) == "string" and not string.begins_with(target, "@") then
+                    local clean_target = string.trim(target)
+                    if clean_target ~= "" and not recipe_map[clean_target] then
+                        recipe_map[clean_target] = true
+                        recipe_list[#recipe_list + 1] = clean_target
+                    end
+                end
+            end
+        end
+    end
+
+    table.sort(recipe_list)
+    return recipe_list, recipe_map
+end
+
 ---Checks if a specific recipe is defined within the application configuration.
 ---@param context table Application context containing configuration data.
 ---@param recipe_name string Name of the recipe to search for.
 ---@return boolean True if the recipe exists in a group, false otherwise.
 global function config__has_recipe(context, recipe_name)
     if type(context) ~= "table" then error("context must be a table", 2) end
-    local groups = context.config.recipes.groups or {}
+    local config = context.config or {}
+    local recipes = config.recipes or {}
+    local groups = recipes.groups or {}
 
     for _, group_targets in pairs(groups) do
         if type(group_targets) == "table" then
@@ -66,26 +98,48 @@ global function config__untangle(context, list)
 
     local untangled = {}
 
+    local function expand_group(group_target, visited)
+        if string.find(group_target, "/") or string.find(group_target, ":") then
+            log.error("Container targeting is not supported for groups: '" .. group_target .. "'.")
+            return false
+        end
+
+        local group_name = string.sub(group_target, 2)
+        local group_recipes = groups[group_name]
+
+        if type(group_recipes) ~= "table" then
+            log.error("Unknown recipe group '" .. group_target .. "'.")
+            return false
+        end
+
+        if visited[group_name] then
+            return true
+        end
+        visited[group_name] = true
+
+        for j = 1, #group_recipes do
+            local item = group_recipes[j]
+            if string.begins_with(item, "@") then
+                if not expand_group(item, visited) then
+                    return false
+                end
+            else
+                table.insert(untangled, item)
+            end
+        end
+
+        visited[group_name] = false
+        return true
+    end
+
     for i = 1, #targets do
         local target = targets[i]
 
         -- 1. Handle group targeting (e.g., @group_name)
         if string.begins_with(target, "@") then
-
-            if string.find(target, "/") or string.find(target, ":") then
-                log.error("Container targeting is not supported for groups: '" .. target .. "'.")
+            if not expand_group(target, {}) then
                 return false
             end
-
-            local group_name = string.sub(target, 2)
-            local group_recipes = groups[group_name]
-
-            if group_recipes == nil then
-                log.error("Unknown recipe group '" .. target .. "'.")
-                return false
-            end
-
-            table.append(untangled, group_recipes)
 
         -- 2. Handle specific edge cases (help or empty string)
         elseif (target == "help" or target == "") then

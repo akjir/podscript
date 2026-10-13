@@ -52,7 +52,22 @@ return {
             end,
             expected = "dry-run=true"
         },
-
+        [s .. "07"] = {
+            description = "Build full path: path already ends with extension.",
+            dev_only = true,
+            run = function()
+                return util.build_full_path("/custom/path/to/my_config.lua", "", ".lua")
+            end,
+            expected = "/custom/path/to/my_config.lua"
+        },
+        [s .. "08"] = {
+            description = "Build full path: file_name already ends with extension.",
+            dev_only = true,
+            run = function()
+                return util.build_full_path("configs", "my_config.lua", ".lua")
+            end,
+            expected = "./configs/my_config.lua"
+        },
         [s .. "09"] = {
             description = "Get version string in development mode.",
             dev_only = true,

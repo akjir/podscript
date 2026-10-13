@@ -90,17 +90,6 @@ return {
                 }
             },
         },
-        [s .. "08b"] = {
-            description = "Simulate logs for specific container (absolute).",
-            simulate = true,
-            parameters = { "logs", "recipe_006_commands/cmd_pod-db" },
-            expectations = {
-                sequence = {
-                    "Execute log command: ",
-                    "podman pod logs -n --color -c cmd_pod-db cmd_pod"
-                }
-            },
-        },
         [s .. "09"] = {
             description = "Error when recipe not found.",
             simulate = true,
@@ -181,6 +170,17 @@ return {
             expectations = {
                 sequence = {
                     "ERROR: Groups are not supported for logs. Only pods and containers are supported."
+                }
+            },
+        },
+        [s .. "16"] = {
+            description = "Simulate logs for specific container (absolute).",
+            simulate = true,
+            parameters = { "logs", "recipe_006_commands/cmd_pod-db" },
+            expectations = {
+                sequence = {
+                    "Execute log command: ",
+                    "podman pod logs -n --color -c cmd_pod-db cmd_pod"
                 }
             },
         }

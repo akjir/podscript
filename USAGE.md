@@ -30,25 +30,25 @@ This document provides a comprehensive command-line reference for PodScript, cov
   - [Options](#options-3)
   - [Usage](#usage-3)
 - [Command Mode](#command-mode)
-  - [Actions](#actions-2)
-  - [Options](#options-2)
-  - [Command Definition](#command-definition)
-  - [Usage](#usage-2)
-- [Config Mode](#config-mode)
-  - [Actions](#actions-3)
-  - [Options](#options-3)
-  - [Editor Configuration](#editor-configuration)
-  - [Usage](#usage-3)
-- [Image Mode](#image-mode)
   - [Actions](#actions-4)
   - [Options](#options-4)
+  - [Command Definition](#command-definition)
   - [Usage](#usage-4)
-- [Recipe Mode](#recipe-mode)
+- [Config Mode](#config-mode)
   - [Actions](#actions-5)
   - [Options](#options-5)
+  - [Editor Configuration](#editor-configuration)
   - [Usage](#usage-5)
-- [Getting Help](#getting-help)
+- [Image Mode](#image-mode)
+  - [Actions](#actions-6)
+  - [Options](#options-6)
   - [Usage](#usage-6)
+- [Recipe Mode](#recipe-mode)
+  - [Actions](#actions-7)
+  - [Options](#options-7)
+  - [Usage](#usage-7)
+- [Getting Help](#getting-help)
+  - [Usage](#usage-8)
 - [Comprehensive Examples](#comprehensive-examples)
   - [Configuration File (`config.lua`)](#configuration-file-configlua)
   - [Basic Pod Lifecycle](#basic-pod-lifecycle)
@@ -180,7 +180,7 @@ pods create recipe --simulate
 # Create and start the pod and containers
 pods create recipe
 
-# Pull updated images and recreate containers if changed
+# Pull updated container images from the registry
 pods update recipe
 
 # Stop and remove the pod and containers
@@ -214,6 +214,7 @@ The following flags can be supplied across CLI modes:
 | :--- | :--- |
 | `--config=<name>` | Load an alternative configuration file by name or path (without the `.lua` extension). |
 | `--debug` | Enable verbose debug logging to output internal state and execution details. |
+| `--simulate` | Preview generated Podman commands without executing them. |
 
 ---
 
@@ -232,7 +233,7 @@ The `--simulate` flag causes commands to be printed rather than executed across 
 | `recreate` | Stop and remove an existing pod and its containers in reverse order, then recreate them anew. |
 | `remove` | Stop and remove a running pod and all associated containers in reverse order. |
 | `status` | Query and display runtime status of managed containers. Target list is optional. |
-| `update` | Pull latest container images and recreate the containers if newer versions exist. |
+| `update` | Pull the latest container images from their configured registries. |
 
 ### Options
 
@@ -242,6 +243,7 @@ The `--simulate` flag causes commands to be printed rather than executed across 
 | `--config=<name>` | Load a specific configuration file (e.g., `--config=staging`). |
 | `--debug` | Enable verbose debug output for troubleshooting. |
 | `--full` | Display extended container columns including Image, Command, and Ports (for `status` action). |
+| `--simulate` | Preview generated commands without executing them. |
 
 ### Targets & Grouping
 
@@ -349,13 +351,16 @@ pods init [OPTIONS]
        },
    }
    ```
-2. **`config.lua`**: A configuration file setting the default pod path and defining the recipe under the `all` group:
+2. **`config.lua`**: A configuration file setting the default editor, simulation mode, pod path, and defining the recipe under the `all` group:
    ```lua
    return {
+       editor = "vim",
+       simulate = false,
        pods = {
            path = "/pods",
        },
        recipes = {
+           path = ".",
            groups = {
                all = {
                    "recipe",
@@ -393,11 +398,15 @@ Fetches and tails logs from pods and containers managed by PodScript.
 | :--- | :--- |
 | `show` | Display the logs for the target and exit (default). |
 | `follow` | Tail the logs and follow them continuously until interrupted. |
+| `help` | Display command-line help for logs mode. |
 
 ### Options
 
 | Option | Description |
 | :--- | :--- |
+| `--config=<name>` | Load a specific configuration file to resolve recipes and paths. |
+| `--debug` | Enable verbose debug output. |
+| `--simulate` | Preview generated commands without executing them. |
 | `--tail=<N>` | Show only the last `N` lines of logs. |
 | `--since=<T>` | Show logs generated since a specific duration (e.g., `1h`, `10m`) or timestamp. |
 | `--until=<T>` | Show logs generated until a specific duration or timestamp. |
@@ -446,6 +455,7 @@ pods connect [OPTIONS] [ACTION] <target> --simulate
 
 *   `--config=NAME`: Use config with given name or path.
 *   `--debug`: Enable debug output.
+*   `--simulate`: Preview generated commands without executing them.
 
 ### Targets
 
@@ -506,6 +516,7 @@ pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX] --simulate
 | :--- | :--- |
 | `--config=<name>` | Load a specific configuration file to resolve recipes and paths. |
 | `--debug` | Enable verbose debug output for command resolution. |
+| `--simulate` | Preview generated commands without executing them. |
 
 ### Command Definition
 
@@ -569,7 +580,7 @@ pods config [OPTIONS] [ACTION]
 
 | Action | Description |
 | :--- | :--- |
-| `show` | Display the contents of the configuration file with line numbers. (Default when omitted). |
+| `show` | Display the active configuration as a structured diagnostic tree. (Default when omitted). |
 | `edit` | Open the active configuration file in the external text editor specified in the config. |
 | `help` | Display command-line help for config mode. |
 
@@ -579,6 +590,7 @@ pods config [OPTIONS] [ACTION]
 | :--- | :--- |
 | `--config=<name>` | Target a specific configuration file instead of the default `config.lua`. |
 | `--debug` | Enable verbose debug output. |
+| `--simulate` | Preview generated commands without executing them. |
 
 ### Editor Configuration
 
@@ -596,7 +608,7 @@ If `editor` is empty or unset, the `edit` action logs an error and aborts.
 ### Usage
 
 ```bash
-# Print default configuration with line numbers
+# Display the active configuration diagnostic tree
 pods config show
 pods config
 
@@ -631,8 +643,10 @@ pods image [OPTIONS] [ACTION]
 | Option | Description |
 | :--- | :--- |
 | `--all` | Prune **all** unused images (including unused tagged images), not just dangling ones. |
+| `--debug` | Enable verbose debug output. |
 | `--force` | Skip the interactive confirmation prompt. |
 | `--preview` | Preview the exact unused images that would be deleted and the total space reclaimable without executing the deletion. |
+| `--simulate` | Preview generated commands without executing them. |
 
 ### Usage
 
@@ -673,15 +687,16 @@ pods recipe [OPTIONS] [ACTION] [RECIPE]
 | `--all` | Include unconfigured (orphaned) recipes found on disk when listing recipes. |
 | `--config=<name>` | Load a specific configuration file to resolve recipe search paths and editor. |
 | `--debug` | Enable verbose debug output. |
+| `--simulate` | Preview generated commands without executing them. |
 
 ### Usage
 
 ```bash
 # Display help for recipe mode
-pods recipe
 pods recipe help
 
-# List all available recipes
+# List all available recipes (default action when omitted)
+pods recipe
 pods recipe list
 
 # List all configured recipes and unconfigured recipes on disk

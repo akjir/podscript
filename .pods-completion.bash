@@ -5,13 +5,13 @@ _pods_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Basic modes and default actions
-    local modes="logs connect init command config recipe image help"
-    local default_actions="create recreate remove status update"
+    local modes="logs connect init command config recipe image"
+    local default_actions="create help recreate remove status update"
 
     # Find mode and action in the preceding words to determine context
     local mode=""
     local action=""
-    
+
     for (( i=1; i<COMP_CWORD; i++ )); do
         local word="${COMP_WORDS[i]}"
         # Ignore flags when determining mode and action
@@ -66,7 +66,7 @@ _pods_completions() {
                 COMPREPLY=( $(compgen -W "shell help" -- "${cur}") )
                 ;;
             logs)
-                COMPREPLY=( $(compgen -W "show follow" -- "${cur}") )
+                COMPREPLY=( $(compgen -W "show follow help" -- "${cur}") )
                 ;;
             init)
                 COMPREPLY=( $(compgen -W "help" -- "${cur}") )
@@ -82,9 +82,6 @@ _pods_completions() {
                 ;;
             image)
                 COMPREPLY=( $(compgen -W "prune help" -- "${cur}") )
-                ;;
-            help)
-                COMPREPLY=( $(compgen -W "${modes} config recipe command init logs connect image" -- "${cur}") )
                 ;;
         esac
     fi

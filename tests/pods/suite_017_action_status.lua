@@ -103,6 +103,32 @@ return {
                     "Display the runtime status of pods and containers."
                 }
             },
+        },
+        [s .. "06"] = {
+            description = "Status of explicitly targeted group.",
+            dev_only = true,
+            run = function()
+                local original_exec = system.exec_capture
+                system.exec_capture = function(cmd)
+                    if string.find(cmd, "podman ps") then
+                        return {
+                            "cid1;;;simple.io/simple:latest;;;;;;2026-09-25;;;Up 2 days;;;80/tcp;;;simple;;;simple_container;;;0",
+                            "cid3;;;unmanaged:latest;;;sh;;;2026-09-24;;;Up 3 days;;;;;;unmanaged;;;unmanaged-pod;;;0"
+                        }
+                    end
+                    return original_exec(cmd)
+                end
+                main({ "--config=tests/pods/configs/config_015_commands", "status", "@all" })
+                system.exec_capture = original_exec
+            end,
+            expectations = {
+                sequence = {
+                    "cid1   simple_container   simple",
+                },
+                not_contains = {
+                    "cid3",
+                }
+            },
         }
     }
 }

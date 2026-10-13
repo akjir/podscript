@@ -44,8 +44,10 @@ local function mode_image__help(context)
     log.print("  help               display this help text\n")
     log.print("OPTIONS:")
     log.print("  --all              prune all unused images, not just dangling ones")
+    log.print("  --debug            enable debug output")
     log.print("  --force            skip confirmation prompt")
     log.print("  --preview          preview images and space that would be deleted")
+    log.print("  --simulate         preview generated commands without executing them")
 end
 
 ---Handles the pruning of orphaned or dangling images.
@@ -60,7 +62,7 @@ local function mode_image__prune(context)
         local in_use_images = {}
         local container_ids, success_ids = system.exec_capture("podman ps -aq")
         if success_ids and container_ids and #container_ids > 0 then
-            local inspect_cmd = "podman inspect -f '{{.Image}}' $(podman ps -aq)"
+            local inspect_cmd = "podman inspect -f '{{.Image}}' " .. table.concat(container_ids, " ")
             local in_use_lines = system.exec_capture(inspect_cmd)
             if in_use_lines then
                 for i = 1, #in_use_lines do
@@ -140,7 +142,7 @@ local function mode_image__prune(context)
         end
         local cmd = table.concat(cmd_args, " ")
 
-        if not is_force then
+        if not is_force and not context.flags.simulate then
             io.write("Are you sure you want to prune " .. (is_all and "all unused" or "dangling") .. " images? Type 'yes' to proceed: ")
             local input = io.read()
             if input ~= "yes" then

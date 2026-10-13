@@ -57,7 +57,7 @@ global function container__create(container, pod, simulate)
     -- container restart
     if not string.is_nil_or_empty(container.restart) then
         commands[#commands + 1] = "--restart"
-        commands[#commands + 1] = container.restart
+        commands[#commands + 1] = string.escape_shell(container.restart)
     end
 
     -- container volumes
@@ -67,7 +67,8 @@ global function container__create(container, pod, simulate)
             local container_dir = container.volumes[i][2]
             local options = container.volumes[i][3]
             if string.is_nil_or_empty(container_dir) then
-                log.error("Container dir cannot be empty! (" .. container.name .. ")")
+                log.error("Container dir cannot be empty! (" .. tostring(container.name) .. ")")
+                return
             else
                 local command = ""
                 if string.is_nil_or_empty(host_dir) then
@@ -144,10 +145,21 @@ global function container__is_valid(container, pod_name)
         log.error("A container in pod '" .. pod_name .. "' is empty!")
         return false
     end
+    local label = tostring(container.name or pod_name)
     -- test for container image
     if string.is_nil_or_empty(container.image) then
-        log.error("Image not set for container '" .. container.name .. "'!")
+        log.error("Image not set for container '" .. label .. "'!")
         return false
+    end
+    -- test for container volumes
+    if not table.is_nil_or_empty(container.volumes) then
+        for i = 1, #container.volumes do
+            local volume = container.volumes[i]
+            if type(volume) ~= "table" or string.is_nil_or_empty(volume[2]) then
+                log.error("Container dir cannot be empty! (" .. label .. ")")
+                return false
+            end
+        end
     end
     return true
 end

@@ -32,31 +32,6 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Displays the help text for the logs mode, detailing usage, actions, and available flags.
----@param context table Application context.
-local function mode_logs__help(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
-    log.print("Show or follow logs for a recipe's pod or container.")
-    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
-    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
-    log.print("ACTIONS:")
-    log.print("  show               fetch and display logs, then exit (default)")
-    log.print("  follow             fetch and follow logs")
-    log.print("  help               display this help\n")
-    log.print("OPTIONS:")
-    log.print("  --tail=<n>         output the specified number of lines at the end")
-    log.print("  --since=<time>     show logs since timestamp")
-    log.print("  --until=<time>     show logs until timestamp")
-    log.print("  --timestamps       show timestamps in the log output")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --simulate         preview generated commands without executing them\n")
-    log.print("TARGET:")
-    log.print("  <recipe>             show logs for all containers in the recipe's pod")
-    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
-end
-
 ---Executes the podman log command for a target recipe's pod or specific container.
 ---@param context table Application context containing flags (e.g., since, tail).
 ---@param action string The logging action (e.g., 'show' or 'follow').
@@ -72,7 +47,7 @@ local function mode_logs__execute(context, action, target)
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
         recipe_name = target
-        container_spec = nil
+        container_spec = ""
     end
 
     -- Load recipe
@@ -108,7 +83,7 @@ local function mode_logs__execute(context, action, target)
     end
     if context.flags.tail then
         commands[#commands + 1] = "--tail"
-        commands[#commands + 1] = tostring(context.flags.tail)
+        commands[#commands + 1] = string.escape_shell(tostring(context.flags.tail))
     end
     if context.flags.timestamps then
         commands[#commands + 1] = "--timestamps"
@@ -135,6 +110,31 @@ local function mode_logs__execute(context, action, target)
         prefix = "Execute log command: "
     })
     return success
+end
+
+---Displays the help text for the logs mode, detailing usage, actions, and available flags.
+---@param context table Application context.
+local function mode_logs__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. " - Logs Mode\n")
+    log.print("Show or follow logs for a recipe's pod or container.")
+    log.print("Usage: pods logs [OPTIONS] [<action>] <recipe>[/container]")
+    log.print("   or: lua pods.lua logs [OPTIONS] [<action>] <recipe>[/container]\n")
+    log.print("ACTIONS:")
+    log.print("  show               fetch and display logs, then exit (default)")
+    log.print("  follow             fetch and follow logs")
+    log.print("  help               display this help\n")
+    log.print("OPTIONS:")
+    log.print("  --tail=<n>         output the specified number of lines at the end")
+    log.print("  --since=<time>     show logs since timestamp")
+    log.print("  --until=<time>     show logs until timestamp")
+    log.print("  --timestamps       show timestamps in the log output")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
+    log.print("TARGET:")
+    log.print("  <recipe>             show logs for all containers in the recipe's pod")
+    log.print("  <recipe>/<container> filter logs to a specific container (index, relative, absolute)")
 end
 
 ---Handles the logs mode, processing commands to display or stream podman logs.

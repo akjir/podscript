@@ -63,18 +63,15 @@ local function mode_connect__shell(context, target)
     local recipe_name, container_spec = string.match(target, "^([^/]+)/(.*)$")
     if not recipe_name then
         recipe_name = target
-        container_spec = nil
+        container_spec = ""
     end
 
-    local abs_container_name
+    local abs_container_name = ""
 
     local recipe_file = util.build_full_path(context.config.recipes.path, recipe_name, ".lua")
     local recipe_exists = system.file_exists(recipe_file)
 
-    local loaded_recipe
-    if recipe_exists then
-        loaded_recipe = recipe__load(context.config.recipes.path, recipe_name)
-    end
+    local loaded_recipe = recipe_exists and recipe__load(context.config.recipes.path, recipe_name) or false
 
     if recipe_exists then
         if not loaded_recipe then

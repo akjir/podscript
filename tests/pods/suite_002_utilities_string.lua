@@ -156,7 +156,7 @@ return {
             run = function()
                 return string.trim(nil)
             end,
-            expected = nil
+            expected = ""
         },
         [s .. "23"] = {
             description = "string.visible_length - ascii string",
@@ -178,6 +178,13 @@ return {
                 return string.visible_length(nil)
             end,
             expected = 0
+        },
+        [s .. "26"] = {
+            description = "string.ends_with - with empty suffix",
+            run = function()
+                return string.ends_with("some string", "")
+            end,
+            expected = true
         },
     },
 }

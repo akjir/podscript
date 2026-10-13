@@ -17,11 +17,11 @@
 ## Architecture & Naming
 * `header.lua`: `VERSION`, `BUILD`, `get_version_string`
 * `log.lua`: `log.*` (includes `log.debug_enabled`)
-* `utilities.lua`: Global utility functions
+* `utilities.lua`: `util.*` utility functions
 * `utilities_{string,table,system}.lua`: Extends `string.*` or `table.*`, or provides `system.*`
 * `{container,pod,recipe,config}.lua`: Prefix `<name>__*`. Declare modular functions as `global function` (`build.lua` localizes them for release).
 * `main.lua`: Prefix `main__*`
-* `mode_{command,config,default,help,init,recipe}.lua`: Prefix `mode_<name>__*`
+* `mode_{command,config,connect,default,image,init,logs,recipe}.lua`: Prefix `mode_<name>__*`
 * **Lua 5.5 & Strict Globals:** Put `global<const> *` at the top of every chunk. Use `table.create` to preallocate tables. Use named varargs (`... args`) for variadic functions.
 
 ## Workflows

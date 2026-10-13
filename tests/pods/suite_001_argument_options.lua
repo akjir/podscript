@@ -77,9 +77,9 @@ return {
             expectations = {
                 sequence = {
                     "DEBUG: Debug mode is enabled.",
-                    "DEBUG: Config '/custom/path/to/my_config.lua.lua' is used.",
-                    "ERROR: cannot open /custom/path/to/my_config.lua.lua: No such file or directory",
-                    "ERROR: Couldn't load configuration '/custom/path/to/my_config.lua.lua'!"
+                    "DEBUG: Config '/custom/path/to/my_config.lua' is used.",
+                    "ERROR: cannot open /custom/path/to/my_config.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration '/custom/path/to/my_config.lua'!"
                 }
             },
         },
@@ -103,8 +103,21 @@ return {
             expectations = {
                 sequence = {
                     "DEBUG: Debug mode is enabled.",
-                    "ERROR: cannot open /custom/path/to/config.lua.lua: No such file or directory",
-                    "ERROR: Couldn't load configuration '/custom/path/to/config.lua.lua'!"
+                    "ERROR: cannot open /custom/path/to/config.lua: No such file or directory",
+                    "ERROR: Couldn't load configuration '/custom/path/to/config.lua'!"
+                }
+            },
+        },
+        [s .. "10"] = {
+            description = "Mode help does not require a valid config file.",
+            config = "config_missing",
+            parameters = { "config", "help" },
+            expectations = {
+                sequence = {
+                    "Usage: pods config [OPTIONS] ACTION"
+                },
+                not_contains = {
+                    "ERROR: Couldn't load configuration"
                 }
             },
         },

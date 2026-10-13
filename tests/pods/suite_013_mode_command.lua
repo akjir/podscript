@@ -196,24 +196,24 @@ return {
             },
         },
         [s .. "17"] = {
-            description = "Print command list (list recipe).",
-            parameters = { "command", "list", "recipe_006_commands" },
+            description = "Command list with non-table entries in recipe.pod.commands.",
+            dev_only = true,
+            run = function()
+                local recipe = {
+                    name = "test_pod",
+                    pod = {
+                        commands = {
+                            invalid_cmd = "not_a_table"
+                        }
+                    }
+                }
+                mode_command__list({}, recipe, "test_recipe")
+                return true
+            end,
+            expected = true,
             expectations = {
                 sequence = {
-                    "WARNING: Command 'missing_container' has no description.",
-                    "WARNING: Command 'missing_execute' has no description.",
-                    "WARNING: Command 'run_absolute' has no description.",
-                    "WARNING: Command 'run_int_container' has no description.",
-                    "WARNING: Command 'run_int_container_2' has no description.",
-                    "WARNING: Command 'run_int_user' has no description.",
-                    "Commands for recipe 'recipe_006_commands':",
-                    "  1) add_index: Adds missing database indices.",
-                    "  2) missing_container",
-                    "  3) missing_execute",
-                    "  4) run_absolute",
-                    "  5) run_int_container",
-                    "  6) run_int_container_2",
-                    "  7) run_int_user"
+                    "There is no valid command in recipe 'test_recipe'."
                 }
             },
         },

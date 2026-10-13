@@ -40,7 +40,7 @@ end
 ---@param suffix string The suffix to search for.
 ---@return boolean True if the string ends with the suffix, false otherwise.
 function string.ends_with(str, suffix)
-    return str:sub(- #suffix) == suffix
+    return suffix == "" or str:sub(- #suffix) == suffix
 end
 
 ---Escapes a string securely for injection into shell commands.
@@ -65,15 +65,6 @@ function string.is_nil_or_empty(str)
     return str == nil or str == ""
 end
 
----Strips leading and trailing whitespace characters from a string.
----@param str string|nil The string to trim.
----@return string The trimmed string, or an empty string if nil.
-function string.trim(str)
-    if str == nil then return "" end
-    -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
-    return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
-end
-
 ---Partitions a string into a table of substrings divided by a given separator.
 ---@param str string The string to partition.
 ---@param sep string The separator substring.
@@ -92,6 +83,15 @@ function string.split(str, sep)
     end
     result[#result + 1] = str:sub(last_end)
     return result
+end
+
+---Strips leading and trailing whitespace characters from a string.
+---@param str string|nil The string to trim.
+---@return string The trimmed string, or an empty string if nil.
+function string.trim(str)
+    if str == nil then return "" end
+    -- avoid lazy evaluation of '.-' in str:match("^%s*(.-)%s*$")
+    return str:match("^()%s*$") and "" or str:match("^%s*(.*%S)")
 end
 
 ---Computes the visible character count of a string, accounting for multi-byte UTF-8 sequences.

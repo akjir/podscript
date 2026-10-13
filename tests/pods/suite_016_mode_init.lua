@@ -36,13 +36,7 @@ return {
             run = function()
                 local test_dir = "/tmp/podscript_test_init"
                 os.execute("rm -rf " .. test_dir .. " && mkdir -p " .. test_dir)
-                local orig_dir = io.popen("pwd"):read("*l")
 
-                -- change directory to test_dir
-                local chdir_success = os.execute("cd " .. test_dir)
-                if not chdir_success then return false end
-
-                -- execute in isolated test dir
                 local test_recipe = test_dir .. "/recipe.lua"
                 local test_config = test_dir .. "/config.lua"
 
@@ -75,7 +69,7 @@ return {
                     and actual_config == config_content
                     and load_success == true
                     and recipe_valid == true
-                    and context.config.recipes.groups.all[1] == "pod"
+                    and context.config.recipes.groups.all[1] == "recipe"
             end,
             expected = true,
         },

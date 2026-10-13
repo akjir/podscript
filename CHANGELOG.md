@@ -21,6 +21,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Fixed recursive `@group` expansion and cycle detection in `config__untangle`.
+- Fixed `@group` target resolution and UTF-8 column padding in `status` action.
+- Fixed `string.ends_with` returning `false` when checking an empty suffix.
+- Fixed duplicate `.lua` file extensions in `util.build_full_path` resolution.
+- Fixed interactive confirmation prompt blocking `image prune` with `--simulate`.
+- Fixed mode `help` actions failing when configuration files are missing.
+- Fixed missing shell escaping for `restart`, `publish`, `tail`, and path helpers.
+- Fixed port order in `pod__create` and volume validation in `container__is_valid`.
+- Fixed table type validation for configs, recipes, and `pod.commands` entries.
+- Fixed default recipe name mismatch in `config.lua` for `init` mode.
 - Fixed cryptic file open error when showing missing recipes in `recipe` mode.
 - Fixed status column alignment for items exceeding default padding limit.
 - Fixed silent error swallowing in `system.exec_capture` when commands fail.

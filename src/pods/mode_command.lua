@@ -32,30 +32,11 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
----Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
----@param command_table table The command table to validate.
----@param recipe table The recipe containing the command.
----@return boolean True if the command is valid, false otherwise.
-local function mode_command__validate(command_table, recipe)
-    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
-    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
-        log.error("No container in command table set!")
-        return false
-    end
-    if string.is_nil_or_empty(command_table.execute) then
-        log.error("No command in command table set!")
-        return false
-    end
-    -- validate container name : APP *APP and 1
-    return true
-end
-
 ---Constructs and executes a Podman command to run a predefined command within a recipe's container.
 ---@param context table Application context.
 ---@param recipe table The recipe containing the command and container definitions.
 ---@param command_table table The specific command configuration to execute.
-local function mode_command__execute(context, recipe, command_table)
+global function mode_command__execute(context, recipe, command_table)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if type(command_table) ~= "table" then error("command_table must be a table", 2) end
@@ -82,9 +63,44 @@ local function mode_command__execute(context, recipe, command_table)
     })
 end
 
+---Retrieves and sorts all valid commands defined within a recipe's pod configuration.
+---@param recipe table The recipe to inspect.
+---@param suppress_warnings boolean|nil True to suppress warnings for commands missing descriptions.
+---@return table An array of valid command tables, each containing the command name, description, and original table.
+global function mode_command__get_valid_commands(recipe, suppress_warnings)
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    if table.is_nil_or_empty(recipe.pod.commands) then
+        return {}
+    end
+
+    local command_count = table.size(recipe.pod.commands)
+    local sorted_commands = table.create(command_count)
+    for command, _ in pairs(recipe.pod.commands) do
+        table.insert(sorted_commands, command)
+    end
+    table.sort(sorted_commands)
+
+    local valid_commands = table.create(command_count)
+    for i = 1, #sorted_commands do
+        local command = sorted_commands[i]
+        local command_table = recipe.pod.commands[command]
+        if type(command_table) == "table" then
+            local description = command_table.description
+            if string.is_nil_or_empty(description) then
+                if not suppress_warnings then
+                    log.warning("Command '" .. command .. "' has no description.")
+                end
+                description = ""
+            end
+            table.insert(valid_commands, { name = command, desc = description, table = command_table })
+        end
+    end
+    return valid_commands
+end
+
 ---Displays the help text for the command mode, outlining usage, actions, and options.
 ---@param context table Application context.
-local function mode_command__help(context)
+global function mode_command__help(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.print("PodScript " .. get_version_string() .. " - Command Mode\n")
     log.print("Execute a command defined in a recipe for a container.")
@@ -105,44 +121,11 @@ local function mode_command__help(context)
     log.print("  <number>           command by numeric index defined in recipe to execute")
 end
 
----Retrieves and sorts all valid commands defined within a recipe's pod configuration.
----@param recipe table The recipe to inspect.
----@param suppress_warnings boolean|nil True to suppress warnings for commands missing descriptions.
----@return table An array of valid command tables, each containing the command name, description, and original table.
-local function mode_command__get_valid_commands(recipe, suppress_warnings)
-    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    if table.is_nil_or_empty(recipe.pod.commands) then
-        return {}
-    end
-
-    local command_count = table.size(recipe.pod.commands)
-    local sorted_commands = table.create(command_count)
-    for command, _ in pairs(recipe.pod.commands) do
-        table.insert(sorted_commands, command)
-    end
-    table.sort(sorted_commands)
-
-    local valid_commands = table.create(command_count)
-    for i = 1, #sorted_commands do
-        local command = sorted_commands[i]
-        local command_table = recipe.pod.commands[command]
-        local description = command_table.description
-        if string.is_nil_or_empty(description) then
-            if not suppress_warnings then
-                log.warning("Command '" .. command .. "' has no description.")
-            end
-            description = ""
-        end
-        table.insert(valid_commands, { name = command, desc = description, table = command_table })
-    end
-    return valid_commands
-end
-
 ---Lists all predefined commands available for a specified recipe, formatting them for display.
 ---@param context table Application context.
 ---@param recipe table The loaded recipe containing the commands.
 ---@param target string The name of the target recipe.
-local function mode_command__list(context, recipe, target)
+global function mode_command__list(context, recipe, target)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(recipe) ~= "table" then error("recipe must be a table", 2) end
     if table.is_nil_or_empty(recipe.pod.commands) then
@@ -171,22 +154,42 @@ local function mode_command__list(context, recipe, target)
     end
 end
 
+---Validates a command configuration table within a recipe, ensuring the command string and container name are specified.
+---@param command_table table The command table to validate.
+---@param recipe table The recipe containing the command.
+---@return boolean True if the command is valid, false otherwise.
+global function mode_command__validate(command_table, recipe)
+    if type(command_table) ~= "table" then error("command_table must be a table", 2) end
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    if string.is_nil_or_empty(command_table.container) and type(command_table.container) ~= "number" then
+        log.error("No container in command table set!")
+        return false
+    end
+    if string.is_nil_or_empty(command_table.execute) then
+        log.error("No command in command table set!")
+        return false
+    end
+    return true
+end
+
 ---Handles the command mode, parsing arguments to list or execute predefined recipe commands.
 ---@param context table Application context containing parsed flags and parameters.
 global function mode_command__handle(context)
     if type(context) ~= "table" then error("context must be a table", 2) end
     log.debug("Command mode is used.")
 
-    local p1 = context.parameters[1]
-    local p2 = context.parameters[2]
-    local p3 = context.parameters[3]
+    local p1 = context.parameters[1] or ""
+    local p2 = context.parameters[2] or ""
+    local p3 = context.parameters[3] or ""
 
     if string.is_nil_or_empty(p1) or p1 == "help" then
         mode_command__help(context)
         return
     end
 
-    local action, target, command_name
+    local action = ""
+    local target = ""
+    local command_name = ""
 
     if p1 == "list" or p1 == "exec" then
         action = p1
@@ -234,7 +237,7 @@ global function mode_command__handle(context)
                 command_table = recipe.pod.commands[command_name]
             end
 
-            if command_table == nil then
+            if type(command_table) ~= "table" then
                 log.error("Command '" .. command_name .. "' not found in recipe '" .. target .. "'.")
                 return
             end

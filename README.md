@@ -119,7 +119,7 @@ Execute commands on groups using the `@` prefix: `pods create @backend`.
 
 | Mode | Action | Target | Description |
 | :--- | :--- | :--- | :--- |
-| `(default)` | `create`, `recreate`, `remove`, `status`, `update` | `<recipe>`, `@<group>` | Executes lifecycle actions on recipes or groups. |
+| `(default)` | `create`, `help`, `recreate`, `remove`, `status`, `update` | `<recipe>`, `@<group>` | Executes lifecycle actions on recipes or groups. |
 | `logs` | `show`, `follow` | `<recipe>[/<container>]` | Retrieves or tails container logs. |
 | `connect` | `shell` | `<recipe>[/<container>]` | Opens an interactive shell in a container. |
 | `command` | `list`, `exec` | `<recipe> [command]` | Executes pre-defined maintenance commands. |
@@ -127,7 +127,6 @@ Execute commands on groups using the `@` prefix: `pods create @backend`.
 | `config` | `show`, `edit` | - | Displays or edits the active configuration file. |
 | `image` | `prune`, `help` | - | Manages orphaned and dangling container images. |
 | `recipe` | `show`, `edit`, `list` | `<recipe>` | Displays, edits, or lists recipes. |
-| `help` | - | - | Displays syntax and usage information. |
 
 Global Options:
 

@@ -21,7 +21,7 @@ return {
         groups = {
             -- An example of a recipe group.
             all = {
-                "pod",
+                "recipe",
             },
         },
     },

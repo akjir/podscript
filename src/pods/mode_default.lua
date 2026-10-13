@@ -30,12 +30,58 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
+---Displays the help text for the default mode, outputting global usage, available modes, actions, and options.
+---@param context table Application context.
+global function mode_default__help(context)
+    if type(context) ~= "table" then error("context must be a table", 2) end
+    log.print("PodScript " .. get_version_string() .. "\n")
+    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
+    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
+    log.print("MODES:")
+    log.print("  *                  default mode")
+    log.print("  command            execute a command defined in a recipe")
+    log.print("  config             manage and inspect configuration")
+    log.print("  connect            connect to a running container with an interactive shell")
+    log.print("  image              manage orphaned and dangling container images")
+    log.print("  init               initialize default configuration and recipe")
+    log.print("  logs               show or follow logs for a pod or container")
+    log.print("  recipe             inspect and edit recipes\n")
+    log.print("OPTIONS:")
+    log.print("  --config=NAME      use config with given name or path")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them")
+    log.print("  --all              include all unmanaged podman containers (status only)\n")
+    log.print("Valid in default mode only:\n")
+    log.print("ACTIONS:")
+    log.print("  create             create a new pod")
+    log.print("  help               display this help and exit")
+    log.print("  recreate           removes and then creates a new pod")
+    log.print("  remove             remove a running pod")
+    log.print("  status             display status of pods and containers")
+    log.print("  update             update all defined images of the pod\n")
+    log.print("TARGETS:")
+    log.print("  *                  names of recipes or groups defined in a config\n")
+    log.print("For more: lua pods.lua [MODE] help")
+end
+
 ---Queries Podman and formats the runtime status of managed pods and containers for display.
 ---@param context table Application context.
 ---@param targets table Array of recipe names to filter the status output.
 global function mode_default__status(context, targets)
     if type(context) ~= "table" then error("context must be a table", 2) end
     if type(targets) ~= "table" then error("targets must be a table", 2) end
+
+    local targets_to_resolve = {}
+    if not table.is_nil_or_empty(targets) then
+        local untangled = config__untangle(context, targets)
+        if not untangled then
+            return
+        end
+        targets_to_resolve = untangled
+    else
+        targets_to_resolve = config__get_recipes(context)
+    end
+
     local query_command = 'podman ps -a --format "{{.ID}};;;{{.Image}};;;{{.Command}};;;{{.CreatedAt}};;;{{.Status}};;;{{.Ports}};;;{{.Names}};;;{{.PodName}};;;{{.Restarts}}"'
     local lines = system.exec_capture(query_command)
     if not lines then
@@ -63,31 +109,6 @@ global function mode_default__status(context, targets)
 
     local display_containers = {}
     local managed_expected = {}
-
-    local targets_to_resolve = {}
-    if not table.is_nil_or_empty(targets) then
-        for i = 1, #targets do
-            targets_to_resolve[#targets_to_resolve + 1] = targets[i]
-        end
-    else
-        -- resolve all known recipes
-        if context.config.recipes and context.config.recipes.groups then
-            local recipe_map = {}
-            for _, group_targets in pairs(context.config.recipes.groups) do
-                if type(group_targets) == "table" then
-                    for _, target in ipairs(group_targets) do
-                        if type(target) == "string" and not string.begins_with(target, "@") then
-                            local clean_target = string.trim(target)
-                            if clean_target ~= "" and not recipe_map[clean_target] then
-                                recipe_map[clean_target] = true
-                                targets_to_resolve[#targets_to_resolve + 1] = clean_target
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
 
     for i = 1, #targets_to_resolve do
         local target = targets_to_resolve[i]
@@ -174,8 +195,9 @@ global function mode_default__status(context, targets)
 
     local pad_right = function(str, len)
         str = str or ""
-        if #str < len then
-            return str .. string.rep(" ", len - #str)
+        local visible = string.visible_length(str)
+        if visible < len then
+            return str .. string.rep(" ", len - visible)
         end
         return str
     end
@@ -183,7 +205,7 @@ global function mode_default__status(context, targets)
     local max_lengths = {}
     for i = 1, #cols do
         local col = cols[i]
-        max_lengths[col] = #col
+        max_lengths[col] = string.visible_length(col)
     end
 
     for i = 1, #display_containers do
@@ -191,8 +213,9 @@ global function mode_default__status(context, targets)
         for j = 1, #cols do
             local col = cols[j]
             local val = tostring(c[string.lower(col)] or "")
-            if #val > max_lengths[col] then
-                max_lengths[col] = #val
+            local visible = string.visible_length(val)
+            if visible > max_lengths[col] then
+                max_lengths[col] = visible
             end
         end
     end
@@ -222,40 +245,6 @@ global function mode_default__status(context, targets)
     end
 end
 
----Displays the help text for the default mode, outputting global usage, available modes, actions, and options.
----@param context table Application context.
-global function mode_default__help(context)
-    if type(context) ~= "table" then error("context must be a table", 2) end
-    log.print("PodScript " .. get_version_string() .. "\n")
-    log.print("Usage: pods [MODE] [OPTIONS] ACTION [TARGETS]")
-    log.print("   or: lua pods.lua [MODE] [OPTIONS] ACTION [TARGETS]\n")
-    log.print("MODES:")
-    log.print("  *                  default mode")
-    log.print("  command            execute a command defined in a recipe")
-    log.print("  config             manage and inspect configuration")
-    log.print("  connect            connect to a running container with an interactive shell")
-    log.print("  image              manage orphaned and dangling container images")
-    log.print("  init               initialize default configuration and recipe")
-    log.print("  logs               show or follow logs for a pod or container")
-    log.print("  recipe             inspect and edit recipes\n")
-    log.print("OPTIONS:")
-    log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output")
-    log.print("  --simulate         preview generated commands without executing them")
-    log.print("  --all              include all unmanaged podman containers (status only)\n")
-    log.print("Valid in default mode only:\n")
-    log.print("ACTIONS:")
-    log.print("  create             create a new pod")
-    log.print("  help               display this help and exit")
-    log.print("  recreate           removes and then creates a new pod")
-    log.print("  remove             remove a running pod")
-    log.print("  status             display status of pods and containers")
-    log.print("  update             update all defined images of the pod\n")
-    log.print("TARGETS:")
-    log.print("  *                  names of recipes or groups defined in a config\n")
-    log.print("For more: lua pods.lua [MODE] help")
-end
-
 ---Displays the help text for the status action within the default mode.
 ---@param context table Application context.
 global function mode_default__status_help(context)
@@ -273,6 +262,7 @@ global function mode_default__status_help(context)
     log.print("TARGETS:")
     log.print("  *                  names of recipes or groups to filter (defaults to all managed recipes)")
 end
+
 ---Handles the default mode, orchestrating lifecycle actions (create, recreate, remove, update) or displaying status.
 ---@param context table Application context containing parsed flags and parameters.
 global function mode_default__handle(context)

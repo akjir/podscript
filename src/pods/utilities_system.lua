@@ -67,16 +67,6 @@ function system.check_podman_version()
     return major > 5 or (major == 5 and minor >= 8)
 end
 
----Evaluates whether a directory exists at the specified path.
----@param path string The directory path to verify.
----@return boolean True if the directory exists, false otherwise.
-function system.directory_exists(path)
-    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
-    return success == true
-end
-
 ---Evaluates whether a specific Podman container is currently running.
 ---@param container_name string The name of the container to inspect.
 ---@return boolean True if the container is running, false otherwise.
@@ -91,24 +81,14 @@ function system.container_exists(container_name)
     return false
 end
 
----Resolves the absolute path for a given file system path using realpath.
----@param path string The path to resolve.
----@return string The absolute path.
-function system.get_absolute_path(path)
+---Evaluates whether a directory exists at the specified path.
+---@param path string The directory path to verify.
+---@return boolean True if the directory exists, false otherwise.
+function system.directory_exists(path)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
-    if string.is_nil_or_empty(path) then return "" end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
-    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
-    if not handle then return path end
-    local result = handle:read("*a")
-    handle:close()
-    if result then
-        local trimmed_result = string.trim(result)
-        if not string.is_nil_or_empty(trimmed_result) then
-            return trimmed_result
-        end
-    end
-    return path
+    local safe_path = string.escape_shell(path)
+    local success = system.exec("test -d " .. safe_path, { interactive = true, silent = true })
+    return success == true
 end
 
 ---Executes a shell command synchronously, optionally buffering output or running interactively.
@@ -127,25 +107,18 @@ function system.exec(command, options)
     local interactive = options.interactive == true
     local silent = options.silent == true
 
-    local final_command = command
-    local print_command = command
-
-    if not interactive then
-        final_command = print_command
-    end
-
     if simulate then
         if not string.is_nil_or_empty(prefix) then
             log.print(prefix)
         end
-        log.print(print_command)
+        log.print(command)
         return true, "exit", 0
     end
 
-    log.debug("Execute: " .. print_command)
+    log.debug("Execute: " .. command)
 
     if interactive then
-        local success, exit_reason, exit_code = os.execute(final_command)
+        local success, exit_reason, exit_code = os.execute(command)
         success = (success == true) -- os.execute returns boolean?
         if not success and not silent then
             log.error("Command exited with code '" .. tostring(exit_code) .. "'!")
@@ -154,10 +127,10 @@ function system.exec(command, options)
     end
 
     -- combine STDOUT and STDERR using 2>&1
-    local handle = io.popen("( " .. final_command .. " ) 2>&1")
+    local handle = io.popen("( " .. command .. " ) 2>&1")
     if not handle then
         if not silent then
-            log.error("Failed to execute command '" .. final_command .. "'!")
+            log.error("Failed to execute command '" .. command .. "'!")
         end
         return false, "failed", -1
     end
@@ -220,6 +193,26 @@ function system.file_exists(path)
     return false
 end
 
+---Resolves the absolute path for a given file system path using realpath.
+---@param path string The path to resolve.
+---@return string The absolute path.
+function system.get_absolute_path(path)
+    if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
+    if string.is_nil_or_empty(path) then return "" end
+    local safe_path = string.escape_shell(path)
+    local handle = io.popen("realpath -m " .. safe_path .. " 2>/dev/null")
+    if not handle then return path end
+    local result = handle:read("*a")
+    handle:close()
+    if result then
+        local trimmed_result = string.trim(result)
+        if not string.is_nil_or_empty(trimmed_result) then
+            return trimmed_result
+        end
+    end
+    return path
+end
+
 ---Retrieves a list of files within a directory, optionally filtered by a Lua pattern.
 ---@param path string The directory to scan.
 ---@param pattern string|nil A Lua pattern to filter filenames.
@@ -228,7 +221,7 @@ function system.list_directory(path, pattern)
     if type(path) ~= "string" then error("Expected string for path, got " .. type(path), 2) end
     if pattern ~= nil and type(pattern) ~= "string" then error("Expected string or nil for pattern, got " .. type(pattern), 2) end
     if not system.directory_exists(path) then return nil end
-    local safe_path = "'" .. path:gsub("'", "'\\''") .. "'"
+    local safe_path = string.escape_shell(path)
     local handle = io.popen("ls -1 " .. safe_path .. " 2>/dev/null")
     if not handle then return nil end
     local files = {}

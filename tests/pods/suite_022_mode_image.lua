@@ -47,7 +47,7 @@ return {
                 }
             },
         },
-                [s .. "05"] = {
+        [s .. "05"] = {
             description = "Test image prune preview with mock.",
             parameters = { "image", "--preview", "prune" },
             run = function()
@@ -136,10 +136,21 @@ return {
                     "---------------------------------------------------------------------------",
                     "Total space reclaimable:"
                 },
-                not_sequence = {
+                not_contains = {
                     "  - ijkl5678mnop"
                 }
             }
+        },
+        [s .. "08"] = {
+            description = "Simulate image prune without --force skips interactive prompt.",
+            simulate = true,
+            parameters = { "image", "prune" },
+            expectations = {
+                sequence = {
+                    "Prune images: ",
+                    "podman image prune -f"
+                }
+            },
         }
     }
 }

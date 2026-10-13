@@ -43,6 +43,7 @@ local function mode_config__edit(context)
     local command = editor .. " " .. string.escape_shell(context.config.path)
     system.exec(command, { simulate = context.flags.simulate, interactive = true })
 end
+
 ---Displays the help text for the config mode, detailing available actions and options.
 global function mode_config__help()
     log.print("PodScript " .. get_version_string() .. "\n")
@@ -50,7 +51,8 @@ global function mode_config__help()
     log.print("   or: lua pods.lua config [OPTIONS] ACTION\n")
     log.print("OPTIONS:")
     log.print("  --config=NAME      use config with given name or path")
-    log.print("  --debug            enable debug output\n")
+    log.print("  --debug            enable debug output")
+    log.print("  --simulate         preview generated commands without executing them\n")
     log.print("ACTIONS:")
     log.print("  help               display this help and exit")
     log.print("  edit               edit config")
@@ -93,9 +95,8 @@ local function mode_config__show(context)
     local recipes_path = context.config.recipes.path or ""
     local recipes_status = "[NOT FOUND]"
     local recipes_files = system.list_directory(recipes_path, "%.lua$")
-    if system.directory_exists(recipes_path) then
-        local count = recipes_files and #recipes_files or 0
-        recipes_status = string.format("[OK, %d recipes found]", count)
+    if recipes_files ~= nil then
+        recipes_status = string.format("[OK, %d recipes found]", #recipes_files)
     end
     local abs_recipes_path = system.get_absolute_path(recipes_path)
     local recipes_line = string.format("  %-14s%s", "Recipes:", abs_recipes_path)

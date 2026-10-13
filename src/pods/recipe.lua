@@ -37,11 +37,11 @@ global<const> *
 ---@return table|nil The loaded recipe table, or nil if an error occurred.
 global function recipe__load(recipe_path, recipe_name, suppress_errors)
     local full_path = util.build_full_path(recipe_path, recipe_name, ".lua")
-    local recipe, error, _ = system.load_lua_file(full_path)
-    if recipe == nil then
+    local recipe, err, _ = system.load_lua_file(full_path)
+    if type(recipe) ~= "table" then
         if not suppress_errors then
-            if error ~= nil then
-                log.error(error)
+            if err ~= nil then
+                log.error(err)
             end
             log.error("Couldn't load recipe '" .. full_path .. "'!")
         end
@@ -49,6 +49,49 @@ global function recipe__load(recipe_path, recipe_name, suppress_errors)
     else
         return recipe
     end
+end
+
+---Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
+---@param recipe table The recipe containing the container definitions.
+---@param container_spec string|number The container identifier to resolve.
+---@return string|nil The resolved absolute container name, or nil if not found.
+global function recipe__resolve_container_name(recipe, container_spec)
+    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
+    if type(container_spec) == "number" or tonumber(container_spec) then
+        local container_index = tonumber(container_spec)
+        if container_index and recipe.containers[container_index] then
+            local container = recipe.containers[container_index]
+            container__ensure_name(container, recipe.pod.name, tostring(container_index))
+            return container.name
+        end
+    end
+
+    local spec_str = tostring(container_spec)
+    local container_name = util.normalize_name(spec_str)
+    local alternate_container_name = ""
+
+    if string.begins_with(container_name, "*") then
+        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
+    else
+        alternate_container_name = recipe.pod.name .. "-" .. container_name
+    end
+
+    for i, container in ipairs(recipe.containers) do
+        container__ensure_name(container, recipe.pod.name, tostring(i))
+        if container.name == container_name then
+            return container.name
+        end
+    end
+
+    if alternate_container_name ~= "" then
+        for _, container in ipairs(recipe.containers) do
+            if container.name == alternate_container_name then
+                return container.name
+            end
+        end
+    end
+
+    return nil
 end
 
 ---Validates a loaded recipe, ensuring all required fields, pod properties, and containers are properly configured.
@@ -122,48 +165,4 @@ global function recipe__validate(context, recipe, file_name)
         end
     end
     return true
-end
-
----Resolves a precise container name from a user specification (e.g., numeric index, exact name, or relative *name).
----@param recipe table The recipe containing the container definitions.
----@param container_spec string|number The container identifier to resolve.
----@return string|nil The resolved absolute container name, or nil if not found.
-global function recipe__resolve_container_name(recipe, container_spec)
-    if type(recipe) ~= "table" then error("recipe must be a table", 2) end
-    if type(container_spec) == "number" or tonumber(container_spec) then
-        local container_index = tonumber(container_spec)
-        if container_index and recipe.containers[container_index] then
-            local container = recipe.containers[container_index]
-            container__ensure_name(container, recipe.pod.name, tostring(container_index))
-            return container.name
-        end
-    end
-
-    local spec_str = tostring(container_spec)
-    local container_name = util.normalize_name(spec_str)
-    local alternate_container_name
-
-    if string.begins_with(container_name, "*") then
-        container_name = recipe.pod.name .. "-" .. container_name:sub(2)
-    else
-        alternate_container_name = recipe.pod.name .. "-" .. container_name
-    end
-
-    for i, container in ipairs(recipe.containers) do
-        container__ensure_name(container, recipe.pod.name, tostring(i))
-        if container.name == container_name then
-            return container.name
-        end
-    end
-
-    if alternate_container_name then
-        for i, container in ipairs(recipe.containers) do
-            container__ensure_name(container, recipe.pod.name, tostring(i))
-            if container.name == alternate_container_name then
-                return container.name
-            end
-        end
-    end
-
-    return nil
 end
