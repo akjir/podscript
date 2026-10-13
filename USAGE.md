@@ -1,128 +1,214 @@
-# PodScript CLI Reference & Usage Manual
+# PodScript Usage Guide
 
-This document provides a comprehensive command-line reference for PodScript, covering all modes, lifecycle actions, configuration options, targeting rules, and command syntax.
-
----
+This guide documents all implemented features, configuration schemas, recipe definitions, targeting rules, and command-line modes of PodScript.
 
 ## Table of Contents
 
 - [Command Syntax](#command-syntax)
-- [Updating PodScript](#updating-podscript)
-- [Quick Start](#quick-start)
-- [Modes Overview](#modes-overview)
-- [Global Options](#global-options)
+  - [Modes Overview](#modes-overview)
+  - [Global Options](#global-options)
+- [Configuration Reference](#configuration-reference)
+- [Recipe Reference](#recipe-reference)
+  - [Top-Level Fields](#top-level-fields)
+  - [Pod Fields](#pod-fields)
+  - [Container Fields](#container-fields)
+  - [Recipe Example](#recipe-example)
+- [Targeting Rules](#targeting-rules)
+  - [Recipe and Group Targets](#recipe-and-group-targets)
+  - [Container Targets](#container-targets)
 - [Default Mode](#default-mode)
   - [Actions](#actions)
   - [Options](#options)
-  - [Targets & Grouping](#targets--grouping)
   - [Usage](#usage)
-- [Init Mode](#init-mode)
+- [Logs Mode](#logs-mode)
   - [Actions](#actions-1)
   - [Options](#options-1)
-  - [Generated Files](#generated-files)
   - [Usage](#usage-1)
-- [Logs Mode](#logs-mode)
+- [Connect Mode](#connect-mode)
   - [Actions](#actions-2)
   - [Options](#options-2)
   - [Usage](#usage-2)
-- [Connect Mode](#connect-mode)
+- [Command Mode](#command-mode)
   - [Actions](#actions-3)
   - [Options](#options-3)
   - [Usage](#usage-3)
-- [Command Mode](#command-mode)
+- [Recipe Mode](#recipe-mode)
   - [Actions](#actions-4)
   - [Options](#options-4)
-  - [Command Definition](#command-definition)
   - [Usage](#usage-4)
 - [Config Mode](#config-mode)
   - [Actions](#actions-5)
   - [Options](#options-5)
-  - [Editor Configuration](#editor-configuration)
   - [Usage](#usage-5)
 - [Image Mode](#image-mode)
   - [Actions](#actions-6)
   - [Options](#options-6)
   - [Usage](#usage-6)
-- [Recipe Mode](#recipe-mode)
+- [Init Mode](#init-mode)
   - [Actions](#actions-7)
   - [Options](#options-7)
   - [Usage](#usage-7)
-- [Getting Help](#getting-help)
-  - [Usage](#usage-8)
-- [Comprehensive Examples](#comprehensive-examples)
-  - [Configuration File (`config.lua`)](#configuration-file-configlua)
-  - [Basic Pod Lifecycle](#basic-pod-lifecycle)
-  - [Dry-Run Simulation](#dry-run-simulation)
-  - [Recipe Group Targeting](#recipe-group-targeting)
-  - [Container Maintenance Tasks](#container-maintenance-tasks)
-  - [Configuration Overrides & Debugging](#configuration-overrides--debugging)
-
----
 
 ## Command Syntax
 
-The general syntax for invoking PodScript is:
+Invoke PodScript through the `pods` wrapper or directly with the Lua interpreter:
 
 ```bash
 pods [MODE] [OPTIONS] [ACTION] [TARGETS...]
-```
-
-Or when running directly via the Lua interpreter:
-
-```bash
 lua pods.lua [MODE] [OPTIONS] [ACTION] [TARGETS...]
 ```
 
-### Shell Autocompletion
+Argument parsing follows these rules:
 
-To enable terminal autocompletion for the `pods` and `./pods` commands, first download or update the completion script:
+- **Mode Resolution:** If the first positional argument matches a mode name (`command`, `config`, `connect`, `image`, `init`, `logs`, `recipe`), that mode is selected. Otherwise, PodScript selects the [Default Mode](#default-mode) and treats the first positional argument as the action.
+- **No Arguments:** Running `pods` without arguments executes `pods help`.
+- **Option Placement:** Options prefixed with `--` can appear anywhere in the command line.
+- **Configuration Bypass:** The `init` mode, `image` mode, all `help` actions (`pods help`, `pods <mode> help`, `pods status help`), and parameterless calls to `command`, `connect`, or `logs` run without loading `config.lua`.
+- **Privilege Check:** When executed with elevated privileges (`sudo` or `root`), PodScript prints a warning and requires interactive confirmation (`yes`) before running.
 
-```bash
-curl -sSL https://raw.githubusercontent.com/akjir/podscript/main/.pods-completion.bash -o .pods-completion.bash
+### Modes Overview
+
+| Mode        | Actions                                                    | Target                        | Description                                                       |
+| :---------- | :--------------------------------------------------------- | :---------------------------- | :---------------------------------------------------------------- |
+| `(default)` | `create`, `recreate`, `remove`, `update`, `status`, `help` | `<recipe>`, `@<group>`        | Manage pod lifecycles and inspect runtime container status.       |
+| `logs`      | `show`, `follow`, `help`                                   | `<recipe>[/<container>]`      | Display or follow logs for a pod or a specific container.         |
+| `connect`   | `shell`, `help`                                            | `<recipe>[/<container>]`      | Open an interactive shell inside a running container.             |
+| `command`   | `list`, `exec`, `help`                                     | `<recipe> [<command>\|<idx>]` | List or execute maintenance commands defined in a recipe.         |
+| `recipe`    | `list`, `show`, `edit`, `help`                             | `[<recipe>]`                  | List configured recipes, or display and edit a recipe file.       |
+| `config`    | `show`, `edit`, `help`                                     | `-`                           | Validate and display the active configuration tree or edit it.    |
+| `image`     | `prune`, `help`                                            | `-`                           | Preview and remove dangling or unused container images.           |
+| `init`      | `help`                                                     | `-`                           | Generate initial `config.lua` and `recipe.lua` template files.    |
+
+### Global Options
+
+| Option            | Description                                                                              |
+| :---------------- | :--------------------------------------------------------------------------------------- |
+| `--config=<name>` | Load an alternative configuration file by name or path (with or without `.lua`).         |
+| `--debug`         | Enable verbose debug output for argument parsing, path resolution, and target expansion. |
+| `--simulate`      | Print generated Podman and editor commands without executing them on the host.           |
+
+## Configuration Reference
+
+By default, PodScript loads `./config.lua`. Use `--config=<name>` to load an alternative file (for example, `--config=staging` loads `./staging.lua`).
+
+| Key              | Type      | Default  | Required | Description                                                                          |
+| :--------------- | :-------- | :------- | :------- | :----------------------------------------------------------------------------------- |
+| `editor`         | `string`  | `""`     | No       | External editor command executed by `pods config edit` and `pods recipe edit`.       |
+| `simulate`       | `boolean` | `true`   | No       | Enable dry-run simulation mode globally unless explicitly set to `false`.            |
+| `pods.path`      | `string`  | `""`     | No       | Default base directory for pod volume paths when a recipe omits `pod.path`.          |
+| `recipes.path`   | `string`  | `"."`    | No       | Directory path where PodScript searches for `<recipe>.lua` files.                    |
+| `recipes.groups` | `table`   | `{}`     | Yes      | Non-empty table mapping group names to arrays of recipe names or `@<group>` entries. |
+
+> [!IMPORTANT]
+> Every recipe must belong to at least one group in `recipes.groups` to be recognized by lifecycle commands and `recipe` mode actions.
+
+```lua
+return {
+    editor = "vim",
+    simulate = false,
+    pods = {
+        path = "/pods",
+    },
+    recipes = {
+        path = ".",
+        groups = {
+            backend = {
+                "db-server",
+                "cache-server",
+            },
+            all = {
+                "@backend",
+                "example-app",
+            },
+        },
+    },
+}
 ```
 
-Then, source the script to apply it to your current session:
+## Recipe Reference
 
-```bash
-source .pods-completion.bash
-```
+Each recipe is a Lua file (`<recipe>.lua`) in `recipes.path` that returns a table describing one pod and its containers.
 
-*(You can add the `source` command to your `~/.bashrc` to make it permanent.)*
+### Top-Level Fields
 
----
+| Field         | Type     | Required | Description                                                                 |
+| :------------ | :------- | :------- | :-------------------------------------------------------------------------- |
+| `name`        | `string` | Yes      | Human-readable display name of the recipe.                                  |
+| `description` | `string` | No       | Summary displayed by `pods recipe list`.                                    |
+| `pod`         | `table`  | Yes      | Pod configuration table.                                                    |
+| `containers`  | `table`  | Yes      | Non-empty ordered array of container configuration tables.                  |
 
-## Updating PodScript
+### Pod Fields
 
-To update the standalone `pods.lua` script to the latest version via `curl`:
+| Field          | Type     | Required | Description                                                                                   |
+| :------------- | :------- | :------- | :-------------------------------------------------------------------------------------------- |
+| `pod.name`     | `string` | No       | Pod name in Podman (normalized to lowercase with underscores); defaults to `recipe.name`.     |
+| `pod.registry` | `string` | Yes      | Default image registry prefixed to container images that do not specify `container.registry`. |
+| `pod.path`     | `string` | Cond.    | Base host directory for relative volume mounts; defaults to `<pods.path>/<pod.name>`.         |
+| `pod.publish`  | `table`  | No       | Array of port mapping tables translated into `--publish` arguments on `podman pod create`.    |
+| `pod.options`  | `table`  | No       | Array of raw flag strings appended directly to `podman pod create`.                           |
+| `pod.commands` | `table`  | No       | Dictionary of maintenance command definitions executed via `pods command`.                    |
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/pods.lua -o pods.lua
-```
+#### Port Publishing (`pod.publish`)
 
----
+Each entry in `pod.publish` is an array table that maps to a `--publish` flag:
 
-## Quick Start
+| Entry Format                              | Generated Flag                             |
+| :---------------------------------------- | :----------------------------------------- |
+| `{ 8080 }` or `{ "", 8080 }`              | `--publish 8080`                           |
+| `{ 8080, "TCP" }` or `{ 53, "UDP" }`      | `--publish 8080/TCP` or `--publish 53/UDP` |
+| `{ 8080, 80 }`                            | `--publish 8080:80`                        |
+| `{ 8080, 80, "TCP" }`                     | `--publish 8080:80/TCP`                    |
+| `{ "127.0.0.1:8080", 80, "TCP" }`         | `--publish 127.0.0.1:8080:80/TCP`          |
 
-### 1. Initialize Configuration and Recipe
+#### Maintenance Commands (`pod.commands`)
 
-Run the `init` mode to create the default `config.lua` and an example `recipe.lua`:
+Each key in `pod.commands` defines a named command for `pods command`:
 
-```bash
-pods init
-```
+| Field         | Type             | Required | Description                                                                               |
+| :------------ | :--------------- | :------- | :---------------------------------------------------------------------------------------- |
+| `container`   | `string\|number` | Yes      | Target container by 1-based index (`1`), relative name (`"*db"` or `"db"`), or full name. |
+| `execute`     | `string`         | Yes      | Command line executed inside the container via `podman exec -it`.                         |
+| `user`        | `string\|number` | No       | Username or UID passed to `podman exec -it -u <user>`.                                    |
+| `description` | `string`         | No       | Summary shown in `pods command list` (omitting triggers a warning when listing).          |
 
-This creates:
-- `recipe.lua`: An example recipe defining the `example-stack` pod.
-- `config.lua`: A default configuration with `recipe` registered under the `all` group.
+### Container Fields
 
-### 2. Inspect the Recipe
+Containers in `containers` are created sequentially from index `1` to `N` and stopped/removed in reverse order from `N` down to `1`.
 
-The generated `recipe.lua` defines the pod, network publishing, and container specification:
+| Field                | Type      | Required | Description                                                                                 |
+| :------------------- | :-------- | :------- | :------------------------------------------------------------------------------------------ |
+| `container.image`    | `string`  | Yes      | Image repository and tag (`"example/db-server:latest"`).                                    |
+| `container.name`     | `string`  | No       | Container name; supports relative (`"*db"`), explicit (`"custom"`), or automatic naming.    |
+| `container.registry` | `string`  | No       | Registry override for this container; falls back to `pod.registry`.                         |
+| `container.detach`   | `boolean` | No       | Run container in the background (`--detach`); defaults to `true` unless set to `false`.     |
+| `container.restart`  | `string`  | No       | Restart policy passed to `--restart` (for example, `"always"` or `"on-failure"`).           |
+| `container.volumes`  | `table`   | No       | Array of volume definitions `{ <host_path>, <container_path>, [<options>] }`.               |
+| `container.options`  | `table`   | No       | Array of raw flag strings appended directly to `podman run`.                                |
+| `container.commands` | `table`   | No       | Array of command and argument strings appended after the image in `podman run`.             |
+
+#### Container Naming Rules
+
+- **Omitted or `""`:** Expands to `<pod.name>-<index>` (for example, `example-stack-1`).
+- **Prefixed with `*`:** Expands to `<pod.name>-<suffix>` (for example, `"*db"` becomes `example-stack-db`).
+- **Without `*`:** Normalized (lowercase, spaces replaced with `_`) and used as the exact container name.
+
+#### Volume Mount Rules (`container.volumes`)
+
+Each entry is a 2-element or 3-element array `{ host_dir, container_dir, options }`:
+
+| `host_dir` Value         | Resolution                                       | Generated `--volume` Value                    |
+| :----------------------- | :----------------------------------------------- | :-------------------------------------------- |
+| `""` or `nil`            | Anonymous volume                                 | `<container_dir>[:<options>]`                 |
+| `"data"` or `"./data"`   | Resolved against `pod.path`                      | `<pod.path>/data:<container_dir>[:<options>]` |
+| `"/var/data"`            | Absolute host path used as-is                    | `/var/data:<container_dir>[:<options>]`       |
+
+### Recipe Example
 
 ```lua
 return {
     name = "Example Web Stack",
-    description = "A minimal but complete example recipe with a web app and database.",
+    description = "Web application and database stack.",
 
     pod = {
         name = "example-stack",
@@ -135,8 +221,8 @@ return {
             migrate = {
                 description = "Run database migrations.",
                 container = "*db",
-                user = "postgres",
-                execute = "psql -U postgres -d app -f /migrations/run.sql",
+                user = "dbuser",
+                execute = "db-cli -U dbuser -d app -f /migrations/run.sql",
             },
         },
         options = {
@@ -150,427 +236,301 @@ return {
             detach = true,
             restart = "always",
             registry = "docker.io",
-            image = "postgres:15-alpine",
+            image = "example/db-server:latest",
             volumes = {
-                { "data", "/var/lib/postgresql/data", "Z" },
+                { "data", "/var/lib/db/data", "Z" },
             },
             options = {
-                "--env POSTGRES_PASSWORD=secret",
+                "--env DB_PASSWORD=secret",
             },
         },
         {
             name = "*app",
             detach = true,
             restart = "always",
-            image = "example/app:latest",
+            image = "example/example-app:latest",
             commands = { "start-server.sh" },
         },
     },
 }
 ```
 
-### 3. Manage the Pod
+## Targeting Rules
 
-Execute lifecycle commands against your target recipe:
+### Recipe and Group Targets
 
-```bash
-# Preview the Podman commands without executing them
-pods create recipe --simulate
+The [Default Mode](#default-mode) accepts one or more recipe names (`<recipe>`) or group references (`@<group>`):
 
-# Create and start the pod and containers
-pods create recipe
+- **Sequential Order:** Recipes execute in the exact order they appear after group expansion.
+- **First Appearance Rule:** When a recipe appears multiple times across arguments or nested `@<group>` definitions, only its first occurrence is executed and subsequent duplicates are removed.
+- **Group Validation:** Every targeted recipe must exist in at least one group in `config.lua`. Container suffixes (`@group/container`) are not valid on groups.
 
-# Pull updated container images from the registry
-pods update recipe
+### Container Targets
 
-# Stop and remove the pod and containers
-pods remove recipe
-```
+The `logs`, `connect`, and `command` modes resolve individual containers within a recipe using `<recipe>/<container>` (or `command.container`):
 
----
-
-## Modes Overview
-
-PodScript is organized into operational modes. When no explicit mode is specified as the first positional argument, PodScript defaults to the **Default Mode**.
-
-| Mode | Description |
-| :--- | :--- |
-| `(empty)` | **Default Mode**: Executes lifecycle actions on pods and containers defined in recipe files. |
-| `logs`     | **Logs Mode**: Fetches and tails logs from pods and individual containers. |
-| `connect`  | **Connect Mode**: Opens an interactive shell inside a running container for ad-hoc debugging. |
-| `init`     | **Init Mode**: Initializes default `config.lua` and an example `recipe.lua`. |
-| `command`  | **Command Mode**: Lists or executes maintenance commands defined in a recipe inside a container. |
-| `config`   | **Config Mode**: Displays or modifies the active PodScript configuration file. |
-| `image`    | **Image Mode**: Manages orphaned and dangling container images on the host. |
-| `recipe`   | **Recipe Mode**: Displays or modifies a specific recipe file. |
-
----
-
-## Global Options
-
-The following flags can be supplied across CLI modes:
-
-| Option | Description |
-| :--- | :--- |
-| `--config=<name>` | Load an alternative configuration file by name or path (without the `.lua` extension). |
-| `--debug` | Enable verbose debug logging to output internal state and execution details. |
-| `--simulate` | Preview generated Podman commands without executing them. |
-
----
+- **Numeric Index:** `example-app/1` selects the first container in `containers`.
+- **Relative Name:** `example-app/db` or `example-app/*db` selects `<pod.name>-db`.
+- **Absolute Name:** `example-app/example-stack-db` selects the container matching that exact resolved name.
+- **Direct Container Name (`connect` only):** If `<target>` contains no `/` and no matching `<target>.lua` file exists in `recipes.path`, `pods connect <target>` connects directly to a running Podman container with that name.
 
 ## Default Mode
 
-The `default` mode manages container and pod lifecycles. They require an **Action** followed by one or more **Targets**.
-
-The `--simulate` flag causes commands to be printed rather than executed across all modes.
-
-### Actions
-
-| Action | Description |
-| :--- | :--- |
-| `create` | Create and start a new pod and its containers in the order defined by the recipe. |
-| `help` | Display command-line syntax and usage instructions for the default mode. |
-| `recreate` | Stop and remove an existing pod and its containers in reverse order, then recreate them anew. |
-| `remove` | Stop and remove a running pod and all associated containers in reverse order. |
-| `status` | Query and display runtime status of managed containers. Target list is optional. |
-| `update` | Pull the latest container images from their configured registries. |
-
-### Options
-
-| Option | Description |
-| :--- | :--- |
-| `--all` | Display all containers known to Podman, ignoring the managed-only filter (for `status` action). |
-| `--config=<name>` | Load a specific configuration file (e.g., `--config=staging`). |
-| `--debug` | Enable verbose debug output for troubleshooting. |
-| `--full` | Display extended container columns including Image, Command, and Ports (for `status` action). |
-| `--simulate` | Preview generated commands without executing them. |
-
-### Targets & Grouping
-
-Targets indicate which recipes or collections of recipes should receive the specified action:
-
-- `<recipe_name>`: The name of an individual recipe file (without `.lua`).
-- `@<group_name>`: A recipe group defined in `config.lua` under `recipes.groups`.
-
-#### Execution Order and First Appearance Rule
-
-When multiple targets or groups are specified, PodScript resolves them according to two key rules:
-
-1. **Sequential Order:** Recipes are executed strictly in the order they are provided or listed within a group.
-2. **First Appearance Rule:** If a recipe is targeted multiple times (either directly or via nested groups), only its **first occurrence** in the target sequence is executed. Subsequent duplicates are discarded to prevent redundant operations.
-
-### Usage
+The default mode executes pod lifecycle operations (`create`, `recreate`, `remove`, `update`) and queries container runtime status (`status`). Omit the mode name to invoke default mode.
 
 ```bash
-# Create a pod from a single recipe
-pods create my-web-server
-
-# Recreate a group of pods
-pods recreate @production-apps
-
-# Remove multiple pods and groups in sequence
-pods remove frontend @backend-services cache-server
-
-# Preview pod creation without executing
-pods create my-web-server --simulate
-```
-
----
-
-## Init Mode
-
-The `init` mode bootstraps a new project directory by generating a default configuration file (`config.lua`) and an example recipe file (`recipe.lua`) with the recipe registered under the `@all` group.
-
-```bash
-pods init [OPTIONS]
+pods [OPTIONS] <action> [TARGETS...]
 ```
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `(empty)` | Creates `config.lua` and an example `recipe.lua`. (Default when omitted). |
-| `help` | Display command-line help for init mode. |
+| Action     | Description                                                                                      |
+| :--------- | :----------------------------------------------------------------------------------------------- |
+| `create`   | Create the pod and start all defined containers from top to bottom.                              |
+| `help`     | Display command-line syntax, modes, options, and actions for the default mode.                   |
+| `recreate` | Stop and remove all containers in reverse order, remove the pod, and create the pod stack again. |
+| `remove`   | Stop and remove all containers in reverse order, then remove the pod.                            |
+| `status`   | Display a formatted status table of managed containers (or status help via `pods status help`).  |
+| `update`   | Pull the latest container images from their configured registries for all targeted recipes.      |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--config=<name>` | Specify an alternative configuration filename or path to generate (e.g., `--config=staging`). |
-| `--debug` | Enable verbose debug output. |
-
-### Generated Files
-
-1. **`recipe.lua`**: A ready-to-use example recipe defining a `example-stack` pod:
-   ```lua
-   return {
-       name = "Example Web Stack",
-       description = "A minimal but complete example recipe with a web app and database.",
-
-       pod = {
-           name = "example-stack",
-           path = "/pods/example-stack",
-           registry = "docker.io",
-           publish = {
-               { 8080, 80, "TCP" },
-           },
-           commands = {
-               migrate = {
-                   description = "Run database migrations.",
-                   container = "*db",
-                   user = "postgres",
-                   execute = "psql -U postgres -d app -f /migrations/run.sql",
-               },
-           },
-           options = {
-               "--userns=keep-id",
-           },
-       },
-
-       containers = {
-           {
-               name = "*db",
-               detach = true,
-               restart = "always",
-               registry = "docker.io",
-               image = "postgres:15-alpine",
-               volumes = {
-                   { "data", "/var/lib/postgresql/data", "Z" },
-               },
-               options = {
-                   "--env POSTGRES_PASSWORD=secret",
-               },
-           },
-           {
-               name = "*app",
-               detach = true,
-               restart = "always",
-               image = "example/app:latest",
-               commands = { "start-server.sh" },
-           },
-       },
-   }
-   ```
-2. **`config.lua`**: A configuration file setting the default editor, simulation mode, pod path, and defining the recipe under the `all` group:
-   ```lua
-   return {
-       editor = "vim",
-       simulate = false,
-       pods = {
-           path = "/pods",
-       },
-       recipes = {
-           path = ".",
-           groups = {
-               all = {
-                   "recipe",
-               },
-           },
-       },
-   }
-   ```
-
-> [!NOTE]
-> If either `recipe.lua` or the target configuration file already exists, `pods init` terminates with an error to prevent overwriting existing files.
+| Option            | Description                                                                             |
+| :---------------- | :-------------------------------------------------------------------------------------- |
+| `--all`           | Include unmanaged Podman containers in `status` output alongside managed containers.    |
+| `--config=<name>` | Load an alternative configuration file by name or path.                                 |
+| `--debug`         | Enable verbose debug logging.                                                           |
+| `--full`          | Append `COMMAND` and `PORTS` columns to the `status` output table.                      |
+| `--simulate`      | Print generated Podman commands without executing them.                                 |
 
 ### Usage
 
 ```bash
-# Initialize default configuration and recipe
-pods init
+# Display general help (or run 'pods' without arguments)
+pods help
 
-# Initialize with an alternative configuration name
-pods --config=staging init
+# Create a pod and its containers from a single recipe
+pods create example-app
 
-# Display help for init mode
-pods init help
+# Preview the Podman commands for creating a group of pods without executing them
+pods create @backend --simulate
+
+# Pull the latest images for a group and recreate its pods
+pods update @backend
+pods recreate @backend
+
+# Stop and remove multiple recipes and groups in order
+pods remove example-app @backend
+
+# Show runtime status for all configured recipes
+pods status
+
+# Show extended status (including COMMAND and PORTS) for a specific recipe
+pods status --full example-app
+
+# Show status for all containers on the host, including unmanaged containers
+pods status --all
+
+# Display help specific to the status action
+pods status help
+
+# Run lifecycle actions using an alternative configuration and debug logging
+pods --config=staging --debug recreate example-app
 ```
-
----
 
 ## Logs Mode
 
-Fetches and tails logs from pods and containers managed by PodScript.
+The `logs` mode fetches or streams container logs for a recipe's pod or a single container within that pod via `podman pod logs`.
+
+```bash
+pods logs [OPTIONS] [ACTION] <recipe>[/<container>]
+```
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `show` | Display the logs for the target and exit (default). |
-| `follow` | Tail the logs and follow them continuously until interrupted. |
-| `help` | Display command-line help for logs mode. |
+| Action   | Description                                                                         |
+| :------- | :---------------------------------------------------------------------------------- |
+| `follow` | Stream log output continuously until interrupted (`-f`).                            |
+| `help`   | Display command-line help for `logs` mode (default when called without arguments).  |
+| `show`   | Output logs and exit immediately (default when `<recipe>` is given without action). |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--config=<name>` | Load a specific configuration file to resolve recipes and paths. |
-| `--debug` | Enable verbose debug output. |
-| `--simulate` | Preview generated commands without executing them. |
-| `--tail=<N>` | Show only the last `N` lines of logs. |
-| `--since=<T>` | Show logs generated since a specific duration (e.g., `1h`, `10m`) or timestamp. |
-| `--until=<T>` | Show logs generated until a specific duration or timestamp. |
-| `--timestamps` | Include timestamps in the log output. |
-
-### Targets
-
-Logs mode targets a single recipe. Optionally, target a specific container inside the recipe using the format `<recipe>/<container>`. The `<container>` part can be:
-- The numeric index of the container inside the recipe.
-- The alternate name (with `*` prefix) or exact container name.
+| Option            | Description                                                                      |
+| :---------------- | :------------------------------------------------------------------------------- |
+| `--config=<name>` | Load an alternative configuration file by name or path.                          |
+| `--debug`         | Enable verbose debug logging.                                                    |
+| `--simulate`      | Print the generated `podman pod logs` command without executing it.              |
+| `--since=<time>`  | Show logs generated since the given duration (such as `15m`) or timestamp.       |
+| `--tail=<n>`      | Show only the last `<n>` lines of log output.                                    |
+| `--timestamps`    | Prepend timestamps to each log line.                                             |
+| `--until=<time>`  | Show logs generated before the given duration or timestamp.                      |
 
 ### Usage
 
 ```bash
-# Show logs for all containers in the recipe
-pods logs recipe_name
+# Display logs mode help
+pods logs help
 
-# Tail logs for a specific recipe
-pods logs follow recipe_name
+# Show logs for all containers in a recipe (implicitly uses 'show')
+pods logs example-app
+pods logs show example-app
 
-# Tail logs for the first container only
-pods logs follow recipe_name/1
+# Follow live logs for a specific container by relative name
+pods logs follow example-app/db
 
-# Show last 50 lines for a specific container by alternate name
-pods logs --tail=50 recipe_name/app
+# Show the last 100 log lines with timestamps for the first container
+pods logs --tail=100 --timestamps show example-app/1
+
+# Filter logs to a specific time window
+pods logs --since=1h --until=10m example-app
+
+# Preview the generated Podman logs command using an alternative config
+pods --config=staging --debug logs follow example-app/app --simulate
 ```
-
----
 
 ## Connect Mode
 
-The `connect` mode opens an interactive shell (defaulting to `bash`, falling back to `/bin/sh`) inside a running container via `podman exec -it`. It is intended for ad-hoc debugging and manual inspection.
+The `connect` mode opens an interactive shell (`bash` if available, falling back to `sh`) inside a running container via `podman exec -it`.
 
 ```bash
 pods connect [OPTIONS] [ACTION] <target>
-# or in simulation:
-pods connect [OPTIONS] [ACTION] <target> --simulate
 ```
 
 ### Actions
 
-*   `shell`: Open an interactive shell inside the container (default).
-*   `help`: Display help for the connect mode.
+| Action  | Description                                                                              |
+| :------ | :--------------------------------------------------------------------------------------- |
+| `help`  | Display command-line help for `connect` mode (default when called without arguments).    |
+| `shell` | Open an interactive shell inside the target container (default when action is omitted).  |
 
 ### Options
 
-*   `--config=NAME`: Use config with given name or path.
-*   `--debug`: Enable debug output.
-*   `--simulate`: Preview generated commands without executing them.
-
-### Targets
-
-The connect mode acts on a single container target. Supported syntax:
-
-*   `<recipe>`: Connects to the container if the recipe has exactly 1 container. Aborts if there are multiple containers.
-*   `<recipe>/<container>`: Connects to a specific container by explicit index, relative name, or absolute name.
-*   `<absolute_name>`: Connects directly to the given absolute container name, bypassing recipe validation.
+| Option            | Description                                                            |
+| :---------------- | :--------------------------------------------------------------------- |
+| `--config=<name>` | Load an alternative configuration file by name or path.                |
+| `--debug`         | Enable verbose debug logging.                                          |
+| `--simulate`      | Print the generated `podman exec` command without executing it.        |
 
 ### Usage
 
-Connect to a single-container recipe (implicitly uses `shell`):
 ```bash
-pods connect my_webapp
-```
+# Display connect mode help
+pods connect help
 
-Connect to the second container defined in the recipe:
-```bash
-pods connect my_stack/2
-```
+# Connect to a single-container recipe (implicitly uses 'shell')
+pods connect db-server
+pods connect shell db-server
 
-Connect to a container matching a relative suffix (e.g., `-db`):
-```bash
-pods connect my_stack/db
-```
+# Connect to a specific container in a multi-container recipe by relative name or index
+pods connect example-app/db
+pods connect example-app/2
 
-Connect using an absolute container name (bypasses recipes):
-```bash
-pods connect custom_container_name
-```
+# Connect directly to an unmanaged Podman container by its exact container name
+pods connect custom-container-name
 
-Simulate the connection command:
-```bash
-pods connect my_webapp --simulate
+# Preview the connection command with debug output and an alternative config
+pods --config=staging --debug connect example-app/db --simulate
 ```
 
 ## Command Mode
 
-The `command` mode executes ad-hoc maintenance and administration tasks defined in a recipe inside a running container via `podman exec -it`.
+The `command` mode lists or executes maintenance commands declared under `pod.commands` in a recipe via `podman exec -it`.
 
 ```bash
-pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX]
-# or in simulation:
-pods command [OPTIONS] [ACTION] <recipe> [COMMAND|INDEX] --simulate
+pods command [OPTIONS] [ACTION] <recipe> [<command>|<index>]
 ```
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `exec` | Execute the specified command name or index. (Default when a command is provided). |
-| `list` | List all valid maintenance commands defined in the recipe. (Default when omitted). |
-| `help` | Display command-line help for command mode. |
+| Action | Description                                                                                           |
+| :----- | :---------------------------------------------------------------------------------------------------- |
+| `exec` | Execute a command by name or 1-based index (default when `<command>` or `<index>` is provided).       |
+| `help` | Display command-line help for `command` mode (default when called without arguments).                 |
+| `list` | List all valid commands sorted alphabetically with their index (default when `<command>` is omitted). |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--config=<name>` | Load a specific configuration file to resolve recipes and paths. |
-| `--debug` | Enable verbose debug output for command resolution. |
-| `--simulate` | Preview generated commands without executing them. |
-
-### Command Definition
-
-Commands are declared inside the recipe under the `pod.commands` table:
-
-```lua
-pod = {
-    name = "web-stack",
-    commands = {
-        migrate = {
-            description = "Run database migrations.",
-            container   = "*db",
-            user        = "dbuser",
-            execute     = "db-cli -U dbuser -d app -f /migrations/run.sql",
-        },
-        cache_clear = {
-            description = "Clear application cache.",
-            container   = 2,
-            execute     = "app-cli cache:clear",
-        },
-    },
-}
-```
-
-- `container`: The target container. Can be an absolute name (`"pod_name-db"`), a relative name (`"db"`, previously denoted as `"*db"` in documentation), or a 1-based numeric index into the recipe's `containers` array. The prefix `*` can still be used to explicitly declare a relative name.
-- `execute`: The exact command string to execute inside the container.
-- `user`: (Optional) User ID or username to execute the command as (`-u`).
-- `description`: (Optional) Human-readable explanation shown in command listings.
+| Option            | Description                                                            |
+| :---------------- | :--------------------------------------------------------------------- |
+| `--config=<name>` | Load an alternative configuration file by name or path.                |
+| `--debug`         | Enable verbose debug logging.                                          |
+| `--simulate`      | Print the generated `podman exec` command without executing it.        |
 
 ### Usage
 
 ```bash
-# List all available commands for a recipe
-pods command list web-stack
-# or using the backward-compatible alias
-pods command web-stack
+# Display command mode help
+pods command help
 
-# Execute a command by name
-pods command exec web-stack migrate
-# or using the backward-compatible alias
-pods command web-stack migrate
+# List all maintenance commands defined in a recipe
+pods command list example-app
+pods command example-app
 
-# Execute a command by numeric index
-pods command exec web-stack 1
+# Execute a maintenance command by its key name
+pods command exec example-app migrate
+pods command example-app migrate
 
-# Simulate command execution
-pods command exec web-stack migrate --simulate
+# Execute a maintenance command by its 1-based list index
+pods command exec example-app 1
+
+# Preview the generated podman exec command using an alternative config
+pods --config=staging --debug command exec example-app migrate --simulate
 ```
 
----
+## Recipe Mode
+
+The `recipe` mode lists configured recipes, inspects recipe file contents with line numbers, or opens a recipe file in the configured editor.
+
+```bash
+pods recipe [OPTIONS] [ACTION] [<recipe>]
+```
+
+### Actions
+
+| Action | Description                                                                                      |
+| :----- | :----------------------------------------------------------------------------------------------- |
+| `edit` | Open the specified recipe file in the external editor configured in `config.lua`.                |
+| `help` | Display command-line help for `recipe` mode.                                                     |
+| `list` | List all recipes registered in `config.lua` with descriptions and file status (default action).  |
+| `show` | Print the recipe file with line numbers (default when `<recipe>` is given without an action).    |
+
+### Options
+
+| Option            | Description                                                                             |
+| :---------------- | :-------------------------------------------------------------------------------------- |
+| `--all`           | Include unreferenced `.lua` files found in `recipes.path` when running `recipe list`.   |
+| `--config=<name>` | Load an alternative configuration file by name or path.                                 |
+| `--debug`         | Enable verbose debug logging.                                                           |
+| `--simulate`      | Print the editor command without executing it when running `recipe edit`.               |
+
+### Usage
+
+```bash
+# Display recipe mode help
+pods recipe help
+
+# List all configured recipes and their file status
+pods recipe
+pods recipe list
+
+# List configured recipes plus unreferenced .lua files in the recipes directory
+pods recipe list --all
+
+# Print a recipe file with line numbers
+pods recipe show example-app
+pods recipe example-app
+
+# Open a recipe file in the configured text editor
+pods recipe edit example-app
+
+# Preview the editor command for a recipe in an alternative config
+pods --config=staging --debug recipe edit example-app --simulate
+```
 
 ## Config Mode
 
-The `config` mode provides tools to inspect or edit the active PodScript configuration file.
+The `config` mode validates and displays the active configuration (including directory status, group hierarchy trees, and missing or unreferenced recipe warnings) or opens the configuration file in the configured editor.
 
 ```bash
 pods config [OPTIONS] [ACTION]
@@ -578,54 +538,41 @@ pods config [OPTIONS] [ACTION]
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `show` | Display the active configuration as a structured diagnostic tree. (Default when omitted). |
-| `edit` | Open the active configuration file in the external text editor specified in the config. |
-| `help` | Display command-line help for config mode. |
+| Action | Description                                                                                |
+| :----- | :----------------------------------------------------------------------------------------- |
+| `edit` | Open the active configuration file in the external editor defined by `editor`.             |
+| `help` | Display command-line help for `config` mode.                                               |
+| `show` | Display the validated configuration tree and validation summary (default when omitted).    |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--config=<name>` | Target a specific configuration file instead of the default `config.lua`. |
-| `--debug` | Enable verbose debug output. |
-| `--simulate` | Preview generated commands without executing them. |
-
-### Editor Configuration
-
-To use the `edit` action, define an `editor` command in your `config.lua`:
-
-```lua
-return {
-    editor = "vim", -- or "nano", "nvim", "code --wait", etc.
-    -- ...
-}
-```
-
-If `editor` is empty or unset, the `edit` action logs an error and aborts.
+| Option            | Description                                                               |
+| :---------------- | :------------------------------------------------------------------------ |
+| `--config=<name>` | Target an alternative configuration file by name or path.                 |
+| `--debug`         | Enable verbose debug logging.                                             |
+| `--simulate`      | Print the editor command without executing it when running `config edit`. |
 
 ### Usage
 
 ```bash
-# Display the active configuration diagnostic tree
-pods config show
+# Display config mode help
+pods config help
+
+# Show the active configuration diagnostic tree and validation summary
 pods config
+pods config show
 
-# Print an alternative configuration
-pods --config=staging config show
-
-# Open the active configuration in the configured editor
+# Open the active configuration file in the configured editor
 pods config edit
-```
 
----
+# Inspect or simulate editing an alternative configuration file
+pods --config=staging config show
+pods --config=staging --debug config edit --simulate
+```
 
 ## Image Mode
 
-The `image` mode manages orphaned and dangling container images on the host, helping to reclaim disk space used by old updates or untagged layers.
-
-> **Note on Safety:** Podman will **never** delete an image that is currently attached to a container (whether running or stopped), regardless of the commands or flags used. The `prune` commands strictly target *unused* images.
+The `image` mode previews and removes unused container images on the host. Podman never removes images attached to existing (running or stopped) containers. This mode does not require `config.lua`.
 
 ```bash
 pods image [OPTIONS] [ACTION]
@@ -633,276 +580,74 @@ pods image [OPTIONS] [ACTION]
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `prune` | Safely remove **dangling** (untagged) container images that are not in use by any container. |
-| `help` | Display command-line help for image mode. |
+| Action  | Description                                                                             |
+| :------ | :-------------------------------------------------------------------------------------- |
+| `help`  | Display command-line help for `image` mode (default when called without arguments).     |
+| `prune` | Remove unused dangling container images (or all unused images when `--all` is passed).  |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--all` | Prune **all** unused images (including unused tagged images), not just dangling ones. |
-| `--debug` | Enable verbose debug output. |
-| `--force` | Skip the interactive confirmation prompt. |
-| `--preview` | Preview the exact unused images that would be deleted and the total space reclaimable without executing the deletion. |
-| `--simulate` | Preview generated commands without executing them. |
+| Option       | Description                                                                                      |
+| :----------- | :----------------------------------------------------------------------------------------------- |
+| `--all`      | Target all unused images (including tagged images not used by any container), not just dangling. |
+| `--debug`    | Enable verbose debug logging.                                                                    |
+| `--force`    | Skip the interactive confirmation prompt before pruning images.                                  |
+| `--preview`  | List unused images that would be removed and calculate total reclaimable disk space.             |
+| `--simulate` | Print the `podman image prune` command without executing it.                                     |
 
 ### Usage
 
 ```bash
-# Preview dangling images that can be pruned
+# Display image mode help
+pods image help
+
+# Preview dangling images and reclaimable disk space without deleting anything
 pods image prune --preview
 
-# Prune dangling images (will ask for confirmation)
+# Preview all unused images (both dangling and unreferenced tagged images)
+pods image prune --all --preview
+
+# Prune dangling images with interactive confirmation
 pods image prune
 
-# Prune all unused images and skip confirmation
+# Prune all unused images without confirmation
 pods image prune --all --force
+
+# Preview the generated podman image prune command
+pods --debug image prune --all --simulate
 ```
 
----
+## Init Mode
 
-## Recipe Mode
-
-The `recipe` mode provides inspection and editing capabilities for individual recipe files.
+The `init` mode initializes a directory by creating `recipe.lua` and `config.lua`. If either target file already exists, `pods init` aborts with an error without overwriting existing files.
 
 ```bash
-pods recipe [OPTIONS] [ACTION] [RECIPE]
+pods init [OPTIONS] [ACTION]
 ```
 
 ### Actions
 
-| Action | Description |
-| :--- | :--- |
-| `edit` | Open the specified recipe file in the configured external editor. |
-| `help` | Display command-line help for recipe mode. |
-| `list` | List all available recipes defined in configuration groups. (Default when omitted). |
-| `show` | Display the contents of the specified recipe file with line numbers. |
+| Action   | Description                                                                             |
+| :------- | :-------------------------------------------------------------------------------------- |
+| `(none)` | Create `./recipe.lua` and `./config.lua` (default when called without an action).       |
+| `help`   | Display command-line help for `init` mode.                                              |
 
 ### Options
 
-| Option | Description |
-| :--- | :--- |
-| `--all` | Include unconfigured (orphaned) recipes found on disk when listing recipes. |
-| `--config=<name>` | Load a specific configuration file to resolve recipe search paths and editor. |
-| `--debug` | Enable verbose debug output. |
-| `--simulate` | Preview generated commands without executing them. |
+| Option            | Description                                                                             |
+| :---------------- | :-------------------------------------------------------------------------------------- |
+| `--config=<name>` | Create the configuration file under the specified name or path instead of `config.lua`. |
+| `--debug`         | Enable verbose debug logging.                                                           |
 
 ### Usage
 
 ```bash
-# Display help for recipe mode
-pods recipe help
+# Generate default config.lua and recipe.lua in the current directory
+pods init
 
-# List all available recipes (default action when omitted)
-pods recipe
-pods recipe list
+# Generate recipe.lua and a custom staging.lua configuration file
+pods --config=staging --debug init
 
-# List all configured recipes and unconfigured recipes on disk
-pods recipe list --all
-
-# Print a recipe file with line numbers
-pods recipe show web-service
-
-# Edit a recipe file using the configured external editor
-pods recipe edit web-service
-
-# Print a recipe located in an alternative configuration path
-pods --config=staging recipe show web-service
+# Display init mode help
+pods init help
 ```
-
----
-
-## Getting Help
-
-You can use `help` as an action across all modes to print syntax summaries, options, and actions directly in the terminal.
-
-```bash
-pods help
-# or
-pods <mode> help
-```
-
-### Usage
-
-```bash
-# Display general help (default mode)
-pods help
-
-# Display help for config mode
-pods config help
-
-# Display help for recipe mode
-pods recipe help
-
-# Display help for command mode
-pods command help
-```
-
----
-
-## Comprehensive Examples
-
-### Configuration File (`config.lua`)
-
-A complete configuration template demonstrating all available configuration options:
-
-```lua
--- PodScript Configuration
-return {
-    -- The editor to use for editing files via 'config edit' or 'recipe edit'.
-    editor = "vim",
-
-    -- If true, commands will be printed but not executed (dry-run mode).
-    simulate = true,
-
-    -- Pod-specific configurations.
-    pods = {
-        -- The default root directory for all pod-related data.
-        path = "/pods",
-    },
-
-    -- Defines where to find recipe files for pod creation.
-    recipes = {
-        -- The default search path for recipe files (defaults to current directory if omitted).
-        path = ".",
-
-        -- Defines groups of recipes that can be run together.
-        -- All active recipes must belong to at least one group.
-        groups = {
-            all = {
-                "recipe",
-            },
-            backend = {
-                "db-server",
-                "cache-server",
-            },
-            web = {
-                "api-server",
-                "frontend",
-            },
-            stack = {
-                "@backend",
-                "@web",
-            },
-        },
-    },
-}
-```
-
-See [config.lua](config.lua) for the repository configuration template and [recipe.lua](recipe.lua) for the full recipe example.
-
-### Basic Pod Lifecycle
-
-```bash
-# Create a pod and its containers from recipe 'example-app'
-pods create example-app
-
-# Check the running status of the pod
-pods status example-app
-
-# Recreate the entire pod stack (reverse teardown, forward startup)
-pods recreate example-app
-
-# Stop and remove the pod and all associated containers
-pods remove example-app
-
-# Query the status of all managed containers across all recipes
-pods status
-```
-
-### Dry-Run Simulation
-
-Simulation allows you to verify generated Podman commands before making any changes:
-
-```bash
-# Simulate creating a pod
-pods create example-app --simulate
-
-# Simulate recreation with verbose debug logging
-pods --debug recreate example-app --simulate
-
-# Simulate maintenance command execution
-pods command exec example-app migrate --simulate
-```
-
-### Recipe Group Targeting
-
-Assuming `config.lua` defines the following groups:
-
-```lua
-return {
-    recipes = {
-        groups = {
-            backend = { "db-server", "cache-server" },
-            apps    = { "api-service", "frontend" },
-            stack   = { "@backend", "@apps" },
-        },
-    },
-}
-```
-
-```bash
-# Deploy all backend containers in sequence
-pods create @backend
-
-# Deploy the entire stack
-pods create @stack
-
-# Target both groups and individual recipes (duplicates automatically deduplicated)
-pods update db-server @stack frontend
-```
-
-### Container Maintenance Tasks
-
-```bash
-# Show available maintenance commands for the database recipe
-pods command list db-server
-
-# Output:
-# Commands for recipe 'db-server':
-#   1) backup: Creates a database backup dump.
-#   2) reindex: Rebuilds missing search indices.
-
-# Run the backup command by name
-pods command exec db-server backup
-
-# Run the reindex command by numeric index
-pods command exec db-server 2
-```
-
-### Configuration Overrides & Debugging
-
-```bash
-# Run operations using a dedicated staging configuration
-pods --config=staging create @stack
-
-# Inspect the staging configuration
-pods --config=staging config show
-
-# Run with verbose debug logging to inspect command construction
-pods --debug update web-service
-```
-
----
-
-## Development
-
-If you are developing PodScript itself, a `./task` script is provided to automate the edit-build-test cycle.
-
-```bash
-# Verify (complete cycle: dev tests -> build -> release tests)
-./task verify
-./task verify 01001 --fail-fast
-
-# Testing phases (without building)
-./task test            # Run both dev and release tests
-./task test dev        # Run only dev tests
-./task test release    # Run only release tests
-
-# Building
-./task build
-```
-
-> **Note:** To enable terminal autocompletion for the `./task` script (e.g. typing `./task ver` + `Tab`), run `source .task-completion.bash` in your terminal. You can add this command to your `~/.bashrc` to make it permanent.
