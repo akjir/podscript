@@ -5,45 +5,37 @@
 [![Podman Version](https://img.shields.io/badge/podman-5.8.0%2B-purple.svg)](https://podman.io)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 
-A script to manage Podman pods and containers using declarative Lua recipes.
-
-## Table of Contents
-
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Core Concepts](#core-concepts)
-- [CLI Reference](#cli-reference)
-- [Development](#development)
-- [Disclaimer](#disclaimer)
-- [License](#license)
+PodScript manages Podman pods and containers through declarative Lua recipes. It translates structured Lua tables into deterministic Podman CLI commands without external dependencies or background daemons.
 
 ## Features
 
-- Declarative pod and container configuration via Lua tables.
-- Deterministic lifecycle ordering (top-to-bottom startup, bottom-to-top shutdown).
-- Dry-run simulation flag (`--simulate`) to preview generated Podman commands.
-- Configuration grouping (`@group_name`) for batch recipe execution.
-- Execution of container-specific maintenance commands.
-- Standalone single-file deployment (`pods.lua`) with zero external dependencies.
+- Declarative Lua recipes for pods, published ports, volumes, and containers.
+- Deterministic lifecycle execution (top-to-bottom startup, bottom-to-top shutdown).
+- Recipe groups (`@group`) with nested group expansion and duplicate elimination.
+- Dry-run simulation (`--simulate`) to preview generated Podman commands before execution.
+- Built-in modes for runtime status, log streaming, interactive shell access, maintenance commands, and image pruning.
+- Zero external dependencies in a single standalone file (`pods.lua`).
 
 ## Requirements
 
-| Component | Minimum Version | Notes |
-| :--- | :--- | :--- |
-| Operating System | Linux | Required |
-| Lua | 5.5 | Utilizes `global<const>` and `table.create` |
-| Podman | 5.8.0 | - |
+| Component        | Minimum Version |
+| :--------------- | :-------------- |
+| Operating System | Linux           |
+| Lua              | 5.5             |
+| Podman           | 5.8.0           |
 
 ## Installation
+
+Download the standalone script into your working directory:
 
 ```bash
 mkdir -p podscript && cd podscript
 curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/pods.lua -o pods.lua
 ```
 
-Optional: Create a wrapper script in your PATH.
+### CLI Wrapper (Optional)
+
+Create a wrapper script in `/usr/local/bin/pods` to run `pods` from anywhere:
 
 ```bash
 sudo tee /usr/local/bin/pods > /dev/null << 'EOF'
@@ -55,135 +47,176 @@ EOF
 sudo chmod +x /usr/local/bin/pods
 ```
 
+### Shell Autocompletion (Optional)
+
+Download and source the Bash completion script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/akjir/podscript/refs/heads/main/.pods-completion.bash -o .pods-completion.bash
+source .pods-completion.bash
+```
+
 ## Quick Start
 
-Initialize the project directory with default configurations:
+1. Initialize a new working directory with default `config.lua` and `recipe.lua` templates:
 
 ```bash
 pods init
 ```
 
-This generates `config.lua` and a sample `recipe.lua`.
-
-Preview the execution of the generated recipe:
+2. Preview the Podman commands that PodScript generates for the recipe:
 
 ```bash
 pods create recipe --simulate
 ```
 
-Create and start the pod and containers:
+> [!NOTE]
+> The generated `config.lua` sets `simulate = true` by default as a safeguard. Set `simulate = false` in `config.lua` when you are ready to execute commands on your system.
+
+3. Create the pod, check its status, and inspect container logs:
 
 ```bash
 pods create recipe
+pods status
+pods logs recipe
 ```
 
-## Core Concepts
+4. Stop and remove the pod and its containers:
 
-### Recipes
+```bash
+pods remove recipe
+```
 
-Recipes are defined in Lua tables. A recipe specifies a pod, its network configuration, and a sequential list of containers.
+## Configuration and Recipes
+
+### Configuration (`config.lua`)
+
+The configuration file defines the default text editor, simulation mode, base directories, and recipe groups. Every active recipe must belong to at least one group. Groups can also reference other groups with the `@` prefix.
 
 ```lua
 return {
-    name = "Example Pod",
-    pod = {
-        name = "web-service",
-        publish = { { 8080, 80, "TCP" } },
+    editor = "vim",
+    simulate = false,
+    pods = {
+        path = "/pods",
     },
+    recipes = {
+        path = ".",
+        groups = {
+            backend = {
+                "db-server",
+                "cache-server",
+            },
+            all = {
+                "@backend",
+                "example-app",
+            },
+        },
+    },
+}
+```
+
+### Recipes (`<name>.lua`)
+
+A recipe defines a single pod and an ordered list of containers. Containers are created from top to bottom and removed in reverse order.
+
+```lua
+return {
+    name = "Example Web Stack",
+    description = "Web application and database stack.",
+
+    pod = {
+        name = "web-stack",
+        path = "/pods/web-stack",
+        registry = "docker.io",
+        publish = {
+            { 8080, 80, "TCP" },
+        },
+        commands = {
+            migrate = {
+                description = "Run database migrations.",
+                container = "*db",
+                user = "dbuser",
+                execute = "app-cli migrate",
+            },
+        },
+        options = {
+            "--userns=keep-id",
+        },
+    },
+
     containers = {
         {
-            name = "app",
-            image = "example:latest",
+            name = "*db",
+            restart = "always",
+            image = "example/db-server:latest",
+            volumes = {
+                { "data", "/var/lib/db/data", "Z" },
+            },
+            options = {
+                "--env DB_PASSWORD=secret",
+            },
+        },
+        {
+            name = "*app",
+            restart = "always",
+            image = "example/example-app:latest",
+            commands = { "start-server.sh" },
         },
     },
 }
 ```
 
-### Groups
+Key recipe conventions:
+- **Container Naming:** Names prefixed with `*` (such as `*db`) expand to `<pod.name>-<name>` (`web-stack-db`). If omitted, the container index is used (`web-stack-1`).
+- **Volume Paths:** Relative host paths (such as `"data"`) resolve against `pod.path` (or `<pods.path>/<pod.name>` if `pod.path` is omitted).
+- **Custom Flags:** Any Podman flags not directly modeled by PodScript can be passed via `pod.options` and `container.options`.
 
-Recipe groups are defined in `config.lua` to manage multiple recipes at once.
+## CLI Overview
 
-```lua
-return {
-    recipes = {
-        groups = {
-            backend = { "db-server", "cache-server" },
-        },
-    },
-}
+General syntax:
+
+```bash
+pods [MODE] [OPTIONS] [ACTION] [TARGETS...]
 ```
 
-Execute commands on groups using the `@` prefix: `pods create @backend`.
+| Mode        | Actions                                                    | Target                        | Description                                                  |
+| :---------- | :--------------------------------------------------------- | :---------------------------- | :----------------------------------------------------------- |
+| `(default)` | `create`, `recreate`, `remove`, `update`, `status`, `help` | `<recipe>`, `@<group>`        | Manage pod lifecycles and display container runtime status.  |
+| `logs`      | `show`, `follow`, `help`                                   | `<recipe>[/<container>]`      | Display or stream pod and container logs.                    |
+| `connect`   | `shell`, `help`                                            | `<recipe>[/<container>]`      | Open an interactive shell inside a running container.        |
+| `command`   | `list`, `exec`, `help`                                     | `<recipe> [<command>\|<idx>]` | List or execute maintenance commands defined in a recipe.    |
+| `recipe`    | `list`, `show`, `edit`, `help`                             | `[<recipe>]`                  | List configured recipes, or view and edit a recipe file.     |
+| `config`    | `show`, `edit`, `help`                                     | `-`                           | Display the validated configuration tree or edit the config. |
+| `image`     | `prune`, `help`                                            | `-`                           | Preview and remove dangling or unused container images.      |
+| `init`      | `help`                                                     | `-`                           | Generate default `config.lua` and `recipe.lua` templates.    |
 
-## CLI Reference
+Global options available across modes:
+- `--config=<name>`: Load an alternative configuration file by name or path.
+- `--debug`: Enable verbose debug output.
+- `--simulate`: Print generated Podman commands without executing them.
 
-| Mode | Action | Target | Description |
-| :--- | :--- | :--- | :--- |
-| `(default)` | `create`, `help`, `recreate`, `remove`, `status`, `update` | `<recipe>`, `@<group>` | Executes lifecycle actions on recipes or groups. |
-| `logs` | `show`, `follow` | `<recipe>[/<container>]` | Retrieves or tails container logs. |
-| `connect` | `shell` | `<recipe>[/<container>]` | Opens an interactive shell in a container. |
-| `command` | `list`, `exec` | `<recipe> [command]` | Executes pre-defined maintenance commands. |
-| `init` | - | - | Generates default `config.lua` and `recipe.lua`. |
-| `config` | `show`, `edit` | - | Displays or edits the active configuration file. |
-| `image` | `prune`, `help` | - | Manages orphaned and dangling container images. |
-| `recipe` | `show`, `edit`, `list` | `<recipe>` | Displays, edits, or lists recipes. |
-
-Global Options:
-
-- `--config=<name>`: Specify a custom configuration file.
-- `--debug`: Enable verbose execution output.
-- `--simulate`: Prints generated Podman commands without executing them.
+For complete command documentation, mode-specific flags, and targeting rules, see [USAGE.md](USAGE.md).
 
 ## Development
 
-Source files are located in `src/pods/`. Never edit `pods.lua` directly.
-
-Execute tests and build the release script:
+Source files are located in `src/pods/`. Do not edit `pods.lua` directly; it is generated by the build script.
 
 ```bash
-# Verify (complete cycle: dev tests -> build -> release tests)
+# Run dev tests, build tests, build pods.lua, and run release tests
 ./task verify
-```
 
-Run tests only (defaults to both dev and release environments):
-
-```bash
+# Run specific test suites
 ./task test
-```
-
-Execute tests for a specific environment:
-
-```bash
 ./task test dev
 ./task test release
-```
 
-Execute a specific test by ID and apply test flags (e.g., `--fail-fast`):
-
-```bash
-./task verify 01001
-./task verify 01001 --fail-fast
-./task test dev 01001 --fail-fast
-```
-
-Run the internal test script directly for advanced test flags (e.g., JSON output):
-
-```bash
-lua test.lua --fail-fast
-lua test.lua --json
-```
-
-Build `pods.lua`:
-
-```bash
+# Build standalone pods.lua
 ./task build
-lua build.lua --release
 ```
-
-## Disclaimer
-
-PodScript is provided "as is", without warranty of any kind, express or implied. Use this tool at your own risk. The authors are not responsible for any data loss or system instability.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.
+
+PodScript is provided "as is", without warranty of any kind. Use at your own risk.
