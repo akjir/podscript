@@ -28,4 +28,5 @@
 * Proposals: Use **`proposal-workflow`** to manage `.agents/proposals/`.
 * Development & Build: Use **`podscript-dev-workflow`** to build, test, and develop.
 * Documentation: Use **`update-documentation`** to update `USAGE.md`, `README.md`, and completion scripts.
+* Security Audit: Use **`red-team-audit`** when triggered by `/red <filename>` or `/red all`.
 * Release: Use **`podscript-release`** to create official releases.
