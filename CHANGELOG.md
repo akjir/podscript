@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.6.0] - 2026-10-20
 
 ### Added
 
@@ -15,9 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Replaced `simulate` mode with global `--simulate` flag for standard CLI syntax.
-- Changed default action for `recipe` mode from `help` to `list`.
-- Changed `help` from a standalone mode to a default mode action.
+- Updated CLI syntax to use global `--simulate` flag instead of `simulate` mode.
+- Updated default action for `recipe` mode from `help` to `list`.
+- Updated `help` from a standalone mode to a default mode action.
 
 ### Fixed
 
@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed status column alignment for items exceeding default padding limit.
 - Fixed silent error swallowing in `system.exec_capture` when commands fail.
 - Fixed `STDERR` output console bleeding in `system.exec_capture`.
-- Fixed syntax errors for background commands by removing appended semicolons in `system.exec`.
+- Fixed syntax errors for background commands by removing semicolons in `system.exec`.
 
 ### Removed
 

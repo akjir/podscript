@@ -27,8 +27,8 @@ global<const> *
 --
 -- ------------------------------------------------------------------------- --
 
-local VERSION <const> = "1.5.0"
-local BUILD <const> = "262.b75fb0a.dev"
+local VERSION <const> = "1.6.0"
+local BUILD <const> = "267.f7a2fc6"
 
 ---Constructs and returns the full PodScript version string formatted as 'v<VERSION>+<BUILD>'.
 ---@return string The formatted version string.
@@ -2715,8 +2715,8 @@ local function mode_init__create(context)
             migrate = {\
                 description = \"Run database migrations.\",\
                 container = \"*db\",\
-                user = \"postgres\",\
-                execute = \"psql -U postgres -d app -f /migrations/run.sql\",\
+                user = \"dbuser\",\
+                execute = \"db-cli -U dbuser -d app -f /migrations/run.sql\",\
             },\
         },\
         options = {\
@@ -2730,19 +2730,19 @@ local function mode_init__create(context)
             detach = true,\
             restart = \"always\",\
             registry = \"docker.io\",\
-            image = \"postgres:15-alpine\",\
+            image = \"example/db-server:latest\",\
             volumes = {\
-                { \"data\", \"/var/lib/postgresql/data\", \"Z\" },\
+                { \"data\", \"/var/lib/db/data\", \"Z\" },\
             },\
             options = {\
-                \"--env POSTGRES_PASSWORD=secret\",\
+                \"--env DB_PASSWORD=secret\",\
             },\
         },\
         {\
             name = \"*app\",\
             detach = true,\
             restart = \"always\",\
-            image = \"example/app:latest\",\
+            image = \"example/example-app:latest\",\
             commands = { \"start-server.sh\" },\
         },\
     },\

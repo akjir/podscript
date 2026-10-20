@@ -9,9 +9,7 @@ This directory serves as the collaborative feature roadmap and specification hub
 | ID | Title | Type | Status | Specification |
 | :--- | :--- | :--- | :--- | :--- |
 | `PSP-003` | Volume Host Directory Verification & Automatic Creation | `feature` | `concept` | [psp-003-volume-dir-check.md](psp-003-volume-dir-check.md) |
-| `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `concept` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
 | `PSP-006` | Granular Container Targeting within Pods (`recipe/container`) | `feature` | `concept` | [psp-006-container-targeting.md](psp-006-container-targeting.md) |
-| `PSP-007` | Log Aggregation and Tailing (`logs` mode) | `feature` | `concept` | [psp-007-log-aggregation.md](psp-007-log-aggregation.md) |
 | `PSP-008` | Health-Aware Lifecycle Ordering | `feature` | `concept` | [psp-008-health-aware-lifecycle.md](psp-008-health-aware-lifecycle.md) |
 | `PSP-009` | Environment Variable Management (`.env` Integration) | `feature` | `concept` | [psp-009-env-management.md](psp-009-env-management.md) |
 | `PSP-010` | Podman Secrets Integration | `feature` | `concept` | [psp-010-podman-secrets.md](psp-010-podman-secrets.md) |
@@ -21,7 +19,6 @@ This directory serves as the collaborative feature roadmap and specification hub
 | `PSP-014` | Command Mode Syntax Alignment | `feature` | `concept` | [psp-014-command-syntax-alignment.md](psp-014-command-syntax-alignment.md) |
 | `PSP-015` | Docker Compose to PodScript Converter | `feature` | `concept` | [psp-015-docker-compose-converter.md](psp-015-docker-compose-converter.md) |
 | `PSP-018` | Human-Readable Recipe Output | `feature` | `concept` | [psp-018-human-recipe-output.md](psp-018-human-recipe-output.md) |
-| `PSP-021` | Simulate Flag Migration | `architecture` | `done` | [psp-021-simulate-flag-migration.md](psp-021-simulate-flag-migration.md) |
 | `PSP-022` | Native Container Image Building | `feature` | `concept` | [psp-022-native-build-support.md](psp-022-native-build-support.md) |
 | `PSP-023` | Resource Limits and Hardware Quotas | `feature` | `concept` | [psp-023-resource-limits.md](psp-023-resource-limits.md) |
 | `PSP-024` | Remote Host Orchestration | `feature` | `concept` | [psp-024-remote-host-orchestration.md](psp-024-remote-host-orchestration.md) |
@@ -35,6 +32,9 @@ This directory serves as the collaborative feature roadmap and specification hub
 | :--- | :--- | :--- | :--- | :--- |
 | `PSP-028` | Build System File Insertion Annotation | `enhancement` | `completed` | [psp-028-build-insert-annotation.md](psp-028-build-insert-annotation.md) |
 | `PSP-002` | Orphaned & Dangling Image Cleanup | `feature` | `completed` | [psp-002-image-prune.md](psp-002-image-prune.md) |
+| `PSP-021` | Simulate Flag Migration | `architecture` | `completed` | [psp-021-simulate-flag-migration.md](psp-021-simulate-flag-migration.md) |
+| `PSP-007` | Log Aggregation and Tailing (`logs` mode) | `feature` | `completed` | [psp-007-log-aggregation.md](psp-007-log-aggregation.md) |
+| `PSP-004` | Recipe List Cross-Check (Config vs. Filesystem) | `feature` | `completed` | [psp-004-recipe-list-crosscheck.md](psp-004-recipe-list-crosscheck.md) |
 | `PSP-001` | Running Containers Display & Granular Podman Inspection | `feature` | `completed` | [psp-001-podman-inspection.md](psp-001-podman-inspection.md) |
 | `PSP-005` | Architectural Refactoring: Explicit Context Table | `architecture` | `completed` | [psp-005-central-context-eval.md](psp-005-central-context-eval.md) |
 | `PSP-017` | Human-Readable Configuration Output & Validation | `feature` | `completed` | [psp-017-human-config-output.md](psp-017-human-config-output.md) |

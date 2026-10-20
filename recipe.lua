@@ -13,8 +13,8 @@ return {
             migrate = {
                 description = "Run database migrations.",
                 container = "*db",
-                user = "postgres",
-                execute = "psql -U postgres -d app -f /migrations/run.sql",
+                user = "dbuser",
+                execute = "db-cli -U dbuser -d app -f /migrations/run.sql",
             },
         },
         options = {
@@ -28,19 +28,19 @@ return {
             detach = true,
             restart = "always",
             registry = "docker.io",
-            image = "postgres:15-alpine",
+            image = "example/db-server:latest",
             volumes = {
-                { "data", "/var/lib/postgresql/data", "Z" },
+                { "data", "/var/lib/db/data", "Z" },
             },
             options = {
-                "--env POSTGRES_PASSWORD=secret",
+                "--env DB_PASSWORD=secret",
             },
         },
         {
             name = "*app",
             detach = true,
             restart = "always",
-            image = "example/app:latest",
+            image = "example/example-app:latest",
             commands = { "start-server.sh" },
         },
     },

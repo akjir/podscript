@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Project Discontinued:** PodScript is no longer actively maintained. Development has moved to its successor, **[Podoxide](https://github.com/akjir/podoxide)**.
+
 # PodScript
 
 [![Platform](https://img.shields.io/badge/platform-Linux-blue.svg)](https://www.kernel.org)
